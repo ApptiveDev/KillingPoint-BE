@@ -35,11 +35,11 @@ public class OAuth2Controller {
         return  ResponseEntity.ok(tokenResponse);
     }
 
-    @GetMapping("/test")
-    public ResponseEntity<TokenResponse> testLogin() {
-
-        TokenResponse tokenResponse = testLoginService.testLogin();
-
-        return ResponseEntity.ok(tokenResponse);
-    }
+//    @GetMapping("/test")
+//    public ResponseEntity<TokenResponse> testLogin() {
+//
+//        TokenResponse tokenResponse = testLoginService.testLogin();
+//
+//        return ResponseEntity.ok(tokenResponse);
+//    }
 }
