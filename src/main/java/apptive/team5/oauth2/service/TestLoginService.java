@@ -34,10 +34,13 @@ public class TestLoginService {
 
         Optional<UserEntity> findUser = userRepository.findByIdentifier(TEST_IDENTIFIER);
 
+
         if(findUser.isPresent()){
             user = findUser.get();
         }
-        else user = userRepository.save(new UserEntity(TEST_IDENTIFIER, "test@naver.com", "tester", "tester", UserRoleType.USER, SocialType.KAKAO));
+        else {
+            user = userRepository.save(new UserEntity(TEST_IDENTIFIER, "test@naver.com", "tester", "tester", UserRoleType.USER, SocialType.KAKAO));
+        }
 
 
 
@@ -46,6 +49,6 @@ public class TestLoginService {
 
         jwtService.saveRefreshToken(user.getId(), refreshToken);
 
-        return new TokenResponse(accessToken, refreshToken);
+        return new TokenResponse(accessToken, refreshToken, true);
     }
 }

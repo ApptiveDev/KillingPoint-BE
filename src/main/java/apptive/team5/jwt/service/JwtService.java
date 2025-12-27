@@ -59,7 +59,7 @@ public class JwtService {
 
         saveRefreshToken(userId, newRefreshToken);
 
-        return new TokenResponse(newAccessToken, newRefreshToken);
+        return new TokenResponse(newAccessToken, newRefreshToken, false);
     }
 
     public void deleteRefreshTokenByUserId(Long userId) {

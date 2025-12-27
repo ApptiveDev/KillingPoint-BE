@@ -31,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Transactional
 @Service
@@ -52,6 +51,8 @@ public class UserService {
     public TokenResponse socialLogin(OAuth2Response oAuth2Response) {
         String identifier = oAuth2Response.getProvider() + "-" +oAuth2Response.getProviderId();
 
+        boolean isNew = false;
+
         UserEntity user;
         if (userLowService.existsByIdentifier(identifier)) {
             user = userLowService.findByIdentifier(identifier);
@@ -59,6 +60,7 @@ public class UserService {
         else {
             String tag = TagGenerator.generateTag();
             user = userLowService.save(new UserEntity(identifier, oAuth2Response.getEmail(), oAuth2Response.getUsername(), tag, UserRoleType.USER, oAuth2Response.getProvider()));
+            isNew = true;
         }
 
         String accessToken = jwtUtil.createJWT(user.getId(), "ROLE_" + user.getRoleType().name(), TokenType.ACCESS_TOKEN);
@@ -67,7 +69,7 @@ public class UserService {
 
         jwtService.saveRefreshToken(user.getId(), refreshToken);
 
-        return new TokenResponse(accessToken, refreshToken);
+        return new TokenResponse(accessToken, refreshToken, isNew);
     }
 
     @Transactional(readOnly = true)
