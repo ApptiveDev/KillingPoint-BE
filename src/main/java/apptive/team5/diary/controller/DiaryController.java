@@ -70,7 +70,7 @@ public class DiaryController {
     }
 
     @GetMapping("/my/calendar")
-    public ResponseEntity<List<MyDiaryResponseDto>> getMyDiariesByPeriod(
+    public ResponseEntity<List<CalendarDiaryResponseDto>> getMyDiariesByPeriod(
             @AuthenticationPrincipal
             Long userId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -78,7 +78,7 @@ public class DiaryController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate end
     ) {
-        List<MyDiaryResponseDto> response = diaryService.getMyDiariesByPeriod(userId, start, end);
+        List<CalendarDiaryResponseDto> response = diaryService.getMyDiariesByPeriod(userId, start, end);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

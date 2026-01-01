@@ -18,9 +18,12 @@ public record MyDiaryResponseDto(
         String start,
         String end,
         LocalDateTime createDate,
-        LocalDateTime updateDate
+        LocalDateTime updateDate,
+        boolean isLiked,
+        Long likeCount,
+        Long userId
 ) implements DiaryResponseDto {
-    public static MyDiaryResponseDto from(DiaryEntity diary) {
+    public static MyDiaryResponseDto from(DiaryEntity diary, boolean isLiked, Long likeCount, Long userId) {
         return new MyDiaryResponseDto(
                 diary.getId(),
                 diary.getArtist(),
@@ -34,7 +37,10 @@ public record MyDiaryResponseDto(
                 diary.getStart(),
                 diary.getEnd(),
                 diary.getCreateDateTime(),
-                diary.getUpdateDateTime()
+                diary.getUpdateDateTime(),
+                isLiked,
+                likeCount,
+                userId
         );
     }
 }

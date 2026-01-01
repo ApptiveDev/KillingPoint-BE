@@ -35,8 +35,23 @@ public class DiaryService {
     public Page<MyDiaryResponseDto> getMyDiaries(Long userId, Pageable pageable) {
         UserEntity foundUser = userLowService.getReferenceById(userId);
 
-        return diaryLowService.findDiaryByUser(foundUser, pageable)
-                .map(MyDiaryResponseDto::from);
+        Page<DiaryEntity> diaryPage = diaryLowService.findDiaryByUser(foundUser, pageable);
+
+        List<Long> diaryIds = diaryPage.stream()
+                .map(DiaryEntity::getId)
+                .toList();
+
+
+        Set<Long> likedDiaryIds = diaryLikeLowService.findLikedDiaryIdsByUser(userId, diaryIds);
+        Map<Long, Long> likeCountsMaps = diaryLikeLowService.findLikeCountsByDiaryIds(diaryIds);
+
+        return diaryResponseMapper.mapToResponseDto(
+                diaryPage,
+                likedDiaryIds,
+                likeCountsMaps,
+                userId,
+                MyDiaryResponseDto::from
+        );
     }
 
     @Transactional(readOnly = true)
@@ -96,13 +111,13 @@ public class DiaryService {
     }
 
     @Transactional(readOnly = true)
-    public List<MyDiaryResponseDto> getMyDiariesByPeriod(Long userId, LocalDate startDate, LocalDate endDate) {
+    public List<CalendarDiaryResponseDto> getMyDiariesByPeriod(Long userId, LocalDate startDate, LocalDate endDate) {
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
 
         return diaryLowService.findByUserIdAndPeriod(userId, startDateTime, endDateTime)
                 .stream()
-                .map(MyDiaryResponseDto::from)
+                .map(CalendarDiaryResponseDto::from)
                 .toList();
     }
 

@@ -83,6 +83,7 @@ public class DiaryControllerTest {
         // given
         DiaryEntity firstDiary = diaryRepository.save(TestUtil.makeDiaryEntity(testUser));
         DiaryEntity secondDiary = diaryRepository.save(TestUtil.makeDiaryEntity(testUser));
+        diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(testUser, secondDiary)); // 두번째 다이어리에 좋아요
 
         TestSecurityContextHolderInjection.inject(testUser.getId(), testUser.getRoleType());
 
@@ -115,6 +116,10 @@ public class DiaryControllerTest {
             softly.assertThat(diaryResponse.totalDuration()).isEqualTo(secondDiary.getTotalDuration());
             softly.assertThat(diaryResponse.start()).isEqualTo(secondDiary.getStart());
             softly.assertThat(diaryResponse.end()).isEqualTo(secondDiary.getEnd());
+            softly.assertThat(diaryResponse.isLiked()).isTrue();
+            softly.assertThat(diaryResponse.likeCount()).isEqualTo(1);
+            softly.assertThat(content.getLast().likeCount()).isEqualTo(0);
+            softly.assertThat(content.getLast().isLiked()).isFalse();
             softly.assertThat(content.getFirst().diaryId() > content.getLast().diaryId()).isTrue();
         });
     }
@@ -196,7 +201,7 @@ public class DiaryControllerTest {
                 .getContentAsString();
 
         // then
-        List<MyDiaryResponseDto> content = objectMapper.readValue(response, new TypeReference<>() {});
+        List<CalendarDiaryResponseDto> content = objectMapper.readValue(response, new TypeReference<>() {});
 
         assertSoftly(softly -> {
             softly.assertThat(content.getFirst().diaryId() > content.getLast().diaryId()).isTrue();
