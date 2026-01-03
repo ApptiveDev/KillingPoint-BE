@@ -179,14 +179,21 @@ public class DiaryServiceTest {
         UserEntity user = TestUtil.makeUserEntityWithId();
         DiaryCreateRequest diaryRequest = TestUtil.makeDiaryCreateRequest();
 
+        DiaryEntity savedDiary = TestUtil.makeDiaryEntity(user);
+
         given(userLowService.getReferenceById(user.getId())).willReturn(user);
+        given(diaryLowService.saveDiary(any(DiaryEntity.class))).willReturn(savedDiary);
 
         // when
-        diaryService.createDiary(user.getId(), diaryRequest);
+        DiaryEntity result = diaryService.createDiary(user.getId(), diaryRequest);
 
         // then
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(savedDiary.getId());
+
         verify(userLowService).getReferenceById(any(Long.class));
         verify(diaryLowService).saveDiary(any(DiaryEntity.class));
+        verify(diaryOrderLowService).addDiaryId(user.getId(), savedDiary.getId());
 
         verifyNoMoreInteractions(userLowService, diaryLowService);
     }
