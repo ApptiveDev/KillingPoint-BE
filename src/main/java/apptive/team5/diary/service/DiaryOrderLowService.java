@@ -31,4 +31,14 @@ public class DiaryOrderLowService {
             diaryOrderRepository.save(new DiaryOrderEntity(user, diaryIds));
         }
     }
+
+    public void addDiaryId(Long userId, Long diaryId) {
+        diaryOrderRepository.findByUserId(userId)
+                .ifPresent(order -> order.addDiaryId(diaryId));
+    }
+
+    public void deleteDiaryId(Long userId, Long diaryId) {
+        diaryOrderRepository.findByUserId(userId)
+                .ifPresent(order -> order.removeDiaryId(diaryId));
+    }
 }

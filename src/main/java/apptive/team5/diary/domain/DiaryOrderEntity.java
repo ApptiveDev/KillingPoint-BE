@@ -15,6 +15,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -41,5 +42,23 @@ public class DiaryOrderEntity {
 
     public void updateOrder(List<Long> orderList) {
         this.orderList = orderList;
+    }
+
+    public void addDiaryId(Long diaryId) {
+        if (this.orderList == null) {
+            this.orderList = new ArrayList<>();
+        }
+        else {
+            this.orderList = new ArrayList<>(this.orderList);
+        }
+        this.orderList.addFirst(diaryId);
+    }
+
+    public void removeDiaryId(Long diaryId) {
+        if (this.orderList == null) {
+            return;
+        }
+        this.orderList = new ArrayList<>(this.orderList);
+        this.orderList.remove(diaryId);
     }
 }
