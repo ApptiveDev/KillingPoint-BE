@@ -17,6 +17,7 @@ public enum ExceptionCode {
     NOT_FOUND_DIARY("그런 다이어리는 없습니다."),
     NOT_FOUND_DIARY_LIKE("좋아요를 누르지 않은 킬링파트입니다!"),
     BAD_SUBSCRIBE_REQUEST("자기 자신은 구독할 수 없습니다."),
+    DUPLICATE_SUBSCRIBE_REQUEST("이미 구독한 회원입니다."),
     INVALID_DIARY_LIST("유효하지 않은 다이어리 ID가 포함되어 있습니다.");
 
     private final String description;
