@@ -25,6 +25,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,9 +52,11 @@ public class DiaryServiceTest {
     private DiaryLowService diaryLowService;
     @Mock
     private DiaryLikeLowService diaryLikeLowService;
+    @Mock
+    private DiaryOrderLowService diaryOrderLowService;
 
     @Test
-    @DisplayName("내 다이어리 목록 조회")
+    @DisplayName("내 다이어리 목록 조회 - diaryOrder 없는 상황")
     void getMyDiaries() {
         // given
         UserEntity user = TestUtil.makeUserEntityWithId();
@@ -62,6 +65,7 @@ public class DiaryServiceTest {
         PageRequest pageRequest = PageRequest.of(0, 5);
 
         given(userLowService.getReferenceById(user.getId())).willReturn(user);
+        given(diaryOrderLowService.findByUserId(user.getId())).willReturn(Optional.empty());
         given(diaryLowService.findDiaryByUser(user, pageRequest)).willReturn(diaryEntityPage);
 
         // when
