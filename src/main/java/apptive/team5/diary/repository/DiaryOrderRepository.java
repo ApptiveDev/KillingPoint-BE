@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface DiaryOrderRepository extends JpaRepository<DiaryOrderEntity, Long> {
     Optional<DiaryOrderEntity> findByUserId(Long userId);
+
+    void deleteByUserId(Long userId);
 }

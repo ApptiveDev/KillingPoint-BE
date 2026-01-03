@@ -41,4 +41,8 @@ public class DiaryOrderLowService {
         diaryOrderRepository.findByUserId(userId)
                 .ifPresent(order -> order.removeDiaryId(diaryId));
     }
+
+    public void deleteByUserId(Long userId) {
+        diaryOrderRepository.deleteByUserId(userId);
+    }
 }
