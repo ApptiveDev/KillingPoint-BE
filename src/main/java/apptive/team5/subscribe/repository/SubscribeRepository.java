@@ -46,4 +46,6 @@ public interface SubscribeRepository extends JpaRepository<Subscribe, Long> {
             s.subscribedTo.id in :subscribedToIds
            """)
     List<Subscribe> findBySubscriberIdAndSubscribedToIds(Long subscriberId, List<Long> subscribedToIds);
+
+    boolean existsBySubscriberIdAndSubscribedToId(Long subscriberId, Long subscribedToId);
 }

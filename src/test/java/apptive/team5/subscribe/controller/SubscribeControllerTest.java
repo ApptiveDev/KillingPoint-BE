@@ -215,5 +215,32 @@ class SubscribeControllerTest {
 
     }
 
+    @DisplayName("구독 실패 - 이미 구독한 회원을 구독 요청")
+    @Test
+    void failSubscribeDueToDuplicate() throws Exception {
+
+        // given
+        UserEntity subscriber = TestUtil.makeUserEntity();
+        userRepository.save(subscriber);
+        UserEntity subscribedTo = TestUtil.makeDifferentUserEntity(subscriber);
+        userRepository.save(subscribedTo);
+
+        subscribeRepository.save(new Subscribe(subscriber, subscribedTo));
+
+        TestSecurityContextHolderInjection.inject(subscriber.getId(), subscriber.getRoleType());
+
+        // when
+        String response = mockMvc.perform(post("/api/subscribes/{subscribeToId}", subscribedTo.getId())
+                        .with(securityContext(SecurityContextHolder.getContext()))
+                ).andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(UTF_8);
+
+        Map<String, String> apiResponse = objectMapper.readValue(response, new TypeReference<Map<String, String>>() {
+        });
+
+        assertThat(apiResponse.get("message")).isEqualTo(ExceptionCode.DUPLICATE_SUBSCRIBE_REQUEST.getDescription());
+
+    }
+
 
 }
