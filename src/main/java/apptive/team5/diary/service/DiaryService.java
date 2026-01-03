@@ -48,9 +48,7 @@ public class DiaryService {
         if (optionalDiaryOrder.isPresent()) {
             List<Long> diaryOrder = optionalDiaryOrder.get().getOrderList();
 
-            List<DiaryEntity> diaries = diaryLowService.findDiaryByUserId(userId);
-
-            diaryPage = getOrderedDiariesPage(diaryOrder, diaries, pageable);
+            diaryPage = getOrderedDiariesPage(diaryOrder, pageable);
         }
         else {
             diaryPage = diaryLowService.findDiaryByUser(foundUser, pageable);
@@ -146,7 +144,11 @@ public class DiaryService {
 
         DiaryEntity diary = diaryRequest.toEntity(foundUser);
 
-        return diaryLowService.saveDiary(diary);
+        DiaryEntity savedDiary = diaryLowService.saveDiary(diary);
+
+        diaryOrderLowService.addDiaryId(userId, savedDiary.getId());
+
+        return savedDiary;
     }
 
     @Transactional
@@ -168,6 +170,7 @@ public class DiaryService {
 
         foundDiary.validateOwner(foundUser);
 
+        diaryOrderLowService.deleteDiaryId(userId, diaryId);
         diaryLikeLowService.deleteByDiaryId(diaryId);
         diaryLowService.deleteDiary(foundDiary);
     }
@@ -185,7 +188,7 @@ public class DiaryService {
         diaryLowService.deleteByUserId(userId);
     }
 
-    private Page<DiaryEntity> getOrderedDiariesPage(List<Long> diaryOrder, List<DiaryEntity> diaries, Pageable pageable) {
+    private Page<DiaryEntity> getOrderedDiariesPage(List<Long> diaryOrder, Pageable pageable) {
         int st = (int) pageable.getOffset();
         int en = Math.min(st + pageable.getPageSize(), diaryOrder.size());
 
@@ -193,11 +196,13 @@ public class DiaryService {
             return Page.empty();
         }
 
-        List<Long> pageIds = diaryOrder.subList(st, en);
+        List<Long> pagedIds = diaryOrder.subList(st, en);
 
-        Map<Long, DiaryEntity> entityMap = mapDiariesById(diaries);
+        List<DiaryEntity> pagedDiaries = diaryLowService.findAllByIds(pagedIds);
 
-        List<DiaryEntity> orderedDiaries = pageIds.stream()
+        Map<Long, DiaryEntity> entityMap = mapDiariesById(pagedDiaries);
+
+        List<DiaryEntity> orderedDiaries = pagedIds.stream()
                 .map(entityMap::get)
                 .filter(Objects::nonNull)
                 .toList();
