@@ -11,6 +11,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
+@Table(uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "unique_subscribe",
+                        columnNames = {
+                                "subscriber_id",
+                                "subscribed_to_id"
+                        }
+                ),
+        }
+)
 public class Subscribe {
 
     @Id
