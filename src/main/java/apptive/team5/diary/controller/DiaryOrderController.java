@@ -2,6 +2,7 @@ package apptive.team5.diary.controller;
 
 import apptive.team5.diary.dto.DiaryOrderUpdateRequestDto;
 import apptive.team5.diary.service.DiaryOrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ public class DiaryOrderController {
     @PatchMapping("/order")
     public ResponseEntity<Void> updateDiaryOrder(
             @AuthenticationPrincipal Long userId,
-            @RequestBody DiaryOrderUpdateRequestDto requestDto
+            @Valid @RequestBody DiaryOrderUpdateRequestDto requestDto
     ) {
         diaryOrderService.updateDiaryOrder(userId, requestDto);
         return ResponseEntity.status(HttpStatus.OK).build();
