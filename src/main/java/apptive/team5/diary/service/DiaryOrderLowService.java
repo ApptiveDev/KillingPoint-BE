@@ -20,4 +20,15 @@ public class DiaryOrderLowService {
     public Optional<DiaryOrderEntity> findByUserId(Long userId) {
         return diaryOrderRepository.findByUserId(userId);
     }
+
+    public void saveOrder(UserEntity user, List<Long> diaryIds) {
+        Optional<DiaryOrderEntity> optionalDiaryOrder = diaryOrderRepository.findByUserId(user.getId());
+
+        if (optionalDiaryOrder.isPresent()) {
+            optionalDiaryOrder.get().updateOrder(diaryIds);
+        }
+        else {
+            diaryOrderRepository.save(new DiaryOrderEntity(user, diaryIds));
+        }
+    }
 }
