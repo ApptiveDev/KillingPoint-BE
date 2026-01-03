@@ -58,4 +58,9 @@ public class SubscribeLowService {
     public List<Subscribe> findBySubscriberIdAndSubscribedToIds(Long subscriberId, List<Long> subscribedToIds) {
         return subscribeRepository.findBySubscriberIdAndSubscribedToIds(subscriberId, subscribedToIds);
     }
+
+    @Transactional(readOnly = true)
+    public boolean existsBySubscriberIdAndSubscribedToId(Long subscriberId, Long subscribedToId) {
+        return subscribeRepository.existsBySubscriberIdAndSubscribedToId(subscriberId, subscribedToId);
+    }
 }
