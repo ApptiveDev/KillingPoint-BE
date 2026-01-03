@@ -1,6 +1,7 @@
 package apptive.team5.diary.service;
 
 import apptive.team5.diary.domain.DiaryEntity;
+import apptive.team5.diary.domain.DiaryOrderEntity;
 import apptive.team5.diary.domain.DiaryScope;
 import apptive.team5.diary.dto.DiaryCreateRequest;
 import apptive.team5.diary.dto.MyDiaryResponseDto;
@@ -22,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
@@ -78,6 +80,41 @@ public class DiaryServiceTest {
         verify(diaryLowService).findDiaryByUser(any(UserEntity.class), any(PageRequest.class));
 
         verifyNoMoreInteractions(userLowService, diaryLowService);
+    }
+
+    @Test
+    @DisplayName("내 다이어리 조회 with 정렬 순서 정보")
+    void getMyDiariesWithOrder() {
+        // given
+        Long userId = 1L;
+        Pageable pageable = PageRequest.of(0, 10);
+        UserEntity user = mock(UserEntity.class);
+
+        given(userLowService.getReferenceById(userId)).willReturn(user);
+
+        List<Long> orderList = List.of(30L, 10L, 20L);
+        DiaryOrderEntity orderEntity = mock(DiaryOrderEntity.class);
+        given(orderEntity.getOrderList()).willReturn(orderList);
+        given(diaryOrderLowService.findByUserId(userId)).willReturn(Optional.of(orderEntity));
+
+        DiaryEntity d10 = mock(DiaryEntity.class);
+        given(d10.getId()).willReturn(10L);
+        DiaryEntity d20 = mock(DiaryEntity.class);
+        given(d20.getId()).willReturn(20L);
+        DiaryEntity d30 = mock(DiaryEntity.class);
+        given(d30.getId()).willReturn(30L);
+
+        given(diaryLowService.findAllByIds(any())).willReturn(List.of(d10, d20, d30));
+
+        // when
+        Page<MyDiaryResponseDto> result = diaryService.getMyDiaries(userId, pageable);
+
+        // then
+        List<Long> resultIds = result.getContent().stream()
+                .map(MyDiaryResponseDto::diaryId)
+                .toList();
+
+        assertThat(resultIds).containsExactly(30L, 10L, 20L);
     }
 
     @Test
@@ -242,5 +279,45 @@ public class DiaryServiceTest {
         verify(diaryLowService).deleteDiary(any(DiaryEntity.class));
 
         verifyNoMoreInteractions(userLowService, diaryLowService);
+    }
+
+    @Test
+    @DisplayName("다이어리 생성 시 정렬 정보 동기화")
+    void createDiarySync() {
+        // given
+        Long userId = 1L;
+        UserEntity user = mock(UserEntity.class);
+        given(userLowService.getReferenceById(userId)).willReturn(user);
+
+        DiaryCreateRequest request = mock(DiaryCreateRequest.class);
+        DiaryEntity newDiary = mock(DiaryEntity.class);
+        given(request.toEntity(user)).willReturn(newDiary);
+        given(diaryLowService.saveDiary(newDiary)).willReturn(newDiary);
+        given(newDiary.getId()).willReturn(100L);
+
+        // when
+        diaryService.createDiary(userId, request);
+
+        // then
+        verify(diaryOrderLowService).addDiaryId(userId, 100L);
+    }
+
+    @Test
+    @DisplayName("다이어리 삭제 시 정렬 정보 동기화")
+    void deleteDiarySync() {
+        // given
+        Long userId = 1L;
+        Long diaryId = 100L;
+        UserEntity user = mock(UserEntity.class);
+        DiaryEntity diary = mock(DiaryEntity.class);
+
+        given(userLowService.getReferenceById(userId)).willReturn(user);
+        given(diaryLowService.findDiaryById(diaryId)).willReturn(diary);
+
+        // when
+        diaryService.deleteDiary(userId, diaryId);
+
+        // then
+        verify(diaryOrderLowService).deleteDiaryId(userId, diaryId);
     }
 }
