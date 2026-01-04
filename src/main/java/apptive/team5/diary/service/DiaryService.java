@@ -43,16 +43,7 @@ public class DiaryService {
 
         Optional<DiaryOrderEntity> optionalDiaryOrder = diaryOrderLowService.findByUserId(userId);
 
-        Page<DiaryEntity> diaryPage;
-
-        if (optionalDiaryOrder.isPresent()) {
-            List<Long> diaryOrder = optionalDiaryOrder.get().getOrderList();
-
-            diaryPage = getOrderedDiariesPage(diaryOrder, pageable);
-        }
-        else {
-            diaryPage = diaryLowService.findDiaryByUser(foundUser, pageable);
-        }
+        Page<DiaryEntity> diaryPage = getSortedDiaries(pageable, optionalDiaryOrder, foundUser);
 
         List<Long> diaryIds = diaryPage.stream()
                 .map(DiaryEntity::getId)
@@ -186,6 +177,20 @@ public class DiaryService {
         diaryLikeLowService.deleteByDiaryIds(diaryIds);
 
         diaryLowService.deleteByUserId(userId);
+    }
+
+    private Page<DiaryEntity> getSortedDiaries(Pageable pageable, Optional<DiaryOrderEntity> optionalDiaryOrder, UserEntity foundUser) {
+        Page<DiaryEntity> diaryPage;
+
+        if (optionalDiaryOrder.isPresent()) {
+            List<Long> diaryOrder = optionalDiaryOrder.get().getOrderList();
+
+            diaryPage = getOrderedDiariesPage(diaryOrder, pageable);
+        }
+        else {
+            diaryPage = diaryLowService.findDiaryByUser(foundUser, pageable);
+        }
+        return diaryPage;
     }
 
     private Page<DiaryEntity> getOrderedDiariesPage(List<Long> diaryOrder, Pageable pageable) {
