@@ -15,14 +15,19 @@ public class DiaryReportEntity {
     @Column(name = "diary_report_id")
     private Long id;
 
-    private String content;
+    @Column(nullable = false)
+    private String reason;
+
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String reportContent;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "diary_id", nullable = false)
     private DiaryEntity diary;
 
-    public DiaryReportEntity(String content, DiaryEntity diary) {
-        this.content = content;
+    public DiaryReportEntity(String reason, String reportContent, DiaryEntity diary) {
+        this.reason = reason;
+        this.reportContent = reportContent;
         this.diary = diary;
     }
 }

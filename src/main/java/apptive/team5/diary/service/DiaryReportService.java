@@ -19,6 +19,6 @@ public class DiaryReportService {
 
         DiaryEntity reportedDiary = diaryLowService.findDiaryById(diaryId);
 
-        return diaryReportLowService.save(new DiaryReportEntity(diaryReportRequestDto.content(), reportedDiary));
+        return diaryReportLowService.save(new DiaryReportEntity(diaryReportRequestDto.content(), reportedDiary.getContent(), reportedDiary));
     }
 }
