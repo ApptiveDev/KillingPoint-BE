@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Transactional
 @Service
 @RequiredArgsConstructor
@@ -15,5 +17,13 @@ public class DiaryReportLowService {
 
     public DiaryReportEntity save(DiaryReportEntity diaryReportEntity) {
         return diaryReportRepository.save(diaryReportEntity);
+    }
+
+    public void deleteByDiaryId(Long diaryId) {
+        diaryReportRepository.deleteByDiaryId(diaryId);
+    }
+
+    public void deleteByDiaryIds(List<Long> diaryIds) {
+        diaryReportRepository.deleteByDiaryIds(diaryIds);
     }
 }
