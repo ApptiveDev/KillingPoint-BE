@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/api/diaries")
+@RequestMapping("/api/diaries/order")
 public class DiaryOrderController {
     private final DiaryOrderService diaryOrderService;
 
-    @PatchMapping("/order")
+    @PatchMapping
     public ResponseEntity<Void> updateDiaryOrder(
             @AuthenticationPrincipal Long userId,
             @Valid @RequestBody DiaryOrderUpdateRequestDto requestDto
