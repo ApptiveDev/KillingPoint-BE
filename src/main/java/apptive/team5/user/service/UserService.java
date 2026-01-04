@@ -1,6 +1,7 @@
 package apptive.team5.user.service;
 import apptive.team5.diary.service.DiaryLikeLowService;
 import apptive.team5.diary.service.DiaryLowService;
+import apptive.team5.diary.service.DiaryOrderLowService;
 import apptive.team5.diary.service.DiaryService;
 import apptive.team5.file.dto.FileUploadRequest;
 import apptive.team5.file.service.S3Service;
@@ -45,6 +46,7 @@ public class UserService {
     private final SubscribeLowService subscribeLowService;
     private final DiaryLowService diaryLowService;
     private final DiaryLikeLowService diaryLikeLowService;
+    private final DiaryOrderLowService diaryOrderLowService;
     private final DiaryService diaryService;
     private final SurveyLowService surveyLowService;
 
@@ -86,6 +88,7 @@ public class UserService {
         surveyLowService.deleteByUserId(userId);
         subscribeLowService.deleteByUserId(userId);
         diaryLikeLowService.deleteByUserId(userId);
+        diaryOrderLowService.deleteByUserId(userId);
 
         diaryService.deleteByUserId(userId);
         jwtService.deleteRefreshTokenByUserId(userId);

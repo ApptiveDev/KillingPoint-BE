@@ -1,6 +1,7 @@
 package apptive.team5.diary.service;
 
 import apptive.team5.diary.domain.DiaryEntity;
+import apptive.team5.diary.domain.DiaryOrderEntity;
 import apptive.team5.diary.domain.DiaryScope;
 import apptive.team5.diary.dto.*;
 import apptive.team5.diary.mapper.DiaryResponseMapper;
@@ -9,6 +10,7 @@ import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.service.UserLowService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +20,10 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +32,7 @@ public class DiaryService {
 
     private final UserLowService userLowService;
     private final DiaryLowService diaryLowService;
+    private final DiaryOrderLowService diaryOrderLowService;
     private final DiaryLikeLowService diaryLikeLowService;
     private final DiaryResponseMapper diaryResponseMapper;
     private final SubscribeLowService subscribeLowService;
@@ -35,7 +41,9 @@ public class DiaryService {
     public Page<MyDiaryResponseDto> getMyDiaries(Long userId, Pageable pageable) {
         UserEntity foundUser = userLowService.getReferenceById(userId);
 
-        Page<DiaryEntity> diaryPage = diaryLowService.findDiaryByUser(foundUser, pageable);
+        Optional<DiaryOrderEntity> optionalDiaryOrder = diaryOrderLowService.findByUserId(userId);
+
+        Page<DiaryEntity> diaryPage = getSortedDiaries(pageable, optionalDiaryOrder, foundUser);
 
         List<Long> diaryIds = diaryPage.stream()
                 .map(DiaryEntity::getId)
@@ -127,7 +135,11 @@ public class DiaryService {
 
         DiaryEntity diary = diaryRequest.toEntity(foundUser);
 
-        return diaryLowService.saveDiary(diary);
+        DiaryEntity savedDiary = diaryLowService.saveDiary(diary);
+
+        diaryOrderLowService.addDiaryId(userId, savedDiary.getId());
+
+        return savedDiary;
     }
 
     @Transactional
@@ -149,6 +161,7 @@ public class DiaryService {
 
         foundDiary.validateOwner(foundUser);
 
+        diaryOrderLowService.deleteDiaryId(userId, diaryId);
         diaryLikeLowService.deleteByDiaryId(diaryId);
         diaryLowService.deleteDiary(foundDiary);
     }
@@ -164,5 +177,46 @@ public class DiaryService {
         diaryLikeLowService.deleteByDiaryIds(diaryIds);
 
         diaryLowService.deleteByUserId(userId);
+    }
+
+    private Page<DiaryEntity> getSortedDiaries(Pageable pageable, Optional<DiaryOrderEntity> optionalDiaryOrder, UserEntity foundUser) {
+        Page<DiaryEntity> diaryPage;
+
+        if (optionalDiaryOrder.isPresent()) {
+            List<Long> diaryOrder = optionalDiaryOrder.get().getOrderList();
+
+            diaryPage = getOrderedDiariesPage(diaryOrder, pageable);
+        }
+        else {
+            diaryPage = diaryLowService.findDiaryByUser(foundUser, pageable);
+        }
+        return diaryPage;
+    }
+
+    private Page<DiaryEntity> getOrderedDiariesPage(List<Long> diaryOrder, Pageable pageable) {
+        int st = (int) pageable.getOffset();
+        int en = Math.min(st + pageable.getPageSize(), diaryOrder.size());
+
+        if (st > diaryOrder.size()) {
+            return Page.empty();
+        }
+
+        List<Long> pagedIds = diaryOrder.subList(st, en);
+
+        List<DiaryEntity> pagedDiaries = diaryLowService.findAllByIds(pagedIds);
+
+        Map<Long, DiaryEntity> entityMap = mapDiariesById(pagedDiaries);
+
+        List<DiaryEntity> orderedDiaries = pagedIds.stream()
+                .map(entityMap::get)
+                .filter(Objects::nonNull)
+                .toList();
+
+        return new PageImpl<>(orderedDiaries, pageable, diaryOrder.size());
+    }
+
+    private Map<Long, DiaryEntity> mapDiariesById(List<DiaryEntity> diaries) {
+        return diaries.stream()
+                .collect(Collectors.toMap(DiaryEntity::getId, Function.identity()));
     }
 }
