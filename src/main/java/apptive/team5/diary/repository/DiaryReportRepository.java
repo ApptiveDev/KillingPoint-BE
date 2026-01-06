@@ -18,4 +18,8 @@ public interface DiaryReportRepository extends JpaRepository<DiaryReportEntity, 
     void deleteByDiaryIds(List<Long> diaryId);
 
     List<DiaryReportEntity> findByDiaryId(Long diaryId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("delete from DiaryReportEntity dr")
+    void deleteAllWithBulk();
 }

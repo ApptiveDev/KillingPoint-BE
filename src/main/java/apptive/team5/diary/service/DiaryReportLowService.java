@@ -26,4 +26,13 @@ public class DiaryReportLowService {
     public void deleteByDiaryIds(List<Long> diaryIds) {
         diaryReportRepository.deleteByDiaryIds(diaryIds);
     }
+
+    @Transactional(readOnly = true)
+    public List<DiaryReportEntity> findAll() {
+        return diaryReportRepository.findAll();
+    }
+
+    public void deleteAllWithBulk() {
+        diaryReportRepository.deleteAllWithBulk();
+    }
 }

@@ -35,4 +35,8 @@ public interface DiaryRepository extends JpaRepository<DiaryEntity, Long> {
 
     @Query("select d from DiaryEntity d join fetch d.user where d.user.id in :userIds and d.scope in :scopes order by d.id desc")
     Page<DiaryEntity> findByUserIdsAndScopseWithUserPage(Set<Long> userIds, List<DiaryScope> scopes, Pageable pageable);
+
+    @Modifying(clearAutomatically = true)
+    @Query("delete from DiaryEntity d where d.id in :diaryIds")
+    void deleteByIds(List<Long> diaryIds);
 }
