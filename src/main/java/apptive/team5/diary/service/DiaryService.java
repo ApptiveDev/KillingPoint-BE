@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Transactional
 @Service
 @RequiredArgsConstructor
 public class DiaryService {
@@ -130,7 +131,6 @@ public class DiaryService {
                 .toList();
     }
 
-    @Transactional
     public DiaryEntity createDiary(Long userId, DiaryCreateRequest diaryRequest) {
         UserEntity foundUser = userLowService.getReferenceById(userId);
 
@@ -143,7 +143,6 @@ public class DiaryService {
         return savedDiary;
     }
 
-    @Transactional
     public void updateDiary(Long userId, Long diaryId, DiaryUpdateRequestDto updateRequest) {
         UserEntity foundUser = userLowService.getReferenceById(userId);
 
@@ -154,7 +153,6 @@ public class DiaryService {
         diaryLowService.updateDiary(foundDiary, updateRequest.toDomainInfo());
     }
 
-    @Transactional
     public void deleteDiary(Long userId, Long diaryId) {
         UserEntity foundUser = userLowService.getReferenceById(userId);
 
@@ -168,7 +166,6 @@ public class DiaryService {
         diaryLowService.deleteDiary(foundDiary);
     }
 
-    @Transactional
     public void deleteByUserId(Long userId) {
 
         List<Long> diaryIds = diaryLowService.findDiaryByUserId(userId)

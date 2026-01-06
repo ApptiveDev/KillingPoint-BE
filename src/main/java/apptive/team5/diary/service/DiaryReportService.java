@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 @Transactional
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class DiaryReportService {
 
     private final DiaryReportLowService diaryReportLowService;
