@@ -5,6 +5,10 @@ import apptive.team5.diary.domain.DiaryReportEntity;
 import apptive.team5.diary.dto.AiDiaryReportRequestDto;
 import apptive.team5.diary.dto.AiDiaryReportResponseDto;
 import apptive.team5.diary.dto.DiaryReportRequestDto;
+import apptive.team5.global.exception.DuplicateException;
+import apptive.team5.global.exception.ExceptionCode;
+import apptive.team5.user.domain.UserEntity;
+import apptive.team5.user.service.UserLowService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -31,14 +35,20 @@ public class DiaryReportService {
     private final DiaryOrderLowService diaryOrderLowService;
     private final DiaryLikeLowService diaryLikeLowService;
     private final ChatClient chatClient;
+    private final UserLowService userLowService;
     @Value("${diary.report.prompt}")
     private String reportPrompt;
 
-    public DiaryReportEntity createDiaryReport(DiaryReportRequestDto diaryReportRequestDto, Long diaryId) {
+    public DiaryReportEntity createDiaryReport(DiaryReportRequestDto diaryReportRequestDto, Long diaryId, Long userId) {
+
+        UserEntity userEntity = userLowService.getReferenceById(userId);
 
         DiaryEntity reportedDiary = diaryLowService.findDiaryById(diaryId);
 
-        return diaryReportLowService.save(new DiaryReportEntity(diaryReportRequestDto.content(), reportedDiary.getContent(), reportedDiary));
+        if (diaryReportLowService.existsByUserId(userEntity, reportedDiary))
+            throw new DuplicateException(ExceptionCode.DUPLICATE_DIARY_REPORT.getDescription());
+
+        return diaryReportLowService.save(new DiaryReportEntity(diaryReportRequestDto.content(), reportedDiary.getContent(), reportedDiary, userEntity));
     }
 
     public void processReportedDiary() {

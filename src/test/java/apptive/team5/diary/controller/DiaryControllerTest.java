@@ -326,7 +326,7 @@ public class DiaryControllerTest {
     void deleteDiary() throws Exception {
         // given
         DiaryEntity diary = diaryRepository.save(TestUtil.makeDiaryEntity(testUser));
-        diaryReportRepository.save(new DiaryReportEntity("나쁜말해요", diary.getContent(), diary));
+        diaryReportRepository.save(new DiaryReportEntity("나쁜말해요", diary.getContent(), diary, testUser));
         DiaryLikeEntity diaryLikeEntity = diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(testUser, diary));
         TestSecurityContextHolderInjection.inject(testUser.getId(), testUser.getRoleType());
 

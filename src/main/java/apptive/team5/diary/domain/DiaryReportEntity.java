@@ -1,5 +1,6 @@
 package apptive.team5.diary.domain;
 
+import apptive.team5.user.domain.UserEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -25,9 +26,14 @@ public class DiaryReportEntity {
     @JoinColumn(name = "diary_id", nullable = false)
     private DiaryEntity diary;
 
-    public DiaryReportEntity(String reason, String reportContent, DiaryEntity diary) {
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
+
+    public DiaryReportEntity(String reason, String reportContent, DiaryEntity diary, UserEntity user) {
         this.reason = reason;
         this.reportContent = reportContent;
         this.diary = diary;
+        this.user = user;
     }
 }

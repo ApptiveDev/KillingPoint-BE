@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,9 +17,10 @@ public class DiaryReportController {
     private final DiaryReportService diaryReportService;
 
     @PostMapping("/{diaryId}/reports")
-    public ResponseEntity<Void> reportDiary(@Valid @RequestBody DiaryReportRequestDto diaryReportRequestDto, @PathVariable Long diaryId) {
+    public ResponseEntity<Void> reportDiary(@Valid @RequestBody DiaryReportRequestDto diaryReportRequestDto, @PathVariable Long diaryId,
+                                            @AuthenticationPrincipal Long userId) {
 
-        diaryReportService.createDiaryReport(diaryReportRequestDto, diaryId);
+        diaryReportService.createDiaryReport(diaryReportRequestDto, diaryId, userId);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

@@ -1,8 +1,5 @@
 package apptive.team5.user.service;
-import apptive.team5.diary.service.DiaryLikeLowService;
-import apptive.team5.diary.service.DiaryLowService;
-import apptive.team5.diary.service.DiaryOrderLowService;
-import apptive.team5.diary.service.DiaryService;
+import apptive.team5.diary.service.*;
 import apptive.team5.file.dto.FileUploadRequest;
 import apptive.team5.file.service.S3Service;
 import apptive.team5.file.service.TemporalLowService;
@@ -49,6 +46,7 @@ public class UserService {
     private final DiaryOrderLowService diaryOrderLowService;
     private final DiaryService diaryService;
     private final SurveyLowService surveyLowService;
+    private final DiaryReportLowService diaryReportLowService;
 
     public TokenResponse socialLogin(OAuth2Response oAuth2Response) {
         String identifier = oAuth2Response.getProvider() + "-" +oAuth2Response.getProviderId();
@@ -87,6 +85,7 @@ public class UserService {
 
         surveyLowService.deleteByUserId(userId);
         subscribeLowService.deleteByUserId(userId);
+        diaryReportLowService.deleteByUserId(userId);
         diaryLikeLowService.deleteByUserId(userId);
         diaryOrderLowService.deleteByUserId(userId);
 
