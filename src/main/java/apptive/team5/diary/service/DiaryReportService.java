@@ -72,11 +72,10 @@ public class DiaryReportService {
 
         ArrayList<Long> invalidDiaryIds = new ArrayList<>(response);
 
+        diaryReportLowService.deleteAllWithBulk();
+
         if (invalidDiaryIds.isEmpty()) return;
 
-        System.out.println(invalidDiaryIds);
-
-        diaryReportLowService.deleteAllWithBulk();
         diaryLikeLowService.deleteByDiaryIds(invalidDiaryIds);
 
         Set<Long> userIds = diaryLowService.findAllByIds(invalidDiaryIds)
