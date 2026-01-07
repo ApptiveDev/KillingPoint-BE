@@ -42,6 +42,7 @@ public class DiaryReportLowService {
         diaryReportRepository.deleteByUserId(userId);
     }
 
+    @Transactional(readOnly = true)
     public boolean existsByUserId(UserEntity user, DiaryEntity diary) {
         return diaryReportRepository.existsByUserAndDiary(user, diary);
     }
