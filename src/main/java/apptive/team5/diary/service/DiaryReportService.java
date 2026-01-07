@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,10 +32,7 @@ public class DiaryReportService {
     private final DiaryLowService diaryLowService;
     private final DiaryOrderLowService diaryOrderLowService;
     private final DiaryLikeLowService diaryLikeLowService;
-    private final ChatClient chatClient;
     private final UserLowService userLowService;
-    @Value("${diary.report.prompt}")
-    private String reportPrompt;
 
     public DiaryReportEntity createDiaryReport(DiaryReportRequestDto diaryReportRequestDto, Long diaryId, Long userId) {
 
@@ -50,23 +46,7 @@ public class DiaryReportService {
         return diaryReportLowService.save(new DiaryReportEntity(diaryReportRequestDto.content(), reportedDiary.getContent(), reportedDiary, userEntity));
     }
 
-    public void processReportedDiary() {
-
-        List<String> reportedList = diaryReportLowService.findAll()
-                .stream()
-                .map(diaryReportEntity -> new AiDiaryReportRequestDto(diaryReportEntity).toString()).toList();
-
-        if (reportedList.isEmpty()) return;
-
-
-        String reportRequest = String.join("\n", reportedList);
-
-        Prompt prompt = makeDiaryReportPrompt(reportRequest);
-
-        Set<Long> response = chatClient.prompt(prompt)
-                .call().entity(AiDiaryReportResponseDto.class).diaryIds();
-
-        ArrayList<Long> invalidDiaryIds = new ArrayList<>(response);
+    public void processReportedDiary(List<Long> invalidDiaryIds) {
 
         diaryReportLowService.deleteAllWithBulk();
 
@@ -83,12 +63,6 @@ public class DiaryReportService {
 
         diaryLowService.deleteByDiaryIds(invalidDiaryIds);
     }
-
-    private Prompt makeDiaryReportPrompt(String reportRequest) {
-        SystemMessage systemMessage = new SystemMessage(reportPrompt);
-
-        UserMessage userMessage = new UserMessage(reportRequest);
-
-        return new Prompt(systemMessage, userMessage);
-    }
 }
+
+
