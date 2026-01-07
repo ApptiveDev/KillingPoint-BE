@@ -11,21 +11,21 @@ import java.util.List;
 
 public interface DiaryReportRepository extends JpaRepository<DiaryReportEntity, Long> {
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("delete from DiaryReportEntity dr where dr.diary.id = :diaryId")
     void deleteByDiaryId(Long diaryId);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("delete from DiaryReportEntity dr where dr.diary.id in :diaryIds")
     void deleteByDiaryIds(List<Long> diaryIds);
 
     List<DiaryReportEntity> findByDiaryId(Long diaryId);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("delete from DiaryReportEntity dr")
     void deleteAllWithBulk();
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("delete from DiaryReportEntity dr where dr.user.id = :userId")
     void deleteByUserId(Long userId);
 

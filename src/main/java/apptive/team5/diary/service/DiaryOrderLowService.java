@@ -41,13 +41,11 @@ public class DiaryOrderLowService {
     public void deleteDiaryId(Long userId, Long diaryId) {
         diaryOrderRepository.findByUserId(userId)
                 .ifPresent(order -> order.removeDiaryId(diaryId));
-        diaryOrderRepository.flush();
     }
 
     public void deleteByDiaryIds(Set<Long> userIds, List<Long> diaryIds) {
         diaryOrderRepository.findByUserIds(userIds)
                 .forEach(order -> order.removeDiaryIds(diaryIds));
-        diaryOrderRepository.flush();
     }
 
     public void deleteByUserId(Long userId) {

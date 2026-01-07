@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface SurveyRepository extends JpaRepository<SurveyEntity, Long> {
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("delete from SurveyEntity s where s.user.id = :userId")
     void deleteByUserId(Long userId);
 }

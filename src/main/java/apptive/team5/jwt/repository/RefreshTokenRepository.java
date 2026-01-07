@@ -11,16 +11,16 @@ import java.util.List;
 import java.util.Optional;
 
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken,String> {
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("delete from RefreshToken r where r.user = :user")
     void deleteByUser(UserEntity user);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("delete from RefreshToken r where r.user.id = :userId")
     void deleteByUserId(Long userId);
 
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("delete from RefreshToken r where r.createdDate < :date")
     void deleteExpiredRefreshToken(LocalDateTime date);
 
