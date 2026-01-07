@@ -61,11 +61,7 @@ public class DiaryReportService {
 
         String reportRequest = String.join("\n", reportedList);
 
-        SystemMessage systemMessage = new SystemMessage(reportPrompt);
-
-        UserMessage userMessage = new UserMessage(reportRequest);
-
-        Prompt prompt = new Prompt(systemMessage, userMessage);
+        Prompt prompt = makeDiaryReportPrompt(reportRequest);
 
         Set<Long> response = chatClient.prompt(prompt)
                 .call().entity(AiDiaryReportResponseDto.class).diaryIds();
@@ -86,5 +82,13 @@ public class DiaryReportService {
         diaryOrderLowService.deleteByDiaryIds(userIds, invalidDiaryIds);
 
         diaryLowService.deleteByDiaryIds(invalidDiaryIds);
+    }
+
+    private Prompt makeDiaryReportPrompt(String reportRequest) {
+        SystemMessage systemMessage = new SystemMessage(reportPrompt);
+
+        UserMessage userMessage = new UserMessage(reportRequest);
+
+        return new Prompt(systemMessage, userMessage);
     }
 }
