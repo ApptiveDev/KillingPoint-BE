@@ -1,6 +1,8 @@
 package apptive.team5.global;
 
+import apptive.team5.diary.domain.DiaryReportEntity;
 import apptive.team5.diary.service.DiaryAiReportService;
+import apptive.team5.diary.service.DiaryReportLowService;
 import apptive.team5.diary.service.DiaryReportService;
 import apptive.team5.file.service.S3Service;
 import apptive.team5.jwt.service.JwtService;
@@ -18,6 +20,7 @@ public class Scheduler {
     private final JwtService jwtService;
     private final S3Service s3Service;
     private final DiaryReportService diaryReportService;
+    private final DiaryReportLowService diaryReportLowService;
     private final DiaryAiReportService diaryAiReportService;
 
     @Scheduled(cron = "0 0 3 * * *")
@@ -32,7 +35,11 @@ public class Scheduler {
 
     @Scheduled(cron = "0 0 * * * *")
     public void processReportedDiaries() {
-        Optional<List<Long>> invalidDiaryIds = diaryAiReportService.getInvalidDiaryIds();
-        invalidDiaryIds.ifPresent(diaryReportService::processReportedDiary);
+        List<DiaryReportEntity> recentTop10DiaryReport = diaryReportLowService.findRecentTop10DiaryReport();
+        Optional<List<Long>> invalidDiaryIds = diaryAiReportService.getInvalidDiaryIds(recentTop10DiaryReport);
+
+        if (invalidDiaryIds.isPresent())
+            diaryReportService.processReportedDiary(invalidDiaryIds.get(), recentTop10DiaryReport);
+
     }
 }

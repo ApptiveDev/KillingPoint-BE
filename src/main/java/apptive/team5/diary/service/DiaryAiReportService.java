@@ -1,5 +1,6 @@
 package apptive.team5.diary.service;
 
+import apptive.team5.diary.domain.DiaryReportEntity;
 import apptive.team5.diary.dto.AiDiaryReportRequestDto;
 import apptive.team5.diary.dto.AiDiaryReportResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -17,13 +18,13 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class DiaryAiReportService {
 
-    private final DiaryReportLowService diaryReportLowService;
     private final ChatClient chatClient;
     @Value("${diary.report.prompt}")
     private String reportPrompt;
 
-    public Optional<List<Long>> getInvalidDiaryIds() {
-        List<String> reportedList = diaryReportLowService.findAll()
+    public Optional<List<Long>> getInvalidDiaryIds(List<DiaryReportEntity> recentTop10DiaryReport) {
+
+        List<String> reportedList = recentTop10DiaryReport
                 .stream()
                 .map(diaryReportEntity -> new AiDiaryReportRequestDto(diaryReportEntity).toString()).toList();
 

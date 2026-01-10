@@ -2,20 +2,12 @@ package apptive.team5.diary.service;
 
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryReportEntity;
-import apptive.team5.diary.dto.AiDiaryReportRequestDto;
-import apptive.team5.diary.dto.AiDiaryReportResponseDto;
 import apptive.team5.diary.dto.DiaryReportRequestDto;
 import apptive.team5.global.exception.DuplicateException;
 import apptive.team5.global.exception.ExceptionCode;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.service.UserLowService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.messages.SystemMessage;
-import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,20 +38,28 @@ public class DiaryReportService {
         return diaryReportLowService.save(new DiaryReportEntity(diaryReportRequestDto.content(), reportedDiary.getContent(), reportedDiary, userEntity));
     }
 
-    public void processReportedDiary(List<Long> invalidDiaryIds) {
+    public void processReportedDiary(List<Long> invalidDiaryIds, List<DiaryReportEntity> recentTop10DiaryReport) {
 
-        diaryReportLowService.deleteAllWithBulk();
+        List<Long> processedReportedIds = recentTop10DiaryReport.stream()
+                .map(DiaryReportEntity::getId)
+                .toList();
 
-        if (invalidDiaryIds.isEmpty()) return;
+        diaryReportLowService.deleteByIds(processedReportedIds); // 처리 완료된 DiaryReport 삭제
 
-        diaryLikeLowService.deleteByDiaryIds(invalidDiaryIds);
+        if (invalidDiaryIds.isEmpty()) return; // 부적절한 Diary 없으면 종료
+
+        // 부적절한 diary 삭제 절차 시작
+
+        diaryReportLowService.deleteByDiaryIds(invalidDiaryIds); // 부적절한 diary의 Report 모두 삭제
+
+        diaryLikeLowService.deleteByDiaryIds(invalidDiaryIds);  // 부적절한 diary의 좋아요 삭제
 
         Set<Long> userIds = diaryLowService.findAllByIds(invalidDiaryIds)
                 .stream()
                 .map(diary -> diary.getUser().getId())
                 .collect(Collectors.toSet());
 
-        diaryOrderLowService.deleteByDiaryIds(userIds, invalidDiaryIds);
+        diaryOrderLowService.deleteByDiaryIds(userIds, invalidDiaryIds); // 부적절한 diary의 정렬 삭제
 
         diaryLowService.deleteByDiaryIds(invalidDiaryIds);
     }

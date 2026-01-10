@@ -1,5 +1,6 @@
 package apptive.team5.diary.domain;
 
+import apptive.team5.global.entity.BaseTimeEntity;
 import apptive.team5.user.domain.UserEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -9,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class DiaryReportEntity {
+public class DiaryReportEntity extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
