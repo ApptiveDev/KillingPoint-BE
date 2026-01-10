@@ -40,21 +40,21 @@ public interface DiaryLikeRepository extends JpaRepository<DiaryLikeEntity, Long
     """)
     List<DiaryLikeCountDto> findLikeCountsByDiaryIds(@Param("diaryIds") List<Long> diaryIds);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
             DELETE FROM DiaryLikeEntity dl
             WHERE dl.user.id = :userId
     """)
     void deleteByUserId(@Param("userId") Long userId);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
             DELETE FROM DiaryLikeEntity dl
             WHERE dl.diary.id = :diaryId
     """)
     void deleteByDiaryId(@Param("diaryId") Long diaryId);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
             DELETE FROM DiaryLikeEntity dl
             WHERE dl.diary.id in :diaryIds

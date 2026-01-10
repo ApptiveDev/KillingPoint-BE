@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +41,11 @@ public class DiaryOrderLowService {
     public void deleteDiaryId(Long userId, Long diaryId) {
         diaryOrderRepository.findByUserId(userId)
                 .ifPresent(order -> order.removeDiaryId(diaryId));
+    }
+
+    public void deleteByDiaryIds(Set<Long> userIds, List<Long> diaryIds) {
+        diaryOrderRepository.findByUserIds(userIds)
+                .forEach(order -> order.removeDiaryIds(diaryIds));
     }
 
     public void deleteByUserId(Long userId) {

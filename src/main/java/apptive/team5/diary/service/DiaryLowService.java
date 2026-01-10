@@ -80,4 +80,8 @@ public class DiaryLowService {
         return diaryRepository.findByUserIdsAndScopseWithUserPage(userIds, scopes, pageable);
     }
 
+    public void deleteByDiaryIds(List<Long> diaryIds) {
+        diaryRepository.deleteByIds(diaryIds);
+    }
+
 }

@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface TemporalFileRepository extends JpaRepository<TemporalFile, Long> {
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("delete from TemporalFile t where t.id in (:ids)")
     void deleteByIds(List<Long> ids);
 

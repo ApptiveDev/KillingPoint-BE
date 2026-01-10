@@ -26,7 +26,7 @@ public interface SubscribeRepository extends JpaRepository<Subscribe, Long> {
     )
     Page<Subscribe> findBySubscribedToIdWithSubscriberPage(Long subscribedToId, Pageable pageable);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("delete from Subscribe s where s.subscribedTo.id = :subscribedToId and s.subscriber.id = :subscriberId")
     void deleteBySubscriberIdAndSubscribedToId(Long subscribedToId, Long subscriberId);
 
@@ -36,7 +36,7 @@ public interface SubscribeRepository extends JpaRepository<Subscribe, Long> {
     @Query("select count(s) from Subscribe s where s.subscriber.id = :subscriberId")
     int countSubscribedTobySubscriberId(Long subscriberId);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("delete from Subscribe s where s.subscriber.id = :userId or s.subscribedTo.id = :userId")
     void deleteByUserId(Long userId);
 

@@ -61,4 +61,12 @@ public class DiaryOrderEntity {
         this.orderList = new ArrayList<>(this.orderList);
         this.orderList.remove(diaryId);
     }
+
+    public void removeDiaryIds(List<Long> diaryIds) {
+        if (this.orderList == null) {
+            return;
+        }
+        this.orderList = new ArrayList<>(this.orderList);
+        diaryIds.forEach(diaryId -> this.orderList.remove(diaryId));
+    }
 }
