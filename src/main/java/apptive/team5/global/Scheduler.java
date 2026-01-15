@@ -33,13 +33,13 @@ public class Scheduler {
         s3Service.deleteOrphanS3Files();
     }
 
-    @Scheduled(cron = "0 0 * * * *")
-    public void processReportedDiaries() {
-        List<DiaryReportEntity> recentTop10DiaryReport = diaryReportLowService.findRecentTop10DiaryReport();
-        Optional<List<Long>> invalidDiaryIds = diaryAiReportService.getInvalidDiaryIds(recentTop10DiaryReport);
-
-        if (invalidDiaryIds.isPresent())
-            diaryReportService.processReportedDiary(invalidDiaryIds.get(), recentTop10DiaryReport);
-
-    }
+//    @Scheduled(cron = "0 0 * * * *")
+//    public void processReportedDiaries() {
+//        List<DiaryReportEntity> recentTop10DiaryReport = diaryReportLowService.findRecentTop10DiaryReport();
+//        Optional<List<Long>> invalidDiaryIds = diaryAiReportService.getInvalidDiaryIds(recentTop10DiaryReport);
+//
+//        if (invalidDiaryIds.isPresent())
+//            diaryReportService.processReportedDiary(invalidDiaryIds.get(), recentTop10DiaryReport);
+//
+//    }
 }
