@@ -69,7 +69,9 @@ dependencies {
 	// template engine for mail
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
+	implementation 'org.springframework.ai:spring-ai-starter-model-openai:1.1.0'
 }
+
 
 tasks.named('test') {
 	useJUnitPlatform()

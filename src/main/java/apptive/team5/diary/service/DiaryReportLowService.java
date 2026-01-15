@@ -1,0 +1,51 @@
+package apptive.team5.diary.service;
+
+import apptive.team5.diary.domain.DiaryEntity;
+import apptive.team5.diary.domain.DiaryReportEntity;
+import apptive.team5.diary.repository.DiaryReportRepository;
+import apptive.team5.user.domain.UserEntity;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Transactional
+@Service
+@RequiredArgsConstructor
+public class DiaryReportLowService {
+
+    private final DiaryReportRepository diaryReportRepository;
+
+    public DiaryReportEntity save(DiaryReportEntity diaryReportEntity) {
+        return diaryReportRepository.save(diaryReportEntity);
+    }
+
+    public void deleteByDiaryId(Long diaryId) {
+        diaryReportRepository.deleteByDiaryId(diaryId);
+    }
+
+    public void deleteByDiaryIds(List<Long> diaryIds) {
+        diaryReportRepository.deleteByDiaryIds(diaryIds);
+    }
+
+    public void deleteByIds(List<Long> diaryReportIds) {
+        diaryReportRepository.deleteByIds(diaryReportIds);
+    }
+
+
+    public void deleteByUserId(Long userId) {
+        diaryReportRepository.deleteByUserId(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean existsByUserId(UserEntity user, DiaryEntity diary) {
+        return diaryReportRepository.existsByUserAndDiary(user, diary);
+    }
+
+    @Transactional(readOnly = true)
+    public List<DiaryReportEntity> findRecentTop10DiaryReport() {
+        return diaryReportRepository.findRecentDiaryReport(PageRequest.of(0,10));
+    }
+}

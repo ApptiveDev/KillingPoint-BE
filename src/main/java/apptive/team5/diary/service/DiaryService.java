@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Transactional
 @Service
 @RequiredArgsConstructor
 public class DiaryService {
@@ -36,6 +37,7 @@ public class DiaryService {
     private final DiaryLikeLowService diaryLikeLowService;
     private final DiaryResponseMapper diaryResponseMapper;
     private final SubscribeLowService subscribeLowService;
+    private final DiaryReportLowService diaryReportLowService;
 
     @Transactional(readOnly = true)
     public Page<MyDiaryResponseDto> getMyDiaries(Long userId, Pageable pageable) {
@@ -129,7 +131,6 @@ public class DiaryService {
                 .toList();
     }
 
-    @Transactional
     public DiaryEntity createDiary(Long userId, DiaryCreateRequest diaryRequest) {
         UserEntity foundUser = userLowService.getReferenceById(userId);
 
@@ -142,7 +143,6 @@ public class DiaryService {
         return savedDiary;
     }
 
-    @Transactional
     public void updateDiary(Long userId, Long diaryId, DiaryUpdateRequestDto updateRequest) {
         UserEntity foundUser = userLowService.getReferenceById(userId);
 
@@ -153,7 +153,6 @@ public class DiaryService {
         diaryLowService.updateDiary(foundDiary, updateRequest.toDomainInfo());
     }
 
-    @Transactional
     public void deleteDiary(Long userId, Long diaryId) {
         UserEntity foundUser = userLowService.getReferenceById(userId);
 
@@ -161,18 +160,20 @@ public class DiaryService {
 
         foundDiary.validateOwner(foundUser);
 
+        diaryReportLowService.deleteByDiaryId(diaryId);
         diaryOrderLowService.deleteDiaryId(userId, diaryId);
         diaryLikeLowService.deleteByDiaryId(diaryId);
         diaryLowService.deleteDiary(foundDiary);
     }
 
-    @Transactional
     public void deleteByUserId(Long userId) {
 
         List<Long> diaryIds = diaryLowService.findDiaryByUserId(userId)
                 .stream()
                 .map(DiaryEntity::getId)
                 .toList();
+
+        diaryReportLowService.deleteByDiaryIds(diaryIds);
 
         diaryLikeLowService.deleteByDiaryIds(diaryIds);
 
