@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Killing Part Mail</title>
+</head>
+<body style="margin:0; padding:0; font-family:Arial, sans-serif; background-color:#ffffff;">
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#D5FF5F; height:110px;">
+    <tr>
+        <td align="center" valign="middle">
+            <img src="https://killingpart-file.s3.ap-northeast-2.amazonaws.com/email/killingpart.png"
+                 alt="KillingPart"
+                 style="display:block; height:90px;" />
+        </td>
+    </tr>
+</table>
+
+<div style="padding:30px; font-size:16px; line-height:1.7; color:#333;">
+
+    <h2 style="margin:0 0 20px 0;">📌 다이어리 신고가 접수되었습니다</h2>
+
+    <div style="margin-bottom:12px;">
+        <b>신고 ID:</b>
+        <span th:text="${reportId}"></span>
+    </div>
+
+    <div style="margin-bottom:12px;">
+        <b>신고 사유:</b>
+        <span th:text="${reason}"></span>
+    </div>
+
+    <div style="margin-bottom:12px;">
+        <b>신고한 유저 ID:</b>
+        <span th:text="${userId}"></span>
+    </div>
+
+    <div style="margin-top:20px;">
+        <b>게시글 내용:</b>
+        <div style="margin-top:8px; padding:14px; border:1px solid #ddd; border-radius:8px; background:#fafafa;">
+            <pre style="margin:0; white-space: pre-wrap;" th:text="${reportContent}"></pre>
+        </div>
+    </div>
+
+</div>
+
+
+</body>
+</html>
