@@ -3,6 +3,7 @@ package apptive.team5.diary.service;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryReportEntity;
 import apptive.team5.diary.dto.DiaryReportRequestDto;
+import apptive.team5.diary.dto.DiaryReportResponseDto;
 import apptive.team5.global.exception.DuplicateException;
 import apptive.team5.global.exception.ExceptionCode;
 import apptive.team5.user.domain.UserEntity;
@@ -26,7 +27,7 @@ public class DiaryReportService {
     private final DiaryLikeLowService diaryLikeLowService;
     private final UserLowService userLowService;
 
-    public DiaryReportEntity createDiaryReport(DiaryReportRequestDto diaryReportRequestDto, Long diaryId, Long userId) {
+    public DiaryReportResponseDto createDiaryReport(DiaryReportRequestDto diaryReportRequestDto, Long diaryId, Long userId) {
 
         UserEntity userEntity = userLowService.getReferenceById(userId);
 
@@ -35,7 +36,8 @@ public class DiaryReportService {
         if (diaryReportLowService.existsByUserId(userEntity, reportedDiary))
             throw new DuplicateException(ExceptionCode.DUPLICATE_DIARY_REPORT.getDescription());
 
-        return diaryReportLowService.save(new DiaryReportEntity(diaryReportRequestDto.content(), reportedDiary.getContent(), reportedDiary, userEntity));
+        DiaryReportEntity diaryReportEntity = diaryReportLowService.save(new DiaryReportEntity(diaryReportRequestDto.content(), reportedDiary.getContent(), reportedDiary, userEntity));
+        return new DiaryReportResponseDto(diaryReportEntity);
     }
 
     public void processReportedDiary(List<Long> invalidDiaryIds, List<DiaryReportEntity> recentTop10DiaryReport) {

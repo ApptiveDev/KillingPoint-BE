@@ -15,13 +15,13 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Configuration
 public class AsyncConfig implements AsyncConfigurer {
 
-    @Bean("surveyMailSend")
-    public Executor surveyMailExecutor() {
+    @Bean("sendMail")
+    public Executor sendMailExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(10);
         executor.setMaxPoolSize(50);
         executor.setQueueCapacity(1000);
-        executor.setThreadNamePrefix("SurveyMail-");
+        executor.setThreadNamePrefix("ReportMail-");
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
         executor.initialize();
         return executor;
