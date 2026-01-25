@@ -5,6 +5,8 @@ import apptive.team5.diary.domain.DiaryStoreEntity;
 import apptive.team5.diary.repository.DiaryStoreRepository;
 import apptive.team5.user.domain.UserEntity;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +41,11 @@ public class DiaryStoreLowService {
     @Transactional(readOnly = true)
     public Set<Long> findStoredDiaryIdsByUser(Long userId, List<Long> diaryIds) {
         return diaryStoreRepository.findStoredDiaryIdsByUser(userId, diaryIds);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<DiaryStoreEntity> findStoredDiaryByUserWithDiary(Long userId, Pageable pageable) {
+        return diaryStoreRepository.findStoredDiaryByUserWithDiary(userId, pageable);
     }
 
     public void deleteByDiaryId(Long diaryId) {
