@@ -31,7 +31,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -101,7 +103,7 @@ public class DiaryControllerTest {
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
-                .getContentAsString();
+                .getContentAsString(StandardCharsets.UTF_8);
 
         JsonNode jsonNode = objectMapper.readTree(response);
 
@@ -150,7 +152,7 @@ public class DiaryControllerTest {
                         .with(securityContext(SecurityContextHolder.getContext()))
                 )
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
 
         // then
         JsonNode jsonNode = objectMapper.readTree(response);
@@ -203,7 +205,7 @@ public class DiaryControllerTest {
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
-                .getContentAsString();
+                .getContentAsString(StandardCharsets.UTF_8);
 
         // then
         List<CalendarDiaryResponseDto> content = objectMapper.readValue(response, new TypeReference<>() {});
@@ -243,7 +245,7 @@ public class DiaryControllerTest {
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
-                .getContentAsString();
+                .getContentAsString(StandardCharsets.UTF_8);
 
         // then
         JsonNode jsonNode = objectMapper.readTree(response);
@@ -337,9 +339,35 @@ public class DiaryControllerTest {
                 .andExpect(status().isNoContent());
 
 
-        SoftAssertions.assertSoftly(softly -> {
+        assertSoftly(softly -> {
             softly.assertThat(diaryRepository.existsById(diary.getId())).isFalse();
             softly.assertThat(diaryLikeLowService.existsByUserAndDiary(testUser, diary)).isFalse();
+        });
+    }
+
+    @Test
+    @DisplayName("랜덤 다이어리 조회")
+    void getRandomDiaries() throws Exception {
+
+        // given
+        DiaryEntity diary = diaryRepository.save(TestUtil.makeDiaryEntity(testUser));
+
+        TestSecurityContextHolderInjection.inject(testUser.getId(), testUser.getRoleType());
+
+        // when & then
+        String response = mockMvc.perform(get("/api/diaries/randoms")
+                        .with(securityContext(SecurityContextHolder.getContext()))
+                )
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        List<FeedDiaryResponseDto> feedDiaryResponseDtos = objectMapper.readValue(response, new TypeReference<List<FeedDiaryResponseDto>>() {
+        });
+
+
+        assertSoftly(softly -> {
+            softly.assertThat(feedDiaryResponseDtos.size()).isEqualTo(1);
+            softly.assertThat(feedDiaryResponseDtos.get(0).diaryId()).isEqualTo(diary.getId());
         });
     }
 }
