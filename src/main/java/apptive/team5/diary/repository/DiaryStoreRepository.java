@@ -18,10 +18,10 @@ public interface DiaryStoreRepository extends JpaRepository<DiaryStoreEntity, Lo
     DiaryStoreEntity findByUserAndDiary(UserEntity user, DiaryEntity diary);
 
     @Query("""
-            SELECT dl.diary.id
-            FROM DiaryLikeEntity dl
-            WHERE dl.user.id = :userId
-            AND dl.diary.id IN :diaryIds
+            SELECT ds.diary.id
+            FROM DiaryStoreEntity ds
+            WHERE ds.user.id = :userId
+            AND ds.diary.id IN :diaryIds
     """)
     Set<Long> findStoredDiaryIdsByUser(
             @Param("userId")
@@ -51,5 +51,4 @@ public interface DiaryStoreRepository extends JpaRepository<DiaryStoreEntity, Lo
      """)
     void deleteByDiaryIds(@Param("diaryIds") List<Long> diaryIds);
 
-    List<DiaryStoreEntity> Diary(DiaryEntity diary);
 }
