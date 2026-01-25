@@ -5,6 +5,8 @@ import apptive.team5.diary.domain.DiaryLikeEntity;
 import apptive.team5.diary.domain.DiaryStoreEntity;
 import apptive.team5.diary.dto.DiaryLikeResponseDto;
 import apptive.team5.diary.dto.DiaryStoreResponseDto;
+import apptive.team5.diary.dto.FeedDiaryResponseDto;
+import apptive.team5.diary.dto.MyDiaryResponseDto;
 import apptive.team5.diary.repository.DiaryLikeRepository;
 import apptive.team5.diary.repository.DiaryRepository;
 import apptive.team5.diary.repository.DiaryStoreRepository;
@@ -12,6 +14,7 @@ import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.repository.UserRepository;
 import apptive.team5.util.TestSecurityContextHolderInjection;
 import apptive.team5.util.TestUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,13 +23,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.securityContext;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -115,6 +123,37 @@ class DiaryStoreControllerTest {
 
         JsonNode jsonNode = objectMapper.readTree(responseBody);
         assertThat(jsonNode.path("message").asText()).isEqualTo("그런 다이어리는 없습니다.");
+    }
+
+    @Test
+    @DisplayName("저장한 Diary 조회")
+    void getStoredDiary() throws Exception {
+
+        DiaryStoreEntity diaryStoreEntity = diaryStoreRepository.save(new DiaryStoreEntity(saver, diary));
+        DiaryEntity noneStoreDiary = diaryRepository.save(TestUtil.makeDiaryEntity(userOwner));
+
+
+        String response = mockMvc.perform(get("/api/diaries/stores")
+                        .with(securityContext(SecurityContextHolder.getContext()))
+                )
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+
+        JsonNode jsonNode = objectMapper.readTree(response);
+
+        List<FeedDiaryResponseDto> feedDiaryResponseDtos = objectMapper.convertValue(
+                jsonNode.path("content"),
+                new TypeReference<List<FeedDiaryResponseDto>>() {}
+        );
+
+        FeedDiaryResponseDto storedDiary = feedDiaryResponseDtos.getFirst();
+
+
+        assertSoftly(softly -> {
+            softly.assertThat(feedDiaryResponseDtos.size()).isEqualTo(1);
+            softly.assertThat(storedDiary.diaryId()).isEqualTo(diary.getId());
+        });
     }
   
 }
