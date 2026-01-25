@@ -36,4 +36,6 @@ public interface DiaryStoreRepository extends JpaRepository<DiaryStoreEntity, Lo
             WHERE ds.diary.id in :diaryIds
      """)
     void deleteByDiaryIds(@Param("diaryIds") List<Long> diaryIds);
+
+    List<DiaryStoreEntity> Diary(DiaryEntity diary);
 }

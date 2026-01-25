@@ -1,12 +1,10 @@
 package apptive.team5.diary.controller;
 
-import apptive.team5.diary.domain.DiaryEntity;
-import apptive.team5.diary.domain.DiaryLikeEntity;
-import apptive.team5.diary.domain.DiaryReportEntity;
-import apptive.team5.diary.domain.DiaryScope;
+import apptive.team5.diary.domain.*;
 import apptive.team5.diary.dto.*;
 import apptive.team5.diary.repository.DiaryReportRepository;
 import apptive.team5.diary.repository.DiaryRepository;
+import apptive.team5.diary.repository.DiaryStoreRepository;
 import apptive.team5.diary.service.DiaryLikeLowService;
 import apptive.team5.diary.service.DiaryLowService;
 import apptive.team5.subscribe.domain.Subscribe;
@@ -72,6 +70,9 @@ public class DiaryControllerTest {
 
     @Autowired
     private DiaryReportRepository  diaryReportRepository;
+
+    @Autowired
+    private DiaryStoreRepository diaryStoreRepository;
 
     @Autowired
     private SubscribeRepository subscribeRepository;
@@ -328,6 +329,7 @@ public class DiaryControllerTest {
     void deleteDiary() throws Exception {
         // given
         DiaryEntity diary = diaryRepository.save(TestUtil.makeDiaryEntity(testUser));
+        diaryStoreRepository.save(new DiaryStoreEntity(testUser, diary));
         diaryReportRepository.save(new DiaryReportEntity("나쁜말해요", diary.getContent(), diary, testUser));
         DiaryLikeEntity diaryLikeEntity = diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(testUser, diary));
         TestSecurityContextHolderInjection.inject(testUser.getId(), testUser.getRoleType());
