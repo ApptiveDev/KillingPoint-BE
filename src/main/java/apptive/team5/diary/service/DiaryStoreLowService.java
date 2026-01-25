@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -33,6 +34,11 @@ public class DiaryStoreLowService {
     @Transactional(readOnly = true)
     public DiaryStoreEntity findByUserAndDiary(UserEntity user, DiaryEntity diary) {
         return diaryStoreRepository.findByUserAndDiary(user, diary);
+    }
+
+    @Transactional(readOnly = true)
+    public Set<Long> findStoredDiaryIdsByUser(Long userId, List<Long> diaryIds) {
+        return diaryStoreRepository.findStoredDiaryIdsByUser(userId, diaryIds);
     }
 
     public void deleteByDiaryId(Long diaryId) {

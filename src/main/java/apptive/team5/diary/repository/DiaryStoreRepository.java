@@ -9,12 +9,26 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Set;
 
 public interface DiaryStoreRepository extends JpaRepository<DiaryStoreEntity, Long> {
 
     boolean existsByUserAndDiary(UserEntity user, DiaryEntity diary);
 
     DiaryStoreEntity findByUserAndDiary(UserEntity user, DiaryEntity diary);
+
+    @Query("""
+            SELECT dl.diary.id
+            FROM DiaryLikeEntity dl
+            WHERE dl.user.id = :userId
+            AND dl.diary.id IN :diaryIds
+    """)
+    Set<Long> findStoredDiaryIdsByUser(
+            @Param("userId")
+            Long userId,
+            @Param("diaryIds")
+            List<Long> diaryIds
+    );
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""

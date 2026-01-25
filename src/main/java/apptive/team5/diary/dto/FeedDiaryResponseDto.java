@@ -24,13 +24,14 @@ public record FeedDiaryResponseDto (
         LocalDateTime createDate,
         LocalDateTime updateDate,
         boolean isLiked,
+        boolean isStored,
         Long likeCount,
         Long userId,
         String username,
         String tag,
         String profileImageUrl
 ) implements DiaryResponseDto {
-    public static FeedDiaryResponseDto from(DiaryEntity diary, boolean isLiked, Long likeCount, Long currentUserId) {
+    public static FeedDiaryResponseDto from(DiaryEntity diary, boolean isLiked, boolean isStored, Long likeCount, Long currentUserId) {
         String contentResponse = diary.getContentForViewer(currentUserId);
         UserEntity user = diary.getUser();
 
@@ -49,6 +50,7 @@ public record FeedDiaryResponseDto (
                 diary.getCreateDateTime(),
                 diary.getUpdateDateTime(),
                 isLiked,
+                isStored,
                 likeCount,
                 user.getId(),
                 user.getUsername(),
