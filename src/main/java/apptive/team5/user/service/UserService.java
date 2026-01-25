@@ -47,6 +47,7 @@ public class UserService {
     private final DiaryService diaryService;
     private final SurveyLowService surveyLowService;
     private final DiaryReportLowService diaryReportLowService;
+    private final DiaryStoreLowService diaryStoreLowService;
 
     public TokenResponse socialLogin(OAuth2Response oAuth2Response) {
         String identifier = oAuth2Response.getProvider() + "-" +oAuth2Response.getProviderId();
@@ -85,6 +86,7 @@ public class UserService {
 
         surveyLowService.deleteByUserId(userId);
         subscribeLowService.deleteByUserId(userId);
+        diaryStoreLowService.deleteByUserId(userId);
         diaryReportLowService.deleteByUserId(userId);
         diaryLikeLowService.deleteByUserId(userId);
         diaryOrderLowService.deleteByUserId(userId);

@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -31,5 +33,17 @@ public class DiaryStoreLowService {
     @Transactional(readOnly = true)
     public DiaryStoreEntity findByUserAndDiary(UserEntity user, DiaryEntity diary) {
         return diaryStoreRepository.findByUserAndDiary(user, diary);
+    }
+
+    public void deleteByDiaryId(Long diaryId) {
+        diaryStoreRepository.deleteByDiaryId(diaryId);
+    }
+
+    public void deleteByDiaryIds(List<Long> diaryIds) {
+        diaryStoreRepository.deleteByDiaryIds(diaryIds);
+    }
+
+    public void deleteByUserId(Long userId) {
+        diaryStoreRepository.deleteByUserId(userId);
     }
 }

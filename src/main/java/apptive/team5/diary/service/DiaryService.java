@@ -34,6 +34,7 @@ public class DiaryService {
     private final DiaryResponseMapper diaryResponseMapper;
     private final SubscribeLowService subscribeLowService;
     private final DiaryReportLowService diaryReportLowService;
+    private final DiaryStoreLowService diaryStoreLowService;
 
     @Transactional(readOnly = true)
     public Page<MyDiaryResponseDto> getMyDiaries(Long userId, Pageable pageable) {
@@ -139,6 +140,7 @@ public class DiaryService {
 
         foundDiary.validateOwner(foundUser);
 
+        diaryStoreLowService.deleteByDiaryId(diaryId);
         diaryReportLowService.deleteByDiaryId(diaryId);
         diaryOrderLowService.deleteDiaryId(userId, diaryId);
         diaryLikeLowService.deleteByDiaryId(diaryId);
@@ -151,6 +153,8 @@ public class DiaryService {
                 .stream()
                 .map(DiaryEntity::getId)
                 .toList();
+
+        diaryStoreLowService.deleteByDiaryIds(diaryIds);
 
         diaryReportLowService.deleteByDiaryIds(diaryIds);
 
