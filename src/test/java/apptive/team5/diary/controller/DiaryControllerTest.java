@@ -128,6 +128,7 @@ public class DiaryControllerTest {
             softly.assertThat(diaryResponse.likeCount()).isEqualTo(1);
             softly.assertThat(content.getLast().likeCount()).isEqualTo(0);
             softly.assertThat(content.getLast().isLiked()).isFalse();
+            softly.assertThat(content.getLast().isStored()).isFalse();
             softly.assertThat(content.getFirst().diaryId() > content.getLast().diaryId()).isTrue();
         });
     }
@@ -143,6 +144,7 @@ public class DiaryControllerTest {
 
         diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(viewer, publicDiary));
         diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(testUser, publicDiary));
+        diaryStoreRepository.save(new DiaryStoreEntity(viewer, publicDiary));
 
         diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(testUser, killingPartDiary));
 
@@ -174,12 +176,14 @@ public class DiaryControllerTest {
             softly.assertThat(publicResponse.content()).isNotNull();
             softly.assertThat(publicResponse.content()).isEqualTo(publicDiary.getContent());
             softly.assertThat(publicResponse.isLiked()).isTrue();
+            softly.assertThat(publicResponse.isStored()).isTrue();
             softly.assertThat(publicResponse.likeCount()).isEqualTo(2L);
 
             // KILLING_PART
             UserDiaryResponseDto killingPartResponse = responseMap.get(killingPartDiary.getId());
             softly.assertThat(killingPartResponse.content()).isEqualTo("비공개 일기입니다.");
             softly.assertThat(killingPartResponse.isLiked()).isFalse();
+            softly.assertThat(killingPartResponse.isStored()).isFalse();
             softly.assertThat(killingPartResponse.likeCount()).isEqualTo(1L);
         });
     }
@@ -228,10 +232,12 @@ public class DiaryControllerTest {
         subscribeRepository.save(subscribe);
 
         DiaryEntity otherFeedDiary = diaryRepository.save(TestUtil.makeDiaryEntity(subscribedToUser));
-        // 좋아요 누를 다이어를 두 번째로 저장
+        // 좋아요, 저장 누를 다이어를 두 번째로 저장
         DiaryEntity likedFeedDiary = diaryRepository.save(TestUtil.makeDiaryEntity(subscribedToUser));
         // 좋아요 누르기
         DiaryLikeEntity diaryLikeEntity = diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(testUser, likedFeedDiary));
+        DiaryStoreEntity diaryStoreEntity = diaryStoreRepository.save(new DiaryStoreEntity(testUser, likedFeedDiary));
+
 
         // 구독하지 않은 회원
         UserEntity otherUser = userRepository.save(TestUtil.makeDifferentUserEntity(subscribedToUser));
@@ -260,6 +266,7 @@ public class DiaryControllerTest {
             softly.assertThat(content).hasSize(2);
             softly.assertThat(feedDiaryResponseDto.diaryId()).isEqualTo(likedFeedDiary.getId());
             softly.assertThat(feedDiaryResponseDto.isLiked()).isTrue();
+            softly.assertThat(feedDiaryResponseDto.isStored()).isTrue();
             softly.assertThat(feedDiaryResponseDto.likeCount()).isEqualTo(1L);
             softly.assertThat(feedDiaryResponseDto.userId()).isEqualTo(subscribedToUser.getId());
             softly.assertThat(content.getFirst().diaryId() > content.getLast().diaryId()).isTrue();
