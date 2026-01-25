@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,5 +38,24 @@ public class DiaryResponseMapper {
                         currentUserId
                 )
         );
+    }
+
+    public <T extends DiaryResponseDto> List<T> mapToResponseDto(
+            List<DiaryEntity> diaries,
+            Set<Long> likedDiaryIds,
+            Map<Long, Long> likeCountsMap,
+            Long currentUserId,
+            DiaryResponseDtoMapper<T> mapper
+    ) {
+        return diaries.stream()
+                .map(diary ->
+                        mapper.map(
+                                diary,
+                                likedDiaryIds.contains(diary.getId()),
+                                likeCountsMap.getOrDefault(diary.getId(), 0L),
+                                currentUserId
+                        )
+                )
+                .toList();
     }
 }

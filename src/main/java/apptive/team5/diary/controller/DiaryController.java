@@ -103,6 +103,17 @@ public class DiaryController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    @GetMapping("/randoms")
+    public ResponseEntity<List<FeedDiaryResponseDto>> getRandomDiary(
+            @AuthenticationPrincipal
+            Long userId
+    ) {
+
+        List<FeedDiaryResponseDto> randomDiaries = diaryService.getRandomDiaries(userId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(randomDiaries);
+    }
+
     @PutMapping("/{diaryId}")
     public ResponseEntity<Void> putDiary(
             @AuthenticationPrincipal
