@@ -2,8 +2,10 @@ package apptive.team5.user.controller;
 
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryLikeEntity;
+import apptive.team5.diary.domain.DiaryStoreEntity;
 import apptive.team5.diary.repository.DiaryLikeRepository;
 import apptive.team5.diary.repository.DiaryRepository;
+import apptive.team5.diary.repository.DiaryStoreRepository;
 import apptive.team5.global.exception.ExceptionCode;
 import apptive.team5.global.util.S3Util;
 import apptive.team5.subscribe.domain.Subscribe;
@@ -66,6 +68,9 @@ class UserControllerTest {
 
     @Autowired
     private DiaryLikeRepository diaryLikeRepository;
+
+    @Autowired
+    private DiaryStoreRepository  diaryStoreRepository;
 
 
     @DisplayName("회원 정보 조회 성공")
@@ -278,6 +283,7 @@ class UserControllerTest {
         DiaryLikeEntity otherDiaryLikeEntity = new DiaryLikeEntity(user, otherDiary);
         diaryLikeRepository.save(diaryLikeEntity);
         diaryLikeRepository.save(otherDiaryLikeEntity);
+        diaryStoreRepository.save(new DiaryStoreEntity(user, diaryEntity));
         TestSecurityContextHolderInjection.inject(user.getId(), user.getRoleType());
 
 

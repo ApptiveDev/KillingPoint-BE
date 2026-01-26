@@ -1,12 +1,10 @@
 package apptive.team5.diary.controller;
 
-import apptive.team5.diary.domain.DiaryEntity;
-import apptive.team5.diary.domain.DiaryLikeEntity;
-import apptive.team5.diary.domain.DiaryReportEntity;
-import apptive.team5.diary.domain.DiaryScope;
+import apptive.team5.diary.domain.*;
 import apptive.team5.diary.dto.*;
 import apptive.team5.diary.repository.DiaryReportRepository;
 import apptive.team5.diary.repository.DiaryRepository;
+import apptive.team5.diary.repository.DiaryStoreRepository;
 import apptive.team5.diary.service.DiaryLikeLowService;
 import apptive.team5.diary.service.DiaryLowService;
 import apptive.team5.subscribe.domain.Subscribe;
@@ -31,7 +29,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -72,6 +72,9 @@ public class DiaryControllerTest {
     private DiaryReportRepository  diaryReportRepository;
 
     @Autowired
+    private DiaryStoreRepository diaryStoreRepository;
+
+    @Autowired
     private SubscribeRepository subscribeRepository;
 
     private UserEntity testUser;
@@ -101,7 +104,7 @@ public class DiaryControllerTest {
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
-                .getContentAsString();
+                .getContentAsString(StandardCharsets.UTF_8);
 
         JsonNode jsonNode = objectMapper.readTree(response);
 
@@ -125,6 +128,7 @@ public class DiaryControllerTest {
             softly.assertThat(diaryResponse.likeCount()).isEqualTo(1);
             softly.assertThat(content.getLast().likeCount()).isEqualTo(0);
             softly.assertThat(content.getLast().isLiked()).isFalse();
+            softly.assertThat(content.getLast().isStored()).isFalse();
             softly.assertThat(content.getFirst().diaryId() > content.getLast().diaryId()).isTrue();
         });
     }
@@ -140,6 +144,7 @@ public class DiaryControllerTest {
 
         diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(viewer, publicDiary));
         diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(testUser, publicDiary));
+        diaryStoreRepository.save(new DiaryStoreEntity(viewer, publicDiary));
 
         diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(testUser, killingPartDiary));
 
@@ -150,7 +155,7 @@ public class DiaryControllerTest {
                         .with(securityContext(SecurityContextHolder.getContext()))
                 )
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
 
         // then
         JsonNode jsonNode = objectMapper.readTree(response);
@@ -171,12 +176,14 @@ public class DiaryControllerTest {
             softly.assertThat(publicResponse.content()).isNotNull();
             softly.assertThat(publicResponse.content()).isEqualTo(publicDiary.getContent());
             softly.assertThat(publicResponse.isLiked()).isTrue();
+            softly.assertThat(publicResponse.isStored()).isTrue();
             softly.assertThat(publicResponse.likeCount()).isEqualTo(2L);
 
             // KILLING_PART
             UserDiaryResponseDto killingPartResponse = responseMap.get(killingPartDiary.getId());
             softly.assertThat(killingPartResponse.content()).isEqualTo("비공개 일기입니다.");
             softly.assertThat(killingPartResponse.isLiked()).isFalse();
+            softly.assertThat(killingPartResponse.isStored()).isFalse();
             softly.assertThat(killingPartResponse.likeCount()).isEqualTo(1L);
         });
     }
@@ -203,7 +210,7 @@ public class DiaryControllerTest {
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
-                .getContentAsString();
+                .getContentAsString(StandardCharsets.UTF_8);
 
         // then
         List<CalendarDiaryResponseDto> content = objectMapper.readValue(response, new TypeReference<>() {});
@@ -225,10 +232,12 @@ public class DiaryControllerTest {
         subscribeRepository.save(subscribe);
 
         DiaryEntity otherFeedDiary = diaryRepository.save(TestUtil.makeDiaryEntity(subscribedToUser));
-        // 좋아요 누를 다이어를 두 번째로 저장
+        // 좋아요, 저장 누를 다이어를 두 번째로 저장
         DiaryEntity likedFeedDiary = diaryRepository.save(TestUtil.makeDiaryEntity(subscribedToUser));
         // 좋아요 누르기
         DiaryLikeEntity diaryLikeEntity = diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(testUser, likedFeedDiary));
+        DiaryStoreEntity diaryStoreEntity = diaryStoreRepository.save(new DiaryStoreEntity(testUser, likedFeedDiary));
+
 
         // 구독하지 않은 회원
         UserEntity otherUser = userRepository.save(TestUtil.makeDifferentUserEntity(subscribedToUser));
@@ -243,7 +252,7 @@ public class DiaryControllerTest {
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
-                .getContentAsString();
+                .getContentAsString(StandardCharsets.UTF_8);
 
         // then
         JsonNode jsonNode = objectMapper.readTree(response);
@@ -257,6 +266,7 @@ public class DiaryControllerTest {
             softly.assertThat(content).hasSize(2);
             softly.assertThat(feedDiaryResponseDto.diaryId()).isEqualTo(likedFeedDiary.getId());
             softly.assertThat(feedDiaryResponseDto.isLiked()).isTrue();
+            softly.assertThat(feedDiaryResponseDto.isStored()).isTrue();
             softly.assertThat(feedDiaryResponseDto.likeCount()).isEqualTo(1L);
             softly.assertThat(feedDiaryResponseDto.userId()).isEqualTo(subscribedToUser.getId());
             softly.assertThat(content.getFirst().diaryId() > content.getLast().diaryId()).isTrue();
@@ -326,6 +336,7 @@ public class DiaryControllerTest {
     void deleteDiary() throws Exception {
         // given
         DiaryEntity diary = diaryRepository.save(TestUtil.makeDiaryEntity(testUser));
+        diaryStoreRepository.save(new DiaryStoreEntity(testUser, diary));
         diaryReportRepository.save(new DiaryReportEntity("나쁜말해요", diary.getContent(), diary, testUser));
         DiaryLikeEntity diaryLikeEntity = diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(testUser, diary));
         TestSecurityContextHolderInjection.inject(testUser.getId(), testUser.getRoleType());
@@ -337,9 +348,35 @@ public class DiaryControllerTest {
                 .andExpect(status().isNoContent());
 
 
-        SoftAssertions.assertSoftly(softly -> {
+        assertSoftly(softly -> {
             softly.assertThat(diaryRepository.existsById(diary.getId())).isFalse();
             softly.assertThat(diaryLikeLowService.existsByUserAndDiary(testUser, diary)).isFalse();
+        });
+    }
+
+    @Test
+    @DisplayName("랜덤 다이어리 조회")
+    void getRandomDiaries() throws Exception {
+
+        // given
+        DiaryEntity diary = diaryRepository.save(TestUtil.makeDiaryEntity(testUser));
+
+        TestSecurityContextHolderInjection.inject(testUser.getId(), testUser.getRoleType());
+
+        // when & then
+        String response = mockMvc.perform(get("/api/diaries/randoms")
+                        .with(securityContext(SecurityContextHolder.getContext()))
+                )
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        List<FeedDiaryResponseDto> feedDiaryResponseDtos = objectMapper.readValue(response, new TypeReference<List<FeedDiaryResponseDto>>() {
+        });
+
+
+        assertSoftly(softly -> {
+            softly.assertThat(feedDiaryResponseDtos.size()).isEqualTo(1);
+            softly.assertThat(feedDiaryResponseDtos.get(0).diaryId()).isEqualTo(diary.getId());
         });
     }
 }

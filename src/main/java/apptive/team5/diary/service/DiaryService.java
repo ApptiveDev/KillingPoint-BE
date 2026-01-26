@@ -3,6 +3,7 @@ package apptive.team5.diary.service;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryOrderEntity;
 import apptive.team5.diary.domain.DiaryScope;
+import apptive.team5.diary.domain.DiaryStoreEntity;
 import apptive.team5.diary.dto.*;
 import apptive.team5.diary.mapper.DiaryResponseMapper;
 import apptive.team5.subscribe.service.SubscribeLowService;
@@ -18,11 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -38,6 +35,7 @@ public class DiaryService {
     private final DiaryResponseMapper diaryResponseMapper;
     private final SubscribeLowService subscribeLowService;
     private final DiaryReportLowService diaryReportLowService;
+    private final DiaryStoreLowService diaryStoreLowService;
 
     @Transactional(readOnly = true)
     public Page<MyDiaryResponseDto> getMyDiaries(Long userId, Pageable pageable) {
@@ -47,21 +45,7 @@ public class DiaryService {
 
         Page<DiaryEntity> diaryPage = getSortedDiaries(pageable, optionalDiaryOrder, foundUser);
 
-        List<Long> diaryIds = diaryPage.stream()
-                .map(DiaryEntity::getId)
-                .toList();
-
-
-        Set<Long> likedDiaryIds = diaryLikeLowService.findLikedDiaryIdsByUser(userId, diaryIds);
-        Map<Long, Long> likeCountsMaps = diaryLikeLowService.findLikeCountsByDiaryIds(diaryIds);
-
-        return diaryResponseMapper.mapToResponseDto(
-                diaryPage,
-                likedDiaryIds,
-                likeCountsMaps,
-                userId,
-                MyDiaryResponseDto::from
-        );
+        return getDiaryResponseDtoPage(userId, diaryPage, MyDiaryResponseDto::from);
     }
 
     @Transactional(readOnly = true)
@@ -74,20 +58,7 @@ public class DiaryService {
         List<DiaryScope> visibleScopes = List.of(DiaryScope.PUBLIC, DiaryScope.KILLING_PART);
         Page<DiaryEntity> diaryPage = diaryLowService.findByUserIdsAndScopseWithUserPage(subscribedToIds, visibleScopes, pageable);
 
-        List<Long> diaryIds = diaryPage.getContent().stream()
-                .map(DiaryEntity::getId)
-                .toList();
-
-        Set<Long> likedDiaryIds = diaryLikeLowService.findLikedDiaryIdsByUser(userId, diaryIds);
-        Map<Long, Long> likeCountsMap = diaryLikeLowService.findLikeCountsByDiaryIds(diaryIds);
-
-        return diaryResponseMapper.mapToResponseDto(
-                diaryPage,
-                likedDiaryIds,
-                likeCountsMap,
-                userId,
-                FeedDiaryResponseDto::from
-        );
+        return getDiaryResponseDtoPage(userId, diaryPage, FeedDiaryResponseDto::from);
     }
 
 
@@ -104,20 +75,7 @@ public class DiaryService {
             diaryPage = diaryLowService.findDiaryByUserAndScopeIn(targetUserId, visibleScopes, pageable);
         }
 
-        List<Long> diaryIds = diaryPage.getContent().stream()
-                .map(DiaryEntity::getId)
-                .toList();
-
-        Set<Long> likedDiaryIds = diaryLikeLowService.findLikedDiaryIdsByUser(currentUserId, diaryIds);
-        Map<Long, Long> likeCountsMap = diaryLikeLowService.findLikeCountsByDiaryIds(diaryIds);
-
-        return diaryResponseMapper.mapToResponseDto(
-                diaryPage,
-                likedDiaryIds,
-                likeCountsMap,
-                currentUserId,
-                UserDiaryResponseDto::from
-        );
+        return getDiaryResponseDtoPage(currentUserId, diaryPage, UserDiaryResponseDto::from);
     }
 
     @Transactional(readOnly = true)
@@ -129,6 +87,24 @@ public class DiaryService {
                 .stream()
                 .map(CalendarDiaryResponseDto::from)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<FeedDiaryResponseDto> getRandomDiaries(Long userId) {
+        List<DiaryEntity> randomDiary = diaryLowService.findRandomDiary();
+
+        Collections.shuffle(randomDiary);
+
+        return getDiaryResponseDtoList(userId, randomDiary, FeedDiaryResponseDto::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<FeedDiaryResponseDto> getStoredDiaries(Long userId, Pageable pageable) {
+
+        Page<DiaryEntity> diaryPage = diaryStoreLowService.findStoredDiaryByUserWithDiary(userId, pageable)
+                .map(DiaryStoreEntity::getDiary);
+
+        return getDiaryResponseDtoPage(userId, diaryPage, FeedDiaryResponseDto::from);
     }
 
     public DiaryEntity createDiary(Long userId, DiaryCreateRequest diaryRequest) {
@@ -160,6 +136,7 @@ public class DiaryService {
 
         foundDiary.validateOwner(foundUser);
 
+        diaryStoreLowService.deleteByDiaryId(diaryId);
         diaryReportLowService.deleteByDiaryId(diaryId);
         diaryOrderLowService.deleteDiaryId(userId, diaryId);
         diaryLikeLowService.deleteByDiaryId(diaryId);
@@ -173,11 +150,51 @@ public class DiaryService {
                 .map(DiaryEntity::getId)
                 .toList();
 
+        diaryStoreLowService.deleteByDiaryIds(diaryIds);
+
         diaryReportLowService.deleteByDiaryIds(diaryIds);
 
         diaryLikeLowService.deleteByDiaryIds(diaryIds);
 
         diaryLowService.deleteByUserId(userId);
+    }
+
+    private <T extends DiaryResponseDto> Page<T> getDiaryResponseDtoPage(Long userId, Page<DiaryEntity> diaryPage, DiaryResponseMapper.DiaryResponseDtoMapper<T> mapper) {
+        List<Long> diaryIds = diaryPage.getContent().stream()
+                .map(DiaryEntity::getId)
+                .toList();
+
+        Set<Long> likedDiaryIds = diaryLikeLowService.findLikedDiaryIdsByUser(userId, diaryIds);
+        Map<Long, Long> likeCountsMap = diaryLikeLowService.findLikeCountsByDiaryIds(diaryIds);
+        Set<Long> storedDiaryIds = diaryStoreLowService.findStoredDiaryIdsByUser(userId, diaryIds);
+
+        return diaryResponseMapper.mapToResponseDto(
+                diaryPage,
+                likedDiaryIds,
+                storedDiaryIds,
+                likeCountsMap,
+                userId,
+                mapper
+        );
+    }
+
+    private <T extends DiaryResponseDto> List<T> getDiaryResponseDtoList(Long userId, List<DiaryEntity> diaries, DiaryResponseMapper.DiaryResponseDtoMapper<T> mapper) {
+        List<Long> diaryIds = diaries.stream()
+                .map(DiaryEntity::getId)
+                .toList();
+
+        Set<Long> likedDiaryIds = diaryLikeLowService.findLikedDiaryIdsByUser(userId, diaryIds);
+        Map<Long, Long> likeCountsMap = diaryLikeLowService.findLikeCountsByDiaryIds(diaryIds);
+        Set<Long> storedDiaryIds = diaryStoreLowService.findStoredDiaryIdsByUser(userId, diaryIds);
+
+        return diaryResponseMapper.mapToResponseDto(
+                diaries,
+                likedDiaryIds,
+                storedDiaryIds,
+                likeCountsMap,
+                userId,
+                mapper
+        );
     }
 
     private Page<DiaryEntity> getSortedDiaries(Pageable pageable, Optional<DiaryOrderEntity> optionalDiaryOrder, UserEntity foundUser) {

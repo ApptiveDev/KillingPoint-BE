@@ -58,6 +58,8 @@ public class DiaryServiceTest {
     private DiaryOrderLowService diaryOrderLowService;
     @Mock
     private DiaryReportLowService diaryReportLowService;
+    @Mock
+    private DiaryStoreLowService diaryStoreLowService;
 
     @Test
     @DisplayName("내 다이어리 목록 조회 - diaryOrder 없는 상황")
@@ -280,6 +282,7 @@ public class DiaryServiceTest {
         verify(userLowService).getReferenceById(any(Long.class));
         verify(diaryLowService).findDiaryById(any(Long.class));
         verify(diaryLowService).deleteDiary(any(DiaryEntity.class));
+        verify(diaryStoreLowService).deleteByDiaryId(any(Long.class));
 
         verifyNoMoreInteractions(userLowService, diaryLowService);
     }

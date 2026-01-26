@@ -9,13 +9,16 @@ import apptive.team5.global.exception.NotFoundEntityException;
 import apptive.team5.user.domain.UserEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
@@ -56,6 +59,16 @@ public class DiaryLowService {
     @Transactional(readOnly = true)
     public List<DiaryEntity> findByUserIdAndPeriod(Long userId, LocalDateTime start, LocalDateTime end) {
         return diaryRepository.findByUserIdAndCreateDateTimeBetween(userId, start, end);
+    }
+
+    @Transactional(readOnly = true)
+    public List<DiaryEntity> findRandomDiary() {
+
+        Long maxId = diaryRepository.findMaxId();
+
+        long randomId = ThreadLocalRandom.current().nextLong(1, maxId + 1);
+
+        return diaryRepository.findDiaryGreaterThanId(randomId, PageRequest.of(0,5));
     }
 
     public void updateDiary(DiaryEntity diary, DiaryInfo diaryInfo) {

@@ -22,9 +22,10 @@ public record UserDiaryResponseDto(
         LocalDateTime createDate,
         LocalDateTime updateDate,
         boolean isLiked,
+        boolean isStored,
         Long likeCount
 ) implements DiaryResponseDto {
-    public static UserDiaryResponseDto from(DiaryEntity diary, boolean isLiked, Long likeCount, Long currentUserId) {
+    public static UserDiaryResponseDto from(DiaryEntity diary, boolean isLiked, boolean isStored, Long likeCount, Long currentUserId) {
         String contentResponse = diary.getContentForViewer(currentUserId);
 
         return new UserDiaryResponseDto(
@@ -42,6 +43,7 @@ public record UserDiaryResponseDto(
                 diary.getCreateDateTime(),
                 diary.getUpdateDateTime(),
                 isLiked,
+                isStored,
                 likeCount
         );
     }
