@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,7 +68,7 @@ public class DiaryLowService {
 
         long randomId = ThreadLocalRandom.current().nextLong(1, maxId + 1);
 
-        return diaryRepository.findRandomDiary(randomId, PageRequest.of(0,5));
+        return diaryRepository.findDiaryGreaterThanId(randomId, PageRequest.of(0,5));
     }
 
     public void updateDiary(DiaryEntity diary, DiaryInfo diaryInfo) {
