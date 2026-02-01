@@ -91,7 +91,7 @@ public class DiaryService {
 
     @Transactional(readOnly = true)
     public List<FeedDiaryResponseDto> getRandomDiaries(Long userId) {
-        List<DiaryEntity> randomDiary = diaryLowService.findRandomDiary();
+        List<DiaryEntity> randomDiary = diaryLowService.findRandomDiary(userId);
 
         Collections.shuffle(randomDiary);
 

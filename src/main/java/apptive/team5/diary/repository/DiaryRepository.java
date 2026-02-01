@@ -32,8 +32,11 @@ public interface DiaryRepository extends JpaRepository<DiaryEntity, Long> {
     @Query("select max(d.id) from DiaryEntity d")
     Long findMaxId();
 
-    @Query("select d from DiaryEntity d where d.id >= :diaryId")
-    List<DiaryEntity> findDiaryGreaterThanId(Long diaryId, Pageable pageable);
+    @Query("select d from DiaryEntity d where d.user.id != :userId and d.id >= :diaryId")
+    List<DiaryEntity> findDiaryNotMineGreaterThanId(Long userId, Long diaryId, Pageable pageable);
+
+    @Query("select d from DiaryEntity d where d.user.id != :userId and d.id <= :diaryId")
+    List<DiaryEntity> findDiaryByNotMineAndLessThanId(Long userId, Long diaryId, Pageable pageable);
 
     @Query("delete from DiaryEntity d where d.user.id = :userId")
     @Modifying(clearAutomatically = true, flushAutomatically = true)

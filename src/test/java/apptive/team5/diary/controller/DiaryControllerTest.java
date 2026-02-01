@@ -359,7 +359,8 @@ public class DiaryControllerTest {
     void getRandomDiaries() throws Exception {
 
         // given
-        DiaryEntity diary = diaryRepository.save(TestUtil.makeDiaryEntity(testUser));
+        UserEntity makeDiaryUser = userRepository.save(TestUtil.makeDifferentUserEntity(testUser));
+        DiaryEntity diary = diaryRepository.save(TestUtil.makeDiaryEntity(makeDiaryUser));
 
         TestSecurityContextHolderInjection.inject(testUser.getId(), testUser.getRoleType());
 

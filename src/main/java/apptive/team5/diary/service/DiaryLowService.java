@@ -62,13 +62,17 @@ public class DiaryLowService {
     }
 
     @Transactional(readOnly = true)
-    public List<DiaryEntity> findRandomDiary() {
+    public List<DiaryEntity> findRandomDiary(Long userId) {
 
         Long maxId = diaryRepository.findMaxId();
 
         long randomId = ThreadLocalRandom.current().nextLong(1, maxId + 1);
 
-        return diaryRepository.findDiaryGreaterThanId(randomId, PageRequest.of(0,5));
+        List<DiaryEntity> randomDiaries = diaryRepository.findDiaryNotMineGreaterThanId(userId, randomId, PageRequest.of(0, 5));
+
+        if (randomDiaries.isEmpty()) return diaryRepository.findDiaryByNotMineAndLessThanId(userId, randomId, PageRequest.of(0, 5));
+
+        return randomDiaries;
     }
 
     public void updateDiary(DiaryEntity diary, DiaryInfo diaryInfo) {

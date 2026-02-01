@@ -33,7 +33,8 @@ import org.springframework.security.access.AccessDeniedException;
 @Table(
         name = "diary_entity",
         indexes = {
-            @Index(name = "idx_diary_user_created", columnList = "user_id, createDateTime")
+                @Index(name = "idx_diary_user_created", columnList = "user_id, createDateTime"),
+                @Index(name ="idx_user_id_diary_id", columnList = "user_id, diary_id")
         }
 )
 public class DiaryEntity extends BaseTimeEntity {
