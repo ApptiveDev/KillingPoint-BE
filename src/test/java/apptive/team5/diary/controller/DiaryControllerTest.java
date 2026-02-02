@@ -371,13 +371,13 @@ public class DiaryControllerTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
 
-        List<FeedDiaryResponseDto> feedDiaryResponseDtos = objectMapper.readValue(response, new TypeReference<List<FeedDiaryResponseDto>>() {
+        RandomDiaryResponseDto randomDiaryResponseDto = objectMapper.readValue(response, new TypeReference<RandomDiaryResponseDto>() {
         });
 
 
         assertSoftly(softly -> {
-            softly.assertThat(feedDiaryResponseDtos.size()).isEqualTo(1);
-            softly.assertThat(feedDiaryResponseDtos.get(0).diaryId()).isEqualTo(diary.getId());
+            softly.assertThat(randomDiaryResponseDto.pageSize()).isEqualTo(1);
+            softly.assertThat(randomDiaryResponseDto.content().get(0).diaryId()).isEqualTo(diary.getId());
         });
     }
 }
