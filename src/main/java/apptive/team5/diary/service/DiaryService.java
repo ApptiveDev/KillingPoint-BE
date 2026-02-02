@@ -90,12 +90,13 @@ public class DiaryService {
     }
 
     @Transactional(readOnly = true)
-    public List<FeedDiaryResponseDto> getRandomDiaries(Long userId) {
+    public RandomDiaryResponseDto getRandomDiaries(Long userId) {
         List<DiaryEntity> randomDiary = diaryLowService.findRandomDiary(userId);
 
         Collections.shuffle(randomDiary);
 
-        return getDiaryResponseDtoList(userId, randomDiary, FeedDiaryResponseDto::from);
+        List<FeedDiaryResponseDto> diaryResponseDtoList = getDiaryResponseDtoList(userId, randomDiary, FeedDiaryResponseDto::from);
+        return new RandomDiaryResponseDto(diaryResponseDtoList);
     }
 
     @Transactional(readOnly = true)

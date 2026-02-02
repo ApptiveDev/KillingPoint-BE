@@ -104,12 +104,12 @@ public class DiaryController {
     }
 
     @GetMapping("/randoms")
-    public ResponseEntity<List<FeedDiaryResponseDto>> getRandomDiary(
+    public ResponseEntity<RandomDiaryResponseDto> getRandomDiary(
             @AuthenticationPrincipal
             Long userId
     ) {
 
-        List<FeedDiaryResponseDto> randomDiaries = diaryService.getRandomDiaries(userId);
+        RandomDiaryResponseDto randomDiaries = diaryService.getRandomDiaries(userId);
 
         return ResponseEntity.status(HttpStatus.OK).body(randomDiaries);
     }
