@@ -68,9 +68,11 @@ public class DiaryLowService {
 
         long randomId = ThreadLocalRandom.current().nextLong(1, maxId + 1);
 
-        List<DiaryEntity> randomDiaries = diaryRepository.findDiaryNotMineGreaterThanId(userId, randomId, PageRequest.of(0, 5));
+        List<DiaryScope> scopes = List.of(DiaryScope.PUBLIC,  DiaryScope.KILLING_PART);
 
-        if (randomDiaries.isEmpty()) return diaryRepository.findDiaryByNotMineAndLessThanId(userId, randomId, PageRequest.of(0, 5));
+        List<DiaryEntity> randomDiaries = diaryRepository.findDiaryNotMineGreaterThanIdAndScopeIn(userId, randomId, scopes, PageRequest.of(0, 5));
+
+        if (randomDiaries.isEmpty()) return diaryRepository.findDiaryByNotMineAndLessThanIdAndScopeIn(userId, randomId, scopes, PageRequest.of(0, 5));
 
         return randomDiaries;
     }

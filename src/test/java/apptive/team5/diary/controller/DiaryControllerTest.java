@@ -361,6 +361,9 @@ public class DiaryControllerTest {
         // given
         UserEntity makeDiaryUser = userRepository.save(TestUtil.makeDifferentUserEntity(testUser));
         DiaryEntity diary = diaryRepository.save(TestUtil.makeDiaryEntity(makeDiaryUser));
+        diaryRepository.save(TestUtil.makeDiaryEntityWithScope(makeDiaryUser, DiaryScope.PRIVATE));
+        diaryRepository.save(TestUtil.makeDiaryEntityWithScope(makeDiaryUser, DiaryScope.PRIVATE));
+        diaryRepository.save(TestUtil.makeDiaryEntityWithScope(makeDiaryUser, DiaryScope.PRIVATE));
 
         TestSecurityContextHolderInjection.inject(testUser.getId(), testUser.getRoleType());
 
