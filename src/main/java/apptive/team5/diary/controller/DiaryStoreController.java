@@ -2,6 +2,7 @@ package apptive.team5.diary.controller;
 
 import apptive.team5.diary.dto.DiaryStoreResponseDto;
 import apptive.team5.diary.dto.FeedDiaryResponseDto;
+import apptive.team5.diary.dto.StoredDiaryResponseDto;
 import apptive.team5.diary.service.DiaryService;
 import apptive.team5.diary.service.DiaryStoreService;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +34,7 @@ public class DiaryStoreController {
     }
 
     @GetMapping("/stores")
-    public ResponseEntity<Page<FeedDiaryResponseDto>> getStoredDiary(
+    public ResponseEntity<Page<StoredDiaryResponseDto>> getStoredDiary(
             @AuthenticationPrincipal
             Long userId,
             @RequestParam(defaultValue = "0")
@@ -41,7 +42,7 @@ public class DiaryStoreController {
             @RequestParam(defaultValue = "5")
             int size
     ) {
-        Page<FeedDiaryResponseDto> storedDiaries = diaryService.getStoredDiaries(userId, PageRequest.of(page, size));
+        Page<StoredDiaryResponseDto> storedDiaries = diaryStoreService.getStoredDiaries(userId, PageRequest.of(page, size));
 
         return ResponseEntity.status(HttpStatus.OK).body(storedDiaries);
     }

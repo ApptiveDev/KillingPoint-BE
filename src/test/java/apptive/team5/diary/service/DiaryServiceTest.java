@@ -45,6 +45,8 @@ public class DiaryServiceTest {
 
     @InjectMocks
     private DiaryService diaryService;
+    @InjectMocks
+    private DiaryStoreService diaryStoreService;
 
     @Mock
     private UserLowService userLowService;
@@ -337,15 +339,13 @@ public class DiaryServiceTest {
                 .willReturn(storePage);
 
         // when
-        Page<FeedDiaryResponseDto> result = diaryService.getStoredDiaries(userId, pageable);
+        Page<StoredDiaryResponseDto> result = diaryStoreService.getStoredDiaries(userId, pageable);
 
         // then
         assertThat(result.getContent()).hasSize(1);
-        FeedDiaryResponseDto dto = result.getContent().getFirst();
+        StoredDiaryResponseDto dto = result.getContent().getFirst();
 
         assertThat(dto.diaryId()).isEqualTo(diaryId);
-
-        assertThat(dto.username()).isEqualTo(author.getUsername());
     }
 
     @Test

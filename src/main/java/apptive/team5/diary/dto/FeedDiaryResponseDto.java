@@ -59,30 +59,4 @@ public record FeedDiaryResponseDto (
                 S3Util.s3Url + user.getProfileImage()
         );
     }
-
-    public static FeedDiaryResponseDto fromStored(DiaryStoreEntity diaryStore) {
-
-        return new FeedDiaryResponseDto(
-                diaryStore.getDiaryId(),
-                diaryStore.getArtist(),
-                diaryStore.getMusicTitle(),
-                diaryStore.getAlbumImageUrl(),
-                diaryStore.getContent(),
-                diaryStore.getVideoUrl(),
-                diaryStore.getScope(),
-                diaryStore.getDuration(),
-                diaryStore.getTotalDuration(),
-                diaryStore.getStart(),
-                diaryStore.getEnd(),
-                diaryStore.getCreateDateTime(),
-                diaryStore.getUpdateDateTime(),
-                false,
-                true,
-                0L,
-                diaryStore.getOriginalAuthorId(),
-                diaryStore.getOriginalAuthorName(),
-                diaryStore.getOriginalAuthorTag(),
-                S3Util.s3Url + diaryStore.getOriginalAuthorProfileImage()
-        );
-    }
 }

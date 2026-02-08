@@ -3,7 +3,6 @@ package apptive.team5.diary.service;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryOrderEntity;
 import apptive.team5.diary.domain.DiaryScope;
-import apptive.team5.diary.domain.DiaryStoreEntity;
 import apptive.team5.diary.dto.*;
 import apptive.team5.diary.mapper.DiaryResponseMapper;
 import apptive.team5.subscribe.service.SubscribeLowService;
@@ -97,14 +96,6 @@ public class DiaryService {
 
         List<FeedDiaryResponseDto> diaryResponseDtoList = getDiaryResponseDtoList(userId, randomDiary, FeedDiaryResponseDto::from);
         return new RandomDiaryResponseDto(diaryResponseDtoList);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<FeedDiaryResponseDto> getStoredDiaries(Long userId, Pageable pageable) {
-
-        Page<DiaryStoreEntity> diaryStoredPage = diaryStoreLowService.findStoredDiaryByUser(userId, pageable);
-
-        return diaryStoredPage.map(FeedDiaryResponseDto::fromStored);
     }
 
     public DiaryEntity createDiary(Long userId, DiaryCreateRequest diaryRequest) {
