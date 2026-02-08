@@ -83,36 +83,36 @@ public class DiaryStoreEntity extends BaseTimeEntity {
     public DiaryStoreEntity(UserEntity user, DiaryStoreInfo info) {
         this.user = user;
         this.diaryId = info.diaryId();
-        update(info);
+        saveInfo(info);
     }
 
-    private void update(DiaryStoreInfo info) {
-        updateMusicBaseInfo(info.musicBasicInfo());
-        updateDiaryBasicInfo(info.diaryBasicInfo());
-        updateMusicPlayInfo(info.musicPlayInfo());
-        updateAuthorInfo(info.authorInfo());
+    private void saveInfo(DiaryStoreInfo info) {
+        saveMusicBaseInfo(info.musicBasicInfo());
+        saveDiaryBasicInfo(info.diaryBasicInfo());
+        saveMusicPlayInfo(info.musicPlayInfo());
+        saveAuthorInfo(info.authorInfo());
     }
 
-    private void updateMusicBaseInfo(MusicBasicInfo info) {
+    private void saveMusicBaseInfo(MusicBasicInfo info) {
         this.musicTitle = info.musicTitle();
         this.artist = info.artist();
         this.albumImageUrl = info.albumImageUrl();
         this.videoUrl = info.videoUrl();
     }
 
-    private void updateDiaryBasicInfo(DiaryBasicInfo info) {
+    private void saveDiaryBasicInfo(DiaryBasicInfo info) {
         this.content = info.content();
         this.scope = info.scope();
     }
 
-    private void updateMusicPlayInfo(MusicPlayInfo info) {
+    private void saveMusicPlayInfo(MusicPlayInfo info) {
         this.duration = info.duration();
         this.totalDuration = info.totalDuration();
         this.start = info.start();
         this.end = info.end();
     }
 
-    private void updateAuthorInfo(StoredAuthorInfo info) {
+    private void saveAuthorInfo(StoredAuthorInfo info) {
         this.originalAuthorId = info.id();
         this.originalAuthorName = info.name();
         this.originalAuthorTag = info.tag();
