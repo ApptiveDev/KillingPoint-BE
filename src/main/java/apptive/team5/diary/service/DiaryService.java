@@ -149,8 +149,6 @@ public class DiaryService {
                 .map(DiaryEntity::getId)
                 .toList();
 
-        diaryStoreLowService.deleteByDiaryIds(diaryIds);
-
         diaryReportLowService.deleteByDiaryIds(diaryIds);
 
         diaryLikeLowService.deleteByDiaryIds(diaryIds);

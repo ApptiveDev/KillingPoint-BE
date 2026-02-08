@@ -67,6 +67,18 @@ public class DiaryStoreEntity extends BaseTimeEntity {
     @Column(nullable = false)
     private String end;
 
+    @Column(nullable = false)
+    private Long originalAuthorId;
+
+    @Column(nullable = false)
+    private String originalAuthorName;
+
+    @Column(nullable = false)
+    private String originalAuthorTag;
+
+    @Column(nullable = false)
+    private String originalAuthorProfileImage;
+
     public DiaryStoreEntity(UserEntity user, DiaryEntity diary) {
         this.user = user;
         this.diaryId = diary.getId();
@@ -75,11 +87,17 @@ public class DiaryStoreEntity extends BaseTimeEntity {
         this.artist = diary.getArtist();
         this.albumImageUrl = diary.getAlbumImageUrl();
         this.videoUrl = diary.getVideoUrl();
-        this.content = diary.getContent();
+        this.content = diary.getContentForViewer(user.getId());
         this.scope = diary.getScope();
         this.duration = diary.getDuration();
         this.totalDuration = diary.getTotalDuration();
         this.start = diary.getStart();
         this.end = diary.getEnd();
+
+        UserEntity author = diary.getUser();
+        this.originalAuthorId = author.getId();
+        this.originalAuthorName = author.getUsername();
+        this.originalAuthorTag = author.getTag();
+        this.originalAuthorProfileImage = author.getProfileImage();
     }
 }

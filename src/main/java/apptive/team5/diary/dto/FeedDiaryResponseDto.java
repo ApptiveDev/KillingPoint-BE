@@ -61,10 +61,9 @@ public record FeedDiaryResponseDto (
     }
 
     public static FeedDiaryResponseDto fromStored(DiaryStoreEntity diaryStore) {
-        UserEntity user = diaryStore.getUser();
 
         return new FeedDiaryResponseDto(
-                diaryStore.getId(),
+                diaryStore.getDiaryId(),
                 diaryStore.getArtist(),
                 diaryStore.getMusicTitle(),
                 diaryStore.getAlbumImageUrl(),
@@ -80,10 +79,10 @@ public record FeedDiaryResponseDto (
                 false,
                 true,
                 0L,
-                user.getId(),
-                user.getUsername(),
-                user.getTag(),
-                S3Util.s3Url + user.getProfileImage()
+                diaryStore.getOriginalAuthorId(),
+                diaryStore.getOriginalAuthorName(),
+                diaryStore.getOriginalAuthorTag(),
+                S3Util.s3Url + diaryStore.getOriginalAuthorProfileImage()
         );
     }
 }
