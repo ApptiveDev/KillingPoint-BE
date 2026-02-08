@@ -2,6 +2,7 @@ package apptive.team5.diary.service;
 
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryStoreEntity;
+import apptive.team5.diary.domain.model.DiaryStoreInfo;
 import apptive.team5.diary.dto.DiaryStoreResponseDto;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.service.UserLowService;
@@ -28,7 +29,8 @@ public class DiaryStoreService {
         }
         else {
             DiaryEntity diary = diaryLowService.findDiaryById(diaryId);
-            diaryStoreLowService.save(new DiaryStoreEntity(user, diary));
+            DiaryStoreInfo storeInfo = DiaryStoreInfo.from(diary, user);
+            diaryStoreLowService.save(new DiaryStoreEntity(user, storeInfo));
             return new DiaryStoreResponseDto(true);
         }
     }

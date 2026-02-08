@@ -4,6 +4,7 @@ import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryOrderEntity;
 import apptive.team5.diary.domain.DiaryScope;
 import apptive.team5.diary.domain.DiaryStoreEntity;
+import apptive.team5.diary.domain.model.DiaryStoreInfo;
 import apptive.team5.diary.dto.*;
 import apptive.team5.diary.mapper.DiaryResponseMapper;
 import apptive.team5.user.domain.SocialType;
@@ -326,7 +327,7 @@ public class DiaryServiceTest {
 
         DiaryEntity diary = TestUtil.makeDiaryEntityWithId(diaryId, author);
 
-        DiaryStoreEntity storeEntity = new DiaryStoreEntity(user, diary);
+        DiaryStoreEntity storeEntity = new DiaryStoreEntity(user, DiaryStoreInfo.from(diary, user));
         ReflectionTestUtils.setField(storeEntity, "id", storeId);
 
         Pageable pageable = PageRequest.of(0, 5);

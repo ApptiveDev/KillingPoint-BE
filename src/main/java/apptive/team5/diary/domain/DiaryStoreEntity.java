@@ -1,5 +1,6 @@
 package apptive.team5.diary.domain;
 
+import apptive.team5.diary.domain.model.*;
 import apptive.team5.global.entity.BaseTimeEntity;
 import apptive.team5.user.domain.UserEntity;
 import jakarta.persistence.*;
@@ -79,25 +80,42 @@ public class DiaryStoreEntity extends BaseTimeEntity {
     @Column(nullable = false)
     private String originalAuthorProfileImage;
 
-    public DiaryStoreEntity(UserEntity user, DiaryEntity diary) {
+    public DiaryStoreEntity(UserEntity user, DiaryStoreInfo info) {
         this.user = user;
-        this.diaryId = diary.getId();
+        this.diaryId = info.diaryId();
+        update(info);
+    }
 
-        this.musicTitle = diary.getMusicTitle();
-        this.artist = diary.getArtist();
-        this.albumImageUrl = diary.getAlbumImageUrl();
-        this.videoUrl = diary.getVideoUrl();
-        this.content = diary.getContentForViewer(user.getId());
-        this.scope = diary.getScope();
-        this.duration = diary.getDuration();
-        this.totalDuration = diary.getTotalDuration();
-        this.start = diary.getStart();
-        this.end = diary.getEnd();
+    private void update(DiaryStoreInfo info) {
+        updateMusicBaseInfo(info.musicBasicInfo());
+        updateDiaryBasicInfo(info.diaryBasicInfo());
+        updateMusicPlayInfo(info.musicPlayInfo());
+        updateAuthorInfo(info.authorInfo());
+    }
 
-        UserEntity author = diary.getUser();
-        this.originalAuthorId = author.getId();
-        this.originalAuthorName = author.getUsername();
-        this.originalAuthorTag = author.getTag();
-        this.originalAuthorProfileImage = author.getProfileImage();
+    private void updateMusicBaseInfo(MusicBasicInfo info) {
+        this.musicTitle = info.musicTitle();
+        this.artist = info.artist();
+        this.albumImageUrl = info.albumImageUrl();
+        this.videoUrl = info.videoUrl();
+    }
+
+    private void updateDiaryBasicInfo(DiaryBasicInfo info) {
+        this.content = info.content();
+        this.scope = info.scope();
+    }
+
+    private void updateMusicPlayInfo(MusicPlayInfo info) {
+        this.duration = info.duration();
+        this.totalDuration = info.totalDuration();
+        this.start = info.start();
+        this.end = info.end();
+    }
+
+    private void updateAuthorInfo(StoredAuthorInfo info) {
+        this.originalAuthorId = info.id();
+        this.originalAuthorName = info.name();
+        this.originalAuthorTag = info.tag();
+        this.originalAuthorProfileImage = info.profileImage();
     }
 }
