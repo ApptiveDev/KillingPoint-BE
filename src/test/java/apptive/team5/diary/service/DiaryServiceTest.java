@@ -3,10 +3,8 @@ package apptive.team5.diary.service;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryOrderEntity;
 import apptive.team5.diary.domain.DiaryScope;
-import apptive.team5.diary.dto.DiaryCreateRequest;
-import apptive.team5.diary.dto.MyDiaryResponseDto;
-import apptive.team5.diary.dto.DiaryUpdateRequestDto;
-import apptive.team5.diary.dto.UserDiaryResponseDto;
+import apptive.team5.diary.domain.DiaryStoreEntity;
+import apptive.team5.diary.dto.*;
 import apptive.team5.diary.mapper.DiaryResponseMapper;
 import apptive.team5.user.domain.SocialType;
 import apptive.team5.user.domain.UserEntity;
@@ -285,6 +283,68 @@ public class DiaryServiceTest {
         verify(diaryStoreLowService, never()).deleteByDiaryId(any(Long.class));
 
         verifyNoMoreInteractions(userLowService, diaryLowService);
+    }
+
+    @Test
+    @DisplayName("일기 삭제 시 보관함 유지")
+    void deleteDiaryKeepStore() {
+        // given
+        Long userId = 1L;
+        Long diaryId = 100L;
+        UserEntity user = TestUtil.makeUserEntityWithId();
+        DiaryEntity diary = TestUtil.makeDiaryEntityWithId(diaryId, user);
+
+        given(userLowService.getReferenceById(userId)).willReturn(user);
+        given(diaryLowService.findDiaryById(diaryId)).willReturn(diary);
+
+        // when
+        diaryService.deleteDiary(userId, diaryId);
+
+        // then
+        verify(diaryLowService).deleteDiary(diary);
+
+        verify(diaryLikeLowService).deleteByDiaryId(diaryId);
+        verify(diaryReportLowService).deleteByDiaryId(diaryId);
+        verify(diaryOrderLowService).deleteDiaryId(userId, diaryId);
+
+        verify(diaryStoreLowService, never()).deleteByDiaryId(diaryId);
+    }
+
+    @Test
+    @DisplayName("보관함 조회")
+    void getStoredDiaries() {
+        Long userId = 1L;
+        Long authorId = 2L;
+        Long diaryId = 100L;
+        Long storeId = 500L;
+
+        UserEntity user = TestUtil.makeUserEntityWithId();
+
+        UserEntity author = TestUtil.makeUserEntity();
+        ReflectionTestUtils.setField(author, "id", authorId);
+        ReflectionTestUtils.setField(author, "username", "OriginalAuthor");
+
+        DiaryEntity diary = TestUtil.makeDiaryEntityWithId(diaryId, author);
+
+        DiaryStoreEntity storeEntity = new DiaryStoreEntity(user, diary);
+        ReflectionTestUtils.setField(storeEntity, "id", storeId);
+
+        Pageable pageable = PageRequest.of(0, 5);
+        Page<DiaryStoreEntity> storePage = new PageImpl<>(List.of(storeEntity));
+
+        given(diaryStoreLowService.findStoredDiaryByUser(userId, pageable))
+                .willReturn(storePage);
+
+        // when
+        Page<FeedDiaryResponseDto> result = diaryService.getStoredDiaries(userId, pageable);
+
+        // then
+        assertThat(result.getContent()).hasSize(1);
+        FeedDiaryResponseDto dto = result.getContent().getFirst();
+
+        assertThat(dto.diaryId()).isEqualTo(diaryId);
+
+        assertThat(dto.username()).isEqualTo(author.getUsername());
     }
 
     @Test
