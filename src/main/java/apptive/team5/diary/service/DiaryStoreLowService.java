@@ -29,13 +29,13 @@ public class DiaryStoreLowService {
     }
 
     @Transactional(readOnly = true)
-    public boolean existsByUserAndDiary(UserEntity user, DiaryEntity diary) {
-        return diaryStoreRepository.existsByUserAndDiary(user, diary);
+    public boolean existsByUserAndDiary(UserEntity user, Long diaryId) {
+        return diaryStoreRepository.existsByUserAndDiaryId(user, diaryId);
     }
 
     @Transactional(readOnly = true)
-    public DiaryStoreEntity findByUserAndDiary(UserEntity user, DiaryEntity diary) {
-        return diaryStoreRepository.findByUserAndDiary(user, diary);
+    public DiaryStoreEntity findByUserAndDiary(UserEntity user, Long diaryId) {
+        return diaryStoreRepository.findByUserAndDiaryId(user, diaryId);
     }
 
     @Transactional(readOnly = true)
@@ -44,8 +44,8 @@ public class DiaryStoreLowService {
     }
 
     @Transactional(readOnly = true)
-    public Page<DiaryStoreEntity> findStoredDiaryByUserWithDiary(Long userId, Pageable pageable) {
-        return diaryStoreRepository.findStoredDiaryByUserWithDiary(userId, pageable);
+    public Page<DiaryStoreEntity> findStoredDiaryByUser(Long userId, Pageable pageable) {
+        return diaryStoreRepository.findStoredDiaryByUser(userId, pageable);
     }
 
     public void deleteByDiaryId(Long diaryId) {

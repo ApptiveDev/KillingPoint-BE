@@ -15,9 +15,9 @@ import java.util.Set;
 
 public interface DiaryStoreRepository extends JpaRepository<DiaryStoreEntity, Long> {
 
-    boolean existsByUserAndDiaryId(UserEntity user, DiaryEntity diaryId);
+    boolean existsByUserAndDiaryId(UserEntity user, Long diaryId);
 
-    DiaryStoreEntity findByUserAndDiaryId(UserEntity user, DiaryEntity diaryId);
+    DiaryStoreEntity findByUserAndDiaryId(UserEntity user, Long diaryId);
 
     @Query("""
             SELECT ds.diaryId
@@ -43,7 +43,7 @@ public interface DiaryStoreRepository extends JpaRepository<DiaryStoreEntity, Lo
             FROM DiaryStoreEntity ds
             WHERE ds.user.id = :userId
     """)
-    Page<DiaryStoreEntity> findStoredDiaryByUserWithDiary(Long userId, Pageable pageable);
+    Page<DiaryStoreEntity> findStoredDiaryByUser(Long userId, Pageable pageable);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
