@@ -282,7 +282,7 @@ public class DiaryServiceTest {
         verify(userLowService).getReferenceById(any(Long.class));
         verify(diaryLowService).findDiaryById(any(Long.class));
         verify(diaryLowService).deleteDiary(any(DiaryEntity.class));
-        verify(diaryStoreLowService).deleteByDiaryId(any(Long.class));
+        verify(diaryStoreLowService, never()).deleteByDiaryId(any(Long.class));
 
         verifyNoMoreInteractions(userLowService, diaryLowService);
     }

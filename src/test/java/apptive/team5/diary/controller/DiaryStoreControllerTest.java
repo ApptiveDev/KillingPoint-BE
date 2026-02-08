@@ -86,7 +86,7 @@ class DiaryStoreControllerTest {
         // then
         assertSoftly(softly -> {
             softly.assertThat(responseDto.isStored()).isTrue();
-            softly.assertThat(diaryStoreRepository.existsByUserAndDiary(saver, diary));
+            softly.assertThat(diaryStoreRepository.existsByUserAndDiaryId(saver, diary.getId()));
         });
     }
 
@@ -108,7 +108,7 @@ class DiaryStoreControllerTest {
         // then
         assertSoftly(softly -> {
             softly.assertThat(responseDto.isStored()).isFalse();
-            softly.assertThat(diaryStoreRepository.existsByUserAndDiary(saver, diary));
+            softly.assertThat(diaryStoreRepository.existsByUserAndDiaryId(saver, diary.getId()));
         });
     }
 
