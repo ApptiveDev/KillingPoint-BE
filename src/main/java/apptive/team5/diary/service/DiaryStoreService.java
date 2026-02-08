@@ -20,14 +20,14 @@ public class DiaryStoreService {
 
     public DiaryStoreResponseDto toggleDiaryStore(Long userId, Long diaryId) {
         UserEntity user = userLowService.getReferenceById(userId);
-        DiaryEntity diary = diaryLowService.findDiaryById(diaryId);
 
-        if (diaryStoreLowService.existsByUserAndDiary(user, diary)) {
-            DiaryStoreEntity diaryStoreEntity = diaryStoreLowService.findByUserAndDiary(user, diary);
+        if (diaryStoreLowService.existsByUserAndDiaryId(user, diaryId)) {
+            DiaryStoreEntity diaryStoreEntity = diaryStoreLowService.findByUserAndDiaryId(user, diaryId);
             diaryStoreLowService.deleteById(diaryStoreEntity.getId());
             return new DiaryStoreResponseDto(false);
         }
         else {
+            DiaryEntity diary = diaryLowService.findDiaryById(diaryId);
             diaryStoreLowService.save(new DiaryStoreEntity(user, diary));
             return new DiaryStoreResponseDto(true);
         }

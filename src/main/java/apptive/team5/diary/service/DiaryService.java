@@ -102,10 +102,9 @@ public class DiaryService {
     @Transactional(readOnly = true)
     public Page<FeedDiaryResponseDto> getStoredDiaries(Long userId, Pageable pageable) {
 
-        Page<DiaryEntity> diaryPage = diaryStoreLowService.findStoredDiaryByUserWithDiary(userId, pageable)
-                .map(DiaryStoreEntity::getDiary);
+        Page<DiaryStoreEntity> diaryStoredPage = diaryStoreLowService.findStoredDiaryByUser(userId, pageable);
 
-        return getDiaryResponseDtoPage(userId, diaryPage, FeedDiaryResponseDto::from);
+        return diaryStoredPage.map(FeedDiaryResponseDto::fromStored);
     }
 
     public DiaryEntity createDiary(Long userId, DiaryCreateRequest diaryRequest) {
@@ -137,7 +136,6 @@ public class DiaryService {
 
         foundDiary.validateOwner(foundUser);
 
-        diaryStoreLowService.deleteByDiaryId(diaryId);
         diaryReportLowService.deleteByDiaryId(diaryId);
         diaryOrderLowService.deleteDiaryId(userId, diaryId);
         diaryLikeLowService.deleteByDiaryId(diaryId);

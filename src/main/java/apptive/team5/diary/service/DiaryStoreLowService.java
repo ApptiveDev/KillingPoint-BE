@@ -29,12 +29,12 @@ public class DiaryStoreLowService {
     }
 
     @Transactional(readOnly = true)
-    public boolean existsByUserAndDiary(UserEntity user, Long diaryId) {
+    public boolean existsByUserAndDiaryId(UserEntity user, Long diaryId) {
         return diaryStoreRepository.existsByUserAndDiaryId(user, diaryId);
     }
 
     @Transactional(readOnly = true)
-    public DiaryStoreEntity findByUserAndDiary(UserEntity user, Long diaryId) {
+    public DiaryStoreEntity findByUserAndDiaryId(UserEntity user, Long diaryId) {
         return diaryStoreRepository.findByUserAndDiaryId(user, diaryId);
     }
 

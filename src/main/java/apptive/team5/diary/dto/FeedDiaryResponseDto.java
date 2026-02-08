@@ -2,6 +2,7 @@ package apptive.team5.diary.dto;
 
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryScope;
+import apptive.team5.diary.domain.DiaryStoreEntity;
 import apptive.team5.global.exception.BadRequestException;
 import apptive.team5.global.exception.ExceptionCode;
 import apptive.team5.global.util.S3Util;
@@ -52,6 +53,33 @@ public record FeedDiaryResponseDto (
                 isLiked,
                 isStored,
                 likeCount,
+                user.getId(),
+                user.getUsername(),
+                user.getTag(),
+                S3Util.s3Url + user.getProfileImage()
+        );
+    }
+
+    public static FeedDiaryResponseDto fromStored(DiaryStoreEntity diaryStore) {
+        UserEntity user = diaryStore.getUser();
+
+        return new FeedDiaryResponseDto(
+                diaryStore.getId(),
+                diaryStore.getArtist(),
+                diaryStore.getMusicTitle(),
+                diaryStore.getAlbumImageUrl(),
+                diaryStore.getContent(),
+                diaryStore.getVideoUrl(),
+                diaryStore.getScope(),
+                diaryStore.getDuration(),
+                diaryStore.getTotalDuration(),
+                diaryStore.getStart(),
+                diaryStore.getEnd(),
+                diaryStore.getCreateDateTime(),
+                diaryStore.getUpdateDateTime(),
+                false,
+                true,
+                0L,
                 user.getId(),
                 user.getUsername(),
                 user.getTag(),
