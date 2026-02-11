@@ -15,15 +15,15 @@ import java.util.Set;
 
 public interface DiaryStoreRepository extends JpaRepository<DiaryStoreEntity, Long> {
 
-    boolean existsByUserAndDiary(UserEntity user, DiaryEntity diary);
+    boolean existsByUserAndDiaryId(UserEntity user, Long diaryId);
 
-    DiaryStoreEntity findByUserAndDiary(UserEntity user, DiaryEntity diary);
+    DiaryStoreEntity findByUserAndDiaryId(UserEntity user, Long diaryId);
 
     @Query("""
-            SELECT ds.diary.id
+            SELECT ds.diaryId
             FROM DiaryStoreEntity ds
             WHERE ds.user.id = :userId
-            AND ds.diary.id IN :diaryIds
+            AND ds.diaryId IN :diaryIds
     """)
     Set<Long> findStoredDiaryIdsByUser(
             @Param("userId")
@@ -35,7 +35,6 @@ public interface DiaryStoreRepository extends JpaRepository<DiaryStoreEntity, Lo
     @Query(value = """
             SELECT ds
             FROM DiaryStoreEntity ds
-            JOIN FETCH ds.diary
             WHERE ds.user.id = :userId
             ORDER BY ds.id desc
     """,
@@ -44,7 +43,7 @@ public interface DiaryStoreRepository extends JpaRepository<DiaryStoreEntity, Lo
             FROM DiaryStoreEntity ds
             WHERE ds.user.id = :userId
     """)
-    Page<DiaryStoreEntity> findStoredDiaryByUserWithDiary(Long userId, Pageable pageable);
+    Page<DiaryStoreEntity> findStoredDiaryByUser(Long userId, Pageable pageable);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
@@ -56,14 +55,14 @@ public interface DiaryStoreRepository extends JpaRepository<DiaryStoreEntity, Lo
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
             DELETE FROM DiaryStoreEntity ds
-            WHERE ds.diary.id = :diaryId
+            WHERE ds.diaryId = :diaryId
     """)
     void deleteByDiaryId(@Param("diaryId") Long diaryId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
             DELETE FROM DiaryStoreEntity ds
-            WHERE ds.diary.id in :diaryIds
+            WHERE ds.diaryId in :diaryIds
      """)
     void deleteByDiaryIds(@Param("diaryIds") List<Long> diaryIds);
 

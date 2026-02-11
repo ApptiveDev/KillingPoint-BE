@@ -3,7 +3,6 @@ package apptive.team5.diary.service;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryOrderEntity;
 import apptive.team5.diary.domain.DiaryScope;
-import apptive.team5.diary.domain.DiaryStoreEntity;
 import apptive.team5.diary.dto.*;
 import apptive.team5.diary.mapper.DiaryResponseMapper;
 import apptive.team5.subscribe.service.SubscribeLowService;
@@ -99,15 +98,6 @@ public class DiaryService {
         return new RandomDiaryResponseDto(diaryResponseDtoList);
     }
 
-    @Transactional(readOnly = true)
-    public Page<FeedDiaryResponseDto> getStoredDiaries(Long userId, Pageable pageable) {
-
-        Page<DiaryEntity> diaryPage = diaryStoreLowService.findStoredDiaryByUserWithDiary(userId, pageable)
-                .map(DiaryStoreEntity::getDiary);
-
-        return getDiaryResponseDtoPage(userId, diaryPage, FeedDiaryResponseDto::from);
-    }
-
     public DiaryEntity createDiary(Long userId, DiaryCreateRequest diaryRequest) {
         UserEntity foundUser = userLowService.getReferenceById(userId);
 
@@ -137,7 +127,6 @@ public class DiaryService {
 
         foundDiary.validateOwner(foundUser);
 
-        diaryStoreLowService.deleteByDiaryId(diaryId);
         diaryReportLowService.deleteByDiaryId(diaryId);
         diaryOrderLowService.deleteDiaryId(userId, diaryId);
         diaryLikeLowService.deleteByDiaryId(diaryId);
@@ -150,8 +139,6 @@ public class DiaryService {
                 .stream()
                 .map(DiaryEntity::getId)
                 .toList();
-
-        diaryStoreLowService.deleteByDiaryIds(diaryIds);
 
         diaryReportLowService.deleteByDiaryIds(diaryIds);
 

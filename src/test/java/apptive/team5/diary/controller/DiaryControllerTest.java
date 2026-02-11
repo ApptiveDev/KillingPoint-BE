@@ -1,6 +1,7 @@
 package apptive.team5.diary.controller;
 
 import apptive.team5.diary.domain.*;
+import apptive.team5.diary.domain.model.DiaryStoreInfo;
 import apptive.team5.diary.dto.*;
 import apptive.team5.diary.repository.DiaryReportRepository;
 import apptive.team5.diary.repository.DiaryRepository;
@@ -144,7 +145,8 @@ public class DiaryControllerTest {
 
         diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(viewer, publicDiary));
         diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(testUser, publicDiary));
-        diaryStoreRepository.save(new DiaryStoreEntity(viewer, publicDiary));
+        DiaryStoreInfo storeInfo = DiaryStoreInfo.from(publicDiary, viewer);
+        diaryStoreRepository.save(new DiaryStoreEntity(viewer, storeInfo));
 
         diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(testUser, killingPartDiary));
 
@@ -236,7 +238,8 @@ public class DiaryControllerTest {
         DiaryEntity likedFeedDiary = diaryRepository.save(TestUtil.makeDiaryEntity(subscribedToUser));
         // 좋아요 누르기
         DiaryLikeEntity diaryLikeEntity = diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(testUser, likedFeedDiary));
-        DiaryStoreEntity diaryStoreEntity = diaryStoreRepository.save(new DiaryStoreEntity(testUser, likedFeedDiary));
+        DiaryStoreInfo storeInfo = DiaryStoreInfo.from(likedFeedDiary, testUser);
+        DiaryStoreEntity diaryStoreEntity = diaryStoreRepository.save(new DiaryStoreEntity(testUser, storeInfo));
 
 
         // 구독하지 않은 회원
@@ -336,7 +339,8 @@ public class DiaryControllerTest {
     void deleteDiary() throws Exception {
         // given
         DiaryEntity diary = diaryRepository.save(TestUtil.makeDiaryEntity(testUser));
-        diaryStoreRepository.save(new DiaryStoreEntity(testUser, diary));
+        DiaryStoreInfo storeInfo = DiaryStoreInfo.from(diary, testUser);
+        diaryStoreRepository.save(new DiaryStoreEntity(testUser, storeInfo));
         diaryReportRepository.save(new DiaryReportEntity("나쁜말해요", diary.getContent(), diary, testUser));
         DiaryLikeEntity diaryLikeEntity = diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(testUser, diary));
         TestSecurityContextHolderInjection.inject(testUser.getId(), testUser.getRoleType());

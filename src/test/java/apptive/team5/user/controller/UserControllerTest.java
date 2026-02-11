@@ -3,6 +3,7 @@ package apptive.team5.user.controller;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryLikeEntity;
 import apptive.team5.diary.domain.DiaryStoreEntity;
+import apptive.team5.diary.domain.model.DiaryStoreInfo;
 import apptive.team5.diary.repository.DiaryLikeRepository;
 import apptive.team5.diary.repository.DiaryRepository;
 import apptive.team5.diary.repository.DiaryStoreRepository;
@@ -275,15 +276,19 @@ class UserControllerTest {
         UserEntity otherUser = TestUtil.makeDifferentUserEntity(user);
         userRepository.save(user);
         userRepository.save(otherUser);
+
         DiaryEntity diaryEntity = TestUtil.makeDiaryEntity(user);
         DiaryEntity otherDiary = TestUtil.makeDiaryEntity(otherUser);
         diaryRepository.save(diaryEntity);
         diaryRepository.save(otherDiary);
+
         DiaryLikeEntity diaryLikeEntity = new DiaryLikeEntity(user, diaryEntity);
         DiaryLikeEntity otherDiaryLikeEntity = new DiaryLikeEntity(user, otherDiary);
+
         diaryLikeRepository.save(diaryLikeEntity);
         diaryLikeRepository.save(otherDiaryLikeEntity);
-        diaryStoreRepository.save(new DiaryStoreEntity(user, diaryEntity));
+
+        diaryStoreRepository.save(new DiaryStoreEntity(user, DiaryStoreInfo.from(diaryEntity, user)));
         TestSecurityContextHolderInjection.inject(user.getId(), user.getRoleType());
 
 

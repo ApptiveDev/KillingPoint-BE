@@ -3,6 +3,7 @@ package apptive.team5.diary.controller;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryLikeEntity;
 import apptive.team5.diary.domain.DiaryStoreEntity;
+import apptive.team5.diary.domain.model.DiaryStoreInfo;
 import apptive.team5.diary.dto.DiaryLikeResponseDto;
 import apptive.team5.diary.dto.DiaryStoreResponseDto;
 import apptive.team5.diary.dto.FeedDiaryResponseDto;
@@ -86,7 +87,7 @@ class DiaryStoreControllerTest {
         // then
         assertSoftly(softly -> {
             softly.assertThat(responseDto.isStored()).isTrue();
-            softly.assertThat(diaryStoreRepository.existsByUserAndDiary(saver, diary));
+            softly.assertThat(diaryStoreRepository.existsByUserAndDiaryId(saver, diary.getId()));
         });
     }
 
@@ -94,7 +95,8 @@ class DiaryStoreControllerTest {
     @DisplayName("저장 취소")
     void toggleDiaryStoreRemove() throws Exception {
         // given
-        diaryStoreRepository.save(new DiaryStoreEntity(saver, diary));
+        DiaryStoreInfo storeInfo = DiaryStoreInfo.from(diary, saver);
+        diaryStoreRepository.save(new DiaryStoreEntity(saver, storeInfo));
 
         // when
         String responseBody = mockMvc.perform(post("/api/diaries/{diaryId}/stores", diary.getId())
@@ -108,7 +110,7 @@ class DiaryStoreControllerTest {
         // then
         assertSoftly(softly -> {
             softly.assertThat(responseDto.isStored()).isFalse();
-            softly.assertThat(diaryStoreRepository.existsByUserAndDiary(saver, diary));
+            softly.assertThat(diaryStoreRepository.existsByUserAndDiaryId(saver, diary.getId())).isFalse();
         });
     }
 
@@ -129,7 +131,7 @@ class DiaryStoreControllerTest {
     @DisplayName("저장한 Diary 조회")
     void getStoredDiary() throws Exception {
 
-        DiaryStoreEntity diaryStoreEntity = diaryStoreRepository.save(new DiaryStoreEntity(saver, diary));
+        DiaryStoreEntity diaryStoreEntity = diaryStoreRepository.save(new DiaryStoreEntity(saver, DiaryStoreInfo.from(diary, saver)));
         DiaryEntity noneStoreDiary = diaryRepository.save(TestUtil.makeDiaryEntity(userOwner));
 
 

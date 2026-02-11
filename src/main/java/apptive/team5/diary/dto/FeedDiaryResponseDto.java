@@ -2,6 +2,7 @@ package apptive.team5.diary.dto;
 
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryScope;
+import apptive.team5.diary.domain.DiaryStoreEntity;
 import apptive.team5.global.exception.BadRequestException;
 import apptive.team5.global.exception.ExceptionCode;
 import apptive.team5.global.util.S3Util;
