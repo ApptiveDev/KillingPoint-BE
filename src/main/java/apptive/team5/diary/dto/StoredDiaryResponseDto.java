@@ -8,7 +8,7 @@ public record StoredDiaryResponseDto(
         String artist,
         String albumImageUrl,
         String videoUrl,
-
+        String originalAuthorTag,
         String duration,
         String totalDuration,
         String start,
@@ -21,6 +21,7 @@ public record StoredDiaryResponseDto(
                 entity.getArtist(),
                 entity.getAlbumImageUrl(),
                 entity.getVideoUrl(),
+                entity.getOriginalAuthorTag(),
                 entity.getDuration(),
                 entity.getTotalDuration(),
                 entity.getStart(),

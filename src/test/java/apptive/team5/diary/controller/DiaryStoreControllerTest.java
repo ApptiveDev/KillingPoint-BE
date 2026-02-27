@@ -4,10 +4,7 @@ import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryLikeEntity;
 import apptive.team5.diary.domain.DiaryStoreEntity;
 import apptive.team5.diary.domain.model.DiaryStoreInfo;
-import apptive.team5.diary.dto.DiaryLikeResponseDto;
-import apptive.team5.diary.dto.DiaryStoreResponseDto;
-import apptive.team5.diary.dto.FeedDiaryResponseDto;
-import apptive.team5.diary.dto.MyDiaryResponseDto;
+import apptive.team5.diary.dto.*;
 import apptive.team5.diary.repository.DiaryLikeRepository;
 import apptive.team5.diary.repository.DiaryRepository;
 import apptive.team5.diary.repository.DiaryStoreRepository;
@@ -144,17 +141,18 @@ class DiaryStoreControllerTest {
 
         JsonNode jsonNode = objectMapper.readTree(response);
 
-        List<FeedDiaryResponseDto> feedDiaryResponseDtos = objectMapper.convertValue(
+        List<StoredDiaryResponseDto> storedDiaryResponseDtos = objectMapper.convertValue(
                 jsonNode.path("content"),
-                new TypeReference<List<FeedDiaryResponseDto>>() {}
+                new TypeReference<List<StoredDiaryResponseDto>>() {}
         );
 
-        FeedDiaryResponseDto storedDiary = feedDiaryResponseDtos.getFirst();
+        StoredDiaryResponseDto storedDiary = storedDiaryResponseDtos.getFirst();
 
 
         assertSoftly(softly -> {
-            softly.assertThat(feedDiaryResponseDtos.size()).isEqualTo(1);
+            softly.assertThat(storedDiaryResponseDtos.size()).isEqualTo(1);
             softly.assertThat(storedDiary.diaryId()).isEqualTo(diary.getId());
+            softly.assertThat(storedDiary.originalAuthorTag()).isEqualTo(userOwner.getTag());
         });
     }
   
