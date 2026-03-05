@@ -8,6 +8,8 @@ import apptive.team5.global.exception.ExceptionCode;
 import apptive.team5.global.exception.NotFoundEntityException;
 import apptive.team5.user.domain.UserEntity;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,11 @@ public class DiaryLikeLowService {
 
     public DiaryLikeEntity saveDiaryLike(DiaryLikeEntity diaryLike) {
         return diaryLikeRepository.save(diaryLike);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<DiaryLikeEntity> findByDiaryId(Long diaryId, Pageable pageable) {
+        return diaryLikeRepository.findByDiaryIdWithPage(diaryId, pageable);
     }
 
     @Transactional(readOnly = true)

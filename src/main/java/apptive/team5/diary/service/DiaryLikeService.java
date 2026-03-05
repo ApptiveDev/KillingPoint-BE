@@ -6,8 +6,11 @@ import apptive.team5.diary.dto.DiaryLikeResponseDto;
 import apptive.team5.global.exception.DuplicateException;
 import apptive.team5.global.exception.ExceptionCode;
 import apptive.team5.user.domain.UserEntity;
+import apptive.team5.user.dto.UserResponse;
 import apptive.team5.user.service.UserLowService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,5 +37,16 @@ public class DiaryLikeService {
             diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(user, diary));
             return new DiaryLikeResponseDto(true);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public Page<UserResponse> getDiaryLikeUsers(Long diaryId, Pageable pageable) {
+
+        DiaryEntity findDiary = diaryLowService.findDiaryById(diaryId);
+
+        Page<UserResponse> userPages = diaryLikeLowService.findByDiaryId(diaryId, pageable)
+                .map(diaryLikeEntity -> new UserResponse(diaryLikeEntity.getUser()));
+
+        return userPages;
     }
 }

@@ -4,6 +4,8 @@ import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryLikeEntity;
 import apptive.team5.diary.dto.DiaryLikeCountDto;
 import apptive.team5.user.domain.UserEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -16,6 +18,9 @@ import java.util.Set;
 public interface DiaryLikeRepository extends JpaRepository<DiaryLikeEntity, Long> {
 
     Optional<DiaryLikeEntity> findByUserAndDiary(UserEntity user, DiaryEntity diary);
+
+    @Query("SELECT dl FROM DiaryLikeEntity dl join fetch dl.user where dl.diary.id = :diaryId")
+    Page<DiaryLikeEntity> findByDiaryIdWithPage(Long diaryId, Pageable pageable);
 
     boolean existsByUserAndDiary(UserEntity user, DiaryEntity diary);
 
@@ -60,4 +65,6 @@ public interface DiaryLikeRepository extends JpaRepository<DiaryLikeEntity, Long
             WHERE dl.diary.id in :diaryIds
      """)
     void deleteByDiaryIds(@Param("diaryIds") List<Long> diaryIds);
+
+    Long diary(DiaryEntity diary);
 }
