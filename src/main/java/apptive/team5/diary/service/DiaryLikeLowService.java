@@ -4,6 +4,7 @@ import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryLikeEntity;
 import apptive.team5.diary.dto.DiaryLikeCountDto;
 import apptive.team5.diary.repository.DiaryLikeRepository;
+import apptive.team5.diary.repository.QDiaryLikeRepository;
 import apptive.team5.global.exception.ExceptionCode;
 import apptive.team5.global.exception.NotFoundEntityException;
 import apptive.team5.user.domain.UserEntity;
@@ -23,14 +24,15 @@ import java.util.stream.Collectors;
 @Transactional
 public class DiaryLikeLowService {
     private final DiaryLikeRepository diaryLikeRepository;
+    private final QDiaryLikeRepository qDiaryLikeRepository;
 
     public DiaryLikeEntity saveDiaryLike(DiaryLikeEntity diaryLike) {
         return diaryLikeRepository.save(diaryLike);
     }
 
     @Transactional(readOnly = true)
-    public Page<DiaryLikeEntity> findByDiaryId(Long diaryId, Pageable pageable) {
-        return diaryLikeRepository.findByDiaryIdWithPage(diaryId, pageable);
+    public Page<DiaryLikeEntity> findByDiaryIdLikeSearchCond(Long diaryId, String searchCond, Pageable pageable) {
+        return qDiaryLikeRepository.findByDiaryIdLikeSearchCond(diaryId, searchCond, pageable);
     }
 
     @Transactional(readOnly = true)

@@ -34,14 +34,13 @@ public class DiaryLikeController {
     @GetMapping
     public ResponseEntity<Page<UserResponse>> getDiaryLikeUsers(
             @PathVariable Long diaryId,
-            @RequestParam(defaultValue = "0")
-            int page,
-            @RequestParam(defaultValue = "100")
-            int size
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int size,
+            @RequestParam(required = false) String searchCond
     ) {
 
-        Page<UserResponse> response = diaryLikeService.getDiaryLikeUsers(diaryId,
-                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")));
+        Page<UserResponse> response = diaryLikeService.getDiaryLikeUsers(diaryId, searchCond,
+                PageRequest.of(page, size));
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
 

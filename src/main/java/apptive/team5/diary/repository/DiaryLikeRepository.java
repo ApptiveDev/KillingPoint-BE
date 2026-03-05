@@ -19,9 +19,6 @@ public interface DiaryLikeRepository extends JpaRepository<DiaryLikeEntity, Long
 
     Optional<DiaryLikeEntity> findByUserAndDiary(UserEntity user, DiaryEntity diary);
 
-    @Query("SELECT dl FROM DiaryLikeEntity dl join fetch dl.user where dl.diary.id = :diaryId")
-    Page<DiaryLikeEntity> findByDiaryIdWithPage(Long diaryId, Pageable pageable);
-
     boolean existsByUserAndDiary(UserEntity user, DiaryEntity diary);
 
     @Query("""

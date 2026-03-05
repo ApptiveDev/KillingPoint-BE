@@ -40,11 +40,11 @@ public class DiaryLikeService {
     }
 
     @Transactional(readOnly = true)
-    public Page<UserResponse> getDiaryLikeUsers(Long diaryId, Pageable pageable) {
+    public Page<UserResponse> getDiaryLikeUsers(Long diaryId, String searchCond, Pageable pageable) {
 
         DiaryEntity findDiary = diaryLowService.findDiaryById(diaryId);
 
-        Page<UserResponse> userPages = diaryLikeLowService.findByDiaryId(diaryId, pageable)
+        Page<UserResponse> userPages = diaryLikeLowService.findByDiaryIdLikeSearchCond(diaryId, searchCond, pageable)
                 .map(diaryLikeEntity -> new UserResponse(diaryLikeEntity.getUser()));
 
         return userPages;

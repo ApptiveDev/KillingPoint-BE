@@ -149,4 +149,32 @@ public class DiaryLikeControllerTest {
             softly.assertThat(content.getFirst().userId()).isEqualTo(secondLikeUser.getId());
         });
     }
+
+    @Test
+    @DisplayName("좋아요한 사람 조회 with 유저 검색")
+    void getDiaryLikeUsersWithSearchCond() throws Exception {
+        // given
+        diaryLikeRepository.save(new DiaryLikeEntity(userLiker, diary));
+        UserEntity secondLikeUser = userRepository.save(new UserEntity("1234", "1234", "1234", "1234", UserRoleType.USER, SocialType.KAKAO));
+        diaryLikeRepository.save(new DiaryLikeEntity(secondLikeUser, diary));
+
+        // when
+        String response = mockMvc.perform(get("/api/diaries/{diaryId}/like?searchCond={username}", diary.getId(), userLiker.getUsername())
+                        .with(securityContext(SecurityContextHolder.getContext()))
+                )
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        JsonNode jsonNode = objectMapper.readTree(response);
+        List<UserResponse> content = objectMapper.convertValue(
+                jsonNode.path("content"),
+                new TypeReference<List<UserResponse>>() {}
+        );
+
+        // then
+        assertSoftly(softly -> {
+            softly.assertThat(content.size()).isEqualTo(1);
+            softly.assertThat(content.getFirst().userId()).isEqualTo(userLiker.getId());
+        });
+    }
 }
