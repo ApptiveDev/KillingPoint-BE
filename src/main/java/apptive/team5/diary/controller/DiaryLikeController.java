@@ -6,6 +6,7 @@ import apptive.team5.user.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -39,7 +40,8 @@ public class DiaryLikeController {
             int size
     ) {
 
-        Page<UserResponse> response = diaryLikeService.getDiaryLikeUsers(diaryId, PageRequest.of(page, size));
+        Page<UserResponse> response = diaryLikeService.getDiaryLikeUsers(diaryId,
+                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")));
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
 

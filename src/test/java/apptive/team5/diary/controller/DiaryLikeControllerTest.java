@@ -6,7 +6,9 @@ import apptive.team5.diary.dto.DiaryLikeResponseDto;
 import apptive.team5.diary.dto.RandomDiaryResponseDto;
 import apptive.team5.diary.repository.DiaryLikeRepository;
 import apptive.team5.diary.repository.DiaryRepository;
+import apptive.team5.user.domain.SocialType;
 import apptive.team5.user.domain.UserEntity;
+import apptive.team5.user.domain.UserRoleType;
 import apptive.team5.user.dto.UserResponse;
 import apptive.team5.user.repository.UserRepository;
 import apptive.team5.util.TestSecurityContextHolderInjection;
@@ -124,6 +126,8 @@ public class DiaryLikeControllerTest {
     void getDiaryLikeUsers() throws Exception {
         // given
         diaryLikeRepository.save(new DiaryLikeEntity(userLiker, diary));
+        UserEntity secondLikeUser = userRepository.save(new UserEntity("1234", "1234", "1234", "1234", UserRoleType.USER, SocialType.KAKAO));
+        diaryLikeRepository.save(new DiaryLikeEntity(secondLikeUser, diary));
 
         // when
         String response = mockMvc.perform(get("/api/diaries/{diaryId}/like", diary.getId())
@@ -140,8 +144,9 @@ public class DiaryLikeControllerTest {
 
         // then
         assertSoftly(softly -> {
-            softly.assertThat(content.size()).isEqualTo(1);
-            softly.assertThat(content.getFirst().userId()).isEqualTo(userLiker.getId());
+            softly.assertThat(content.size()).isEqualTo(2);
+            softly.assertThat(content.getLast().userId()).isEqualTo(userLiker.getId());
+            softly.assertThat(content.getFirst().userId()).isEqualTo(secondLikeUser.getId());
         });
     }
 }
