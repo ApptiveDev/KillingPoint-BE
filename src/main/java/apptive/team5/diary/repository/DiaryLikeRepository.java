@@ -62,6 +62,4 @@ public interface DiaryLikeRepository extends JpaRepository<DiaryLikeEntity, Long
             WHERE dl.diary.id in :diaryIds
      """)
     void deleteByDiaryIds(@Param("diaryIds") List<Long> diaryIds);
-
-    Long diary(DiaryEntity diary);
 }
