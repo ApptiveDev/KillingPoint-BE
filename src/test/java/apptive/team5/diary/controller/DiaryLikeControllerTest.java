@@ -3,12 +3,17 @@ package apptive.team5.diary.controller;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryLikeEntity;
 import apptive.team5.diary.dto.DiaryLikeResponseDto;
+import apptive.team5.diary.dto.RandomDiaryResponseDto;
 import apptive.team5.diary.repository.DiaryLikeRepository;
 import apptive.team5.diary.repository.DiaryRepository;
+import apptive.team5.user.domain.SocialType;
 import apptive.team5.user.domain.UserEntity;
+import apptive.team5.user.domain.UserRoleType;
+import apptive.team5.user.dto.UserResponse;
 import apptive.team5.user.repository.UserRepository;
 import apptive.team5.util.TestSecurityContextHolderInjection;
 import apptive.team5.util.TestUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,11 +26,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.securityContext;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -113,5 +119,62 @@ public class DiaryLikeControllerTest {
 
         JsonNode jsonNode = objectMapper.readTree(responseBody);
         assertThat(jsonNode.path("message").asText()).isEqualTo("그런 다이어리는 없습니다.");
+    }
+
+    @Test
+    @DisplayName("좋아요한 사람 조회")
+    void getDiaryLikeUsers() throws Exception {
+        // given
+        diaryLikeRepository.save(new DiaryLikeEntity(userLiker, diary));
+        UserEntity secondLikeUser = userRepository.save(new UserEntity("1234", "1234", "1234", "1234", UserRoleType.USER, SocialType.KAKAO));
+        diaryLikeRepository.save(new DiaryLikeEntity(secondLikeUser, diary));
+
+        // when
+        String response = mockMvc.perform(get("/api/diaries/{diaryId}/like", diary.getId())
+                        .with(securityContext(SecurityContextHolder.getContext()))
+                )
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        JsonNode jsonNode = objectMapper.readTree(response);
+        List<UserResponse> content = objectMapper.convertValue(
+                jsonNode.path("content"),
+                new TypeReference<List<UserResponse>>() {}
+        );
+
+        // then
+        assertSoftly(softly -> {
+            softly.assertThat(content.size()).isEqualTo(2);
+            softly.assertThat(content.getLast().userId()).isEqualTo(userLiker.getId());
+            softly.assertThat(content.getFirst().userId()).isEqualTo(secondLikeUser.getId());
+        });
+    }
+
+    @Test
+    @DisplayName("좋아요한 사람 조회 with 유저 검색")
+    void getDiaryLikeUsersWithSearchCond() throws Exception {
+        // given
+        diaryLikeRepository.save(new DiaryLikeEntity(userLiker, diary));
+        UserEntity secondLikeUser = userRepository.save(new UserEntity("1234", "1234", "1234", "1234", UserRoleType.USER, SocialType.KAKAO));
+        diaryLikeRepository.save(new DiaryLikeEntity(secondLikeUser, diary));
+
+        // when
+        String response = mockMvc.perform(get("/api/diaries/{diaryId}/like?searchCond={username}", diary.getId(), userLiker.getUsername())
+                        .with(securityContext(SecurityContextHolder.getContext()))
+                )
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        JsonNode jsonNode = objectMapper.readTree(response);
+        List<UserResponse> content = objectMapper.convertValue(
+                jsonNode.path("content"),
+                new TypeReference<List<UserResponse>>() {}
+        );
+
+        // then
+        assertSoftly(softly -> {
+            softly.assertThat(content.size()).isEqualTo(1);
+            softly.assertThat(content.getFirst().userId()).isEqualTo(userLiker.getId());
+        });
     }
 }
