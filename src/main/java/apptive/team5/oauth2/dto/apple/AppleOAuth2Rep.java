@@ -5,7 +5,8 @@ import apptive.team5.user.domain.SocialType;
 
 public record AppleOAuth2Rep (
         String appleId,
-        String email
+        String email,
+        String authorizationCode
 ) implements OAuth2Response {
     @Override
     public SocialType getProvider() {
