@@ -1,6 +1,6 @@
 package apptive.team5.global.exception;
 
-import apptive.team5.oauth2.dto.KakaoApiExceptionResponse;
+import apptive.team5.oauth2.dto.kakao.KakaoApiExceptionResponse;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 

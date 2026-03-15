@@ -2,7 +2,7 @@ package apptive.team5.oauth2.service;
 
 import apptive.team5.jwt.component.JWTUtil;
 import apptive.team5.jwt.dto.TokenResponse;
-import apptive.team5.oauth2.dto.KakaoOAuth2Rep;
+import apptive.team5.oauth2.dto.kakao.KakaoOAuth2Rep;
 import apptive.team5.oauth2.dto.OAuth2Response;
 import apptive.team5.oauth2.handler.KakaoApiResponseHandler;
 import apptive.team5.oauth2.properties.KakaoProperties;
@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class KakaoService {

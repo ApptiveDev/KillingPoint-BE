@@ -2,8 +2,8 @@ package apptive.team5.oauth2.controller;
 
 import apptive.team5.jwt.dto.TokenResponse;
 import apptive.team5.oauth2.dto.apple.AppleLoginRequest;
-import apptive.team5.oauth2.dto.GoogleLoginRequest;
-import apptive.team5.oauth2.dto.KakaoLoginRequest;
+import apptive.team5.oauth2.dto.google.GoogleLoginRequest;
+import apptive.team5.oauth2.dto.kakao.KakaoLoginRequest;
 import apptive.team5.oauth2.service.AppleService;
 import apptive.team5.oauth2.service.GoogleService;
 import apptive.team5.oauth2.service.KakaoService;
