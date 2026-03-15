@@ -116,7 +116,7 @@ public class JWTUtil {
         return new String(Base64.getUrlDecoder().decode(token), StandardCharsets.UTF_8);
     }
 
-    public Claims getTokenClaims(String token, PublicKey publicKey) {
+    public Claims getAppleIdentityTokenClaims(String token, PublicKey publicKey) {
         try {
             return Jwts.parser()
                     .setSigningKey(publicKey)

@@ -70,7 +70,7 @@ public class AppleApiConnector {
         ApplePublicKeyResponse appleAuthPublicKey = getAppleAuthPublicKey();
         PublicKey publicKey = appleKeyGenerator.generatePublicKey(headers, appleAuthPublicKey);
 
-        Claims tokenClaims = jwtUtil.getTokenClaims(identityToken, publicKey);
+        Claims tokenClaims = jwtUtil.getAppleIdentityTokenClaims(identityToken, publicKey);
 
         if (!issuer.equals(tokenClaims.getIssuer())) {
             throw new AuthenticationException(ExceptionCode.INVALID_TOKEN.getDescription());
