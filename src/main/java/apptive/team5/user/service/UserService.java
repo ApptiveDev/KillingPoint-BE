@@ -13,6 +13,7 @@ import apptive.team5.jwt.service.JwtService;
 import apptive.team5.oauth2.dto.OAuth2Response;
 import apptive.team5.subscribe.service.SubscribeLowService;
 import apptive.team5.survey.service.SurveyLowService;
+import apptive.team5.user.domain.SocialType;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.domain.UserRoleType;
 import apptive.team5.user.dto.UserResponse;

@@ -1,8 +1,10 @@
 package apptive.team5.oauth2.controller;
 
 import apptive.team5.jwt.dto.TokenResponse;
+import apptive.team5.oauth2.dto.apple.AppleLoginRequest;
 import apptive.team5.oauth2.dto.GoogleLoginRequest;
 import apptive.team5.oauth2.dto.KakaoLoginRequest;
+import apptive.team5.oauth2.service.AppleService;
 import apptive.team5.oauth2.service.GoogleService;
 import apptive.team5.oauth2.service.KakaoService;
 import apptive.team5.oauth2.service.TestLoginService;
@@ -17,6 +19,7 @@ public class OAuth2Controller {
 
     private final KakaoService kakaoService;
     private final GoogleService googleService;
+    private final AppleService appleService;
     private final TestLoginService testLoginService;
 
     @PostMapping("/kakao")
@@ -32,7 +35,16 @@ public class OAuth2Controller {
 
         TokenResponse tokenResponse = googleService.googleLogin(googleLoginRequest.idToken());
 
-        return  ResponseEntity.ok(tokenResponse);
+        return ResponseEntity.ok(tokenResponse);
+    }
+
+    @PostMapping("/apple")
+    public ResponseEntity<TokenResponse> appleLogin(@RequestBody AppleLoginRequest appleLoginRequest) {
+
+        TokenResponse tokenResponse = appleService.appleLogin(appleLoginRequest);
+
+        return ResponseEntity.ok(tokenResponse);
+
     }
 
 //    @GetMapping("/test")
