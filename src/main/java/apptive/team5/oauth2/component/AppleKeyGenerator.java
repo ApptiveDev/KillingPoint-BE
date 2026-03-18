@@ -68,15 +68,14 @@ public class AppleKeyGenerator {
         Date expirationDate = Date.from(LocalDateTime.now().plusDays(30).atZone(ZoneId.systemDefault()).toInstant());
 
         return Jwts.builder()
-                .setHeaderParam("kid", kid)
-                .setHeaderParam("alg", "ES256")
-                .setIssuer(teamId)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(expirationDate)
-                .setAudience("https://appleid.apple.com")
-                .setSubject(clientId)
-                .signWith(SignatureAlgorithm.ES256, getPrivateKey())
-                .compact();
+                .header().keyId(kid).add("alg", "ES256").and()
+                .issuer(teamId)
+                .issuedAt(new Date())
+                .expiration(expirationDate)
+                .audience().add("https://appleid.apple.com").and()
+                .subject(clientId)
+                .signWith(getPrivateKey(), Jwts.SIG.ES256)
+                .toString();
     }
 
     private PrivateKey getPrivateKey() {
