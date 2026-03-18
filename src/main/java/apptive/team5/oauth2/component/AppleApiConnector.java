@@ -15,6 +15,7 @@ import org.springframework.web.client.RestClient;
 
 import java.security.PublicKey;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 public class AppleApiConnector {
@@ -76,7 +77,9 @@ public class AppleApiConnector {
             throw new AuthenticationException(ExceptionCode.INVALID_TOKEN.getDescription());
         }
 
-        if (!tokenClaims.getAudience().contains(clientId)) {
+        Set<String> audience = tokenClaims.getAudience();
+
+        if (audience == null || !audience.contains(clientId)) {
             throw new AuthenticationException(ExceptionCode.INVALID_TOKEN.getDescription());
         }
 
