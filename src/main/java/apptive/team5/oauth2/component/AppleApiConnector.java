@@ -76,7 +76,7 @@ public class AppleApiConnector {
             throw new AuthenticationException(ExceptionCode.INVALID_TOKEN.getDescription());
         }
 
-        if (!clientId.equals(tokenClaims.getAudience())) {
+        if (!tokenClaims.getAudience().contains(clientId)) {
             throw new AuthenticationException(ExceptionCode.INVALID_TOKEN.getDescription());
         }
 
