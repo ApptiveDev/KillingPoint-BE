@@ -6,6 +6,7 @@ import apptive.team5.jwt.component.JWTUtil;
 import apptive.team5.oauth2.dto.apple.ApplePublicKeyResponse;
 import apptive.team5.oauth2.dto.apple.AppleTokenResponse;
 import io.jsonwebtoken.Claims;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,7 @@ import java.security.PublicKey;
 import java.util.Map;
 import java.util.Set;
 
+@Slf4j
 @Component
 public class AppleApiConnector {
 
@@ -74,12 +76,14 @@ public class AppleApiConnector {
         Claims tokenClaims = jwtUtil.getAppleIdentityTokenClaims(identityToken, publicKey);
 
         if (!issuer.equals(tokenClaims.getIssuer())) {
+            log.info("Issuer mismatch");
             throw new AuthenticationException(ExceptionCode.INVALID_TOKEN.getDescription());
         }
 
         Set<String> audience = tokenClaims.getAudience();
 
         if (audience == null || !audience.contains(clientId)) {
+            log.info("audience mismatch");
             throw new AuthenticationException(ExceptionCode.INVALID_TOKEN.getDescription());
         }
 

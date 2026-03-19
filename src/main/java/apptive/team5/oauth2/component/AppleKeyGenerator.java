@@ -6,6 +6,7 @@ import apptive.team5.oauth2.dto.apple.ApplePublicKey;
 import apptive.team5.oauth2.dto.apple.ApplePublicKeyResponse;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
@@ -29,6 +30,7 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
 
+@Slf4j
 @Component
 public class AppleKeyGenerator {
 
@@ -49,6 +51,7 @@ public class AppleKeyGenerator {
                     tokenHeaders.get("alg"));
             return getPublicKey(publicKey);
         } catch (Exception ex) {
+            log.info("apple public key generation failed");
             throw new AuthenticationException(ExceptionCode.INVALID_TOKEN.getDescription());
         }
 
@@ -86,6 +89,7 @@ public class AppleKeyGenerator {
             PrivateKeyInfo object = (PrivateKeyInfo)pemParser.readObject();
             return converter.getPrivateKey(object);
         } catch (IOException e) {
+            log.info("getPrivateKey IOException");
             throw new AuthenticationException(ExceptionCode.INVALID_TOKEN.getDescription());
         }
     }

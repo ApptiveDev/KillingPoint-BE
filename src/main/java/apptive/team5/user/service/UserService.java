@@ -187,7 +187,7 @@ public class UserService {
 
         AppleTokenResponse appleTokenResponse = appleApiConnector.getAppleRefreshToken(appleOAuth2Rep.authorizationCode());
 
-        String refreshToken = appleTokenResponse.refresh_token();
+        String refreshToken = appleTokenResponse.refreshToken();
 
 
         appleRefreshTokenLowService.save(new AppleRefreshToken(userEntity, refreshToken));
