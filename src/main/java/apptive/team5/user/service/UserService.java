@@ -10,9 +10,16 @@ import apptive.team5.jwt.TokenType;
 import apptive.team5.jwt.component.JWTUtil;
 import apptive.team5.jwt.dto.TokenResponse;
 import apptive.team5.jwt.service.JwtService;
+import apptive.team5.oauth2.component.AppleApiConnector;
+import apptive.team5.oauth2.component.AppleKeyGenerator;
+import apptive.team5.oauth2.domain.AppleRefreshToken;
 import apptive.team5.oauth2.dto.OAuth2Response;
+import apptive.team5.oauth2.dto.apple.AppleOAuth2Rep;
+import apptive.team5.oauth2.dto.apple.AppleTokenResponse;
+import apptive.team5.oauth2.service.AppleRefreshTokenLowService;
 import apptive.team5.subscribe.service.SubscribeLowService;
 import apptive.team5.survey.service.SurveyLowService;
+import apptive.team5.user.domain.SocialType;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.domain.UserRoleType;
 import apptive.team5.user.dto.UserResponse;
@@ -48,6 +55,8 @@ public class UserService {
     private final SurveyLowService surveyLowService;
     private final DiaryReportLowService diaryReportLowService;
     private final DiaryStoreLowService diaryStoreLowService;
+    private final AppleApiConnector appleApiConnector;
+    private final AppleRefreshTokenLowService appleRefreshTokenLowService;
 
     public TokenResponse socialLogin(OAuth2Response oAuth2Response) {
         String identifier = oAuth2Response.getProvider() + "-" +oAuth2Response.getProviderId();
@@ -62,6 +71,7 @@ public class UserService {
             String tag = TagGenerator.generateTag();
             user = userLowService.save(new UserEntity(identifier, oAuth2Response.getEmail(), oAuth2Response.getUsername(), tag, UserRoleType.USER, oAuth2Response.getProvider()));
             isNew = true;
+            if (oAuth2Response.getProvider().equals(SocialType.APPLE)) joinAppleUser(user, oAuth2Response);
         }
 
         String accessToken = jwtUtil.createJWT(user.getId(), "ROLE_" + user.getRoleType().name(), TokenType.ACCESS_TOKEN);
@@ -83,6 +93,12 @@ public class UserService {
     public void deleteUser(Long userId) {
 
         UserEntity findUser = userLowService.findById(userId);
+
+        if (findUser.getSocialType().equals(SocialType.APPLE)) {
+            AppleRefreshToken appleRefreshToken = appleRefreshTokenLowService.findByUserId(userId);
+            appleApiConnector.revokeToken(appleRefreshToken.getToken());
+            appleRefreshTokenLowService.deleteByUserId(userId);
+        }
 
         surveyLowService.deleteByUserId(userId);
         subscribeLowService.deleteByUserId(userId);
@@ -163,6 +179,19 @@ public class UserService {
         int pickCount = subscribeLowService.countSubscribedTobySubscriberId(userId);
 
         return new UserStaticsResponse(fanCount, pickCount, killingPartCount);
+    }
+
+    private void joinAppleUser(UserEntity userEntity, OAuth2Response oAuth2Response) {
+
+        AppleOAuth2Rep appleOAuth2Rep = (AppleOAuth2Rep) oAuth2Response;
+
+        AppleTokenResponse appleTokenResponse = appleApiConnector.getAppleRefreshToken(appleOAuth2Rep.authorizationCode());
+
+        String refreshToken = appleTokenResponse.refreshToken();
+
+
+        appleRefreshTokenLowService.save(new AppleRefreshToken(userEntity, refreshToken));
+
     }
 
 

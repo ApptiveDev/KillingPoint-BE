@@ -1,5 +1,6 @@
-package apptive.team5.oauth2.dto;
+package apptive.team5.oauth2.dto.kakao;
 
+import apptive.team5.oauth2.dto.OAuth2Response;
 import apptive.team5.user.domain.SocialType;
 
 import java.util.Map;

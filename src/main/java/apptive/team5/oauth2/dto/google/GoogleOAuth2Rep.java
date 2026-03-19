@@ -1,5 +1,6 @@
-package apptive.team5.oauth2.dto;
+package apptive.team5.oauth2.dto.google;
 
+import apptive.team5.oauth2.dto.OAuth2Response;
 import apptive.team5.user.domain.SocialType;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 

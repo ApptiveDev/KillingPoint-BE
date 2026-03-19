@@ -3,7 +3,7 @@ package apptive.team5.oauth2.handler;
 import apptive.team5.global.exception.ExceptionCode;
 import apptive.team5.global.exception.ExternalApiConnectException;
 import apptive.team5.global.exception.KakaoApiConnectException;
-import apptive.team5.oauth2.dto.KakaoApiExceptionResponse;
+import apptive.team5.oauth2.dto.kakao.KakaoApiExceptionResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
