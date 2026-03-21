@@ -69,6 +69,8 @@ public class AppleKeyGenerator {
 
     public String getClientSecret() {
         Date expirationDate = Date.from(LocalDateTime.now().plusDays(30).atZone(ZoneId.systemDefault()).toInstant());
+        log.info("Apple client secret generation - keyId: {}, teamId: {}, clientId: {}, expiresAt: {}, pemFormat: {}",
+                mask(kid), mask(teamId), mask(clientId), expirationDate, hasPemMarkers());
 
         return Jwts.builder()
                 .header().keyId(kid).add("alg", "ES256").and()
@@ -87,11 +89,29 @@ public class AppleKeyGenerator {
             PEMParser pemParser = new PEMParser(pemReader);
             JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
             PrivateKeyInfo object = (PrivateKeyInfo)pemParser.readObject();
-            return converter.getPrivateKey(object);
+            PrivateKey parsedKey = converter.getPrivateKey(object);
+            log.info("Apple private key parsed successfully - algorithm: {}", parsedKey.getAlgorithm());
+            return parsedKey;
         } catch (IOException e) {
             log.info("getPrivateKey IOException");
             throw new AuthenticationException(ExceptionCode.INVALID_TOKEN.getDescription());
         }
+    }
+
+    private boolean hasPemMarkers() {
+        return privateKey != null
+                && privateKey.contains("BEGIN PRIVATE KEY")
+                && privateKey.contains("END PRIVATE KEY");
+    }
+
+    private String mask(String value) {
+        if (value == null || value.isBlank()) {
+            return "<empty>";
+        }
+        if (value.length() <= 4) {
+            return "****";
+        }
+        return value.substring(0, 2) + "****" + value.substring(value.length() - 2);
     }
 
 }
