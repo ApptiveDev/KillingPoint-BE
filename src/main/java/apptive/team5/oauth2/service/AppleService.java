@@ -24,7 +24,7 @@ public class AppleService {
 
         String appleId = claims.getSubject();
 
-        return userService.socialLogin(new AppleOAuth2Rep(appleId, appleLoginRequest.email(), appleLoginRequest.authorizationCode()));
+        return userService.socialLogin(new AppleOAuth2Rep(appleId, appleLoginRequest.email(),appleLoginRequest.name(), appleLoginRequest.authorizationCode()));
     }
 
 
