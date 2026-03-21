@@ -8,6 +8,7 @@ import apptive.team5.oauth2.service.AppleService;
 import apptive.team5.oauth2.service.GoogleService;
 import apptive.team5.oauth2.service.KakaoService;
 import apptive.team5.oauth2.service.TestLoginService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class OAuth2Controller {
     private final TestLoginService testLoginService;
 
     @PostMapping("/kakao")
-    public ResponseEntity<TokenResponse> kakaoLogin(@RequestBody KakaoLoginRequest kakaoLoginRequest) {
+    public ResponseEntity<TokenResponse> kakaoLogin(@Valid @RequestBody KakaoLoginRequest kakaoLoginRequest) {
 
         TokenResponse tokenResponse = kakaoService.kakaoLogin(kakaoLoginRequest.accessToken());
 
@@ -39,7 +40,7 @@ public class OAuth2Controller {
     }
 
     @PostMapping("/apple")
-    public ResponseEntity<TokenResponse> appleLogin(@RequestBody AppleLoginRequest appleLoginRequest) {
+    public ResponseEntity<TokenResponse> appleLogin(@Valid @RequestBody AppleLoginRequest appleLoginRequest) {
 
         TokenResponse tokenResponse = appleService.appleLogin(appleLoginRequest);
 
