@@ -81,6 +81,7 @@ public class AppleApiConnector {
         }
 
         Set<String> audience = tokenClaims.getAudience();
+        log.info("Apple identity token audience: {}", audience);
 
         if (audience == null || !audience.contains(clientId)) {
             log.info("audience mismatch");
