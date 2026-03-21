@@ -80,7 +80,7 @@ public class AppleKeyGenerator {
                 .audience().add("https://appleid.apple.com").and()
                 .subject(clientId)
                 .signWith(getPrivateKey(), Jwts.SIG.ES256)
-                .toString();
+                .compact();
     }
 
     private PrivateKey getPrivateKey() {
