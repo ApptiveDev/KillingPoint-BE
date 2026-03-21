@@ -7,9 +7,7 @@ public record AppleLoginRequest(
         String identityToken,
         @NotBlank
         String authorizationCode,
-        @NotBlank
         String email,
-        @NotBlank
         String name
 ) {
 }
