@@ -23,9 +23,8 @@ public class AppleService {
         Claims claims = appleApiConnector.verifyIdentityToken(appleLoginRequest.identityToken());
 
         String appleId = claims.getSubject();
-        String email = claims.get("email", String.class);
 
-        return userService.socialLogin(new AppleOAuth2Rep(appleId, email, appleLoginRequest.authorizationCode()));
+        return userService.socialLogin(new AppleOAuth2Rep(appleId, appleLoginRequest.email(), appleLoginRequest.authorizationCode()));
     }
 
 
