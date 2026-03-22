@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.security.PublicKey;
 import java.util.Map;
@@ -60,12 +62,28 @@ public class AppleApiConnector {
     public void revokeToken(String refreshToken) {
         MultiValueMap<String, String> body = getRevokeTokenBody(refreshToken);
 
-        restClient.post()
-                .uri(appleRevokeUrl)
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .body(body)
-                .retrieve()
-                .toBodilessEntity();
+        try {
+            log.info("Apple revoke request started. token={}", maskToken(refreshToken));
+
+            restClient.post()
+                    .uri(appleRevokeUrl)
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .body(body)
+                    .retrieve()
+                    .toBodilessEntity();
+
+            log.info("Apple revoke request succeeded. token={}", maskToken(refreshToken));
+        } catch (RestClientResponseException e) {
+            log.error("Apple revoke request failed. status={}, responseBody={}, token={}",
+                    e.getStatusCode().value(),
+                    e.getResponseBodyAsString(),
+                    maskToken(refreshToken),
+                    e);
+            throw e;
+        } catch (RestClientException e) {
+            log.error("Apple revoke request failed without response. token={}", maskToken(refreshToken), e);
+            throw e;
+        }
     }
 
     public Claims verifyIdentityToken(String identityToken) {
@@ -119,6 +137,16 @@ public class AppleApiConnector {
         body.add("client_secret", clientSecret);
         body.add("grant_type", "authorization_code");
         return body;
+    }
+
+    private String maskToken(String token) {
+        if (token == null || token.isBlank()) {
+            return "EMPTY";
+        }
+        if (token.length() <= 8) {
+            return "****";
+        }
+        return token.substring(0, 4) + "..." + token.substring(token.length() - 4);
     }
 
 

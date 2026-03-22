@@ -28,6 +28,7 @@ import apptive.team5.user.dto.UserStaticsResponse;
 import apptive.team5.user.dto.UserTagUpdateRequest;
 import apptive.team5.user.util.TagGenerator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
 
 @Transactional
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class UserService {
 
@@ -93,9 +95,11 @@ public class UserService {
     public void deleteUser(Long userId) {
 
         UserEntity findUser = userLowService.findById(userId);
+        log.info("User deletion started. userId={}, socialType={}", userId, findUser.getSocialType());
 
         if (findUser.getSocialType().equals(SocialType.APPLE)) {
             AppleRefreshToken appleRefreshToken = appleRefreshTokenLowService.findByUserId(userId);
+            log.info("Apple user deletion detected. userId={}, appleRefreshTokenId={}", userId, appleRefreshToken.getId());
             appleApiConnector.revokeToken(appleRefreshToken.getToken());
             appleRefreshTokenLowService.deleteByUserId(userId);
         }
@@ -112,6 +116,7 @@ public class UserService {
         userLowService.deleteByUserId(userId);
 
         s3Service.deleteS3File(findUser.getProfileImage());
+        log.info("User deletion completed. userId={}", userId);
     }
 
     public UserResponse changeTag(UserTagUpdateRequest userTagUpdateRequest, Long userId) {
