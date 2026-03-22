@@ -63,16 +63,12 @@ public class AppleApiConnector {
         MultiValueMap<String, String> body = getRevokeTokenBody(refreshToken);
 
         try {
-            log.info("Apple revoke request started. token={}", maskToken(refreshToken));
-
             restClient.post()
                     .uri(appleRevokeUrl)
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                     .body(body)
                     .retrieve()
                     .toBodilessEntity();
-
-            log.info("Apple revoke request succeeded. token={}", maskToken(refreshToken));
         } catch (RestClientResponseException e) {
             log.error("Apple revoke request failed. status={}, responseBody={}, token={}",
                     e.getStatusCode().value(),
