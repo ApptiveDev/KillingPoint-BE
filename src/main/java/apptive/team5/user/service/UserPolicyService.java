@@ -2,11 +2,18 @@ package apptive.team5.user.service;
 
 import apptive.team5.global.exception.BadRequestException;
 import apptive.team5.global.exception.ExceptionCode;
-import apptive.team5.user.domain.*;
+import apptive.team5.user.domain.ClientType;
+import apptive.team5.user.domain.ClientVersion;
+import apptive.team5.user.domain.PolicyRevision;
+import apptive.team5.user.domain.PolicyType;
+import apptive.team5.user.domain.UserEntity;
+import apptive.team5.user.domain.UserPolicyAgreementEntity;
 import apptive.team5.user.dto.InitSettingsResponse;
+import apptive.team5.user.dto.InitSettingsResponse.AppUpdateStatus;
 import apptive.team5.user.dto.PolicyAgreementRequest;
 import apptive.team5.user.dto.PolicyAgreementRequest.AgreementItem;
 import apptive.team5.user.dto.PolicyStatusResponse;
+import apptive.team5.user.util.VersionComparator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,14 +32,16 @@ public class UserPolicyService {
     private final UserInitSettingService userInitSettingService;
 
     @Transactional(readOnly = true)
-    public InitSettingsResponse getInitSettings(Long userId) {
+    public InitSettingsResponse getInitSettings(Long userId, ClientType clientType, String clientVersion) {
         UserEntity user = userLowService.findById(userId);
 
-        boolean needsTagSetup = userInitSettingService.checkNeedsTagSetup(user);
+        AppUpdateStatus appUpdateStatus = checkAppUpdate(clientType, clientVersion);
         List<PolicyStatusResponse> policies = buildPolicyStatuses(user);
-        boolean needsUpdate = policies.stream().anyMatch(PolicyStatusResponse::needsUpdate);
+        boolean needsPolicyAgreement = policies.stream()
+                .anyMatch(PolicyStatusResponse::needsUpdate);
+        boolean needsTagSetup = userInitSettingService.checkNeedsTagSetup(user);
 
-        return new InitSettingsResponse(needsUpdate, needsTagSetup, policies);
+        return new InitSettingsResponse(appUpdateStatus, needsPolicyAgreement, needsTagSetup, policies);
     }
 
     public void agreePolicy(Long userId, PolicyAgreementRequest request) {
@@ -40,6 +49,12 @@ public class UserPolicyService {
 
         validateRequiredPolicies(request.agreements());
         upsertAgreements(user, request.agreements());
+    }
+
+    private AppUpdateStatus checkAppUpdate(ClientType clientType, String clientVersion) {
+        boolean needsForceUpdate = VersionComparator.isLowerThan(clientVersion, ClientVersion.getMinVersion(clientType));
+        boolean needsOptionalUpdate = VersionComparator.isLowerThan(clientVersion, ClientVersion.getLatestVersion(clientType));
+        return new AppUpdateStatus(needsForceUpdate, needsOptionalUpdate);
     }
 
     private List<PolicyStatusResponse> buildPolicyStatuses(UserEntity user) {
