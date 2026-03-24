@@ -57,6 +57,8 @@ public class UserService {
     private final DiaryStoreLowService diaryStoreLowService;
     private final AppleApiConnector appleApiConnector;
     private final AppleRefreshTokenLowService appleRefreshTokenLowService;
+    private final UserInitSettingService userInitSettingService;
+    private final UserPolicyLowService userPolicyLowService;
 
     public TokenResponse socialLogin(OAuth2Response oAuth2Response) {
         String identifier = oAuth2Response.getProvider() + "-" +oAuth2Response.getProviderId();
@@ -71,6 +73,7 @@ public class UserService {
             String tag = TagGenerator.generateTag();
             user = userLowService.save(new UserEntity(identifier, oAuth2Response.getEmail(), oAuth2Response.getUsername(), tag, UserRoleType.USER, oAuth2Response.getProvider()));
             isNew = true;
+            userInitSettingService.createInitSetting(user);
             if (oAuth2Response.getProvider().equals(SocialType.APPLE)) joinAppleUser(user, oAuth2Response);
         }
 
@@ -109,6 +112,8 @@ public class UserService {
 
         diaryService.deleteByUserId(userId);
         jwtService.deleteRefreshTokenByUserId(userId);
+        userPolicyLowService.deleteByUserEntity(findUser);
+        userInitSettingService.deleteByUserEntity(findUser);
         userLowService.deleteByUserId(userId);
 
         s3Service.deleteS3File(findUser.getProfileImage());
@@ -125,6 +130,7 @@ public class UserService {
         }
 
         findUser.changeTag(userTagUpdateRequest.tag());
+        userInitSettingService.markTagSet(findUser);
 
         return new UserResponse(findUser);
     }

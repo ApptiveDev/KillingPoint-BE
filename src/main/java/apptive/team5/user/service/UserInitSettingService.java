@@ -28,4 +28,8 @@ public class UserInitSettingService {
         userInitSettingLowService.findByUserEntity(user)
                 .ifPresent(UserInitSettingEntity::markTagSet);
     }
+
+    public void deleteByUserEntity(UserEntity user) {
+        userInitSettingLowService.deleteByUserEntity(user);
+    }
 }
