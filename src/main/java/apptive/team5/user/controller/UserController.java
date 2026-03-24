@@ -1,6 +1,7 @@
 package apptive.team5.user.controller;
 
 import apptive.team5.file.dto.FileUploadRequest;
+import apptive.team5.user.dto.InitSettingsRequest;
 import apptive.team5.user.dto.InitSettingsResponse;
 import apptive.team5.user.dto.PolicyAgreementRequest;
 import apptive.team5.user.dto.UserResponse;
@@ -88,9 +89,10 @@ public class UserController {
     }
 
     @GetMapping("/init-settings")
-    public ResponseEntity<InitSettingsResponse> getInitSettings(@AuthenticationPrincipal Long userId) {
+    public ResponseEntity<InitSettingsResponse> getInitSettings(@AuthenticationPrincipal Long userId,
+                                                                @Valid @ModelAttribute InitSettingsRequest request) {
 
-        InitSettingsResponse response = userPolicyService.getInitSettings(userId);
+        InitSettingsResponse response = userPolicyService.getInitSettings(userId, request.clientType(), request.clientVersion());
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
