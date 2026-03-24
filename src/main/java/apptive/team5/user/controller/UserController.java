@@ -1,10 +1,13 @@
 package apptive.team5.user.controller;
 
 import apptive.team5.file.dto.FileUploadRequest;
+import apptive.team5.user.dto.InitSettingsResponse;
+import apptive.team5.user.dto.PolicyAgreementRequest;
 import apptive.team5.user.dto.UserResponse;
 import apptive.team5.user.dto.UserSearchResponse;
 import apptive.team5.user.dto.UserStaticsResponse;
 import apptive.team5.user.dto.UserTagUpdateRequest;
+import apptive.team5.user.service.UserPolicyService;
 import apptive.team5.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final UserPolicyService userPolicyService;
 
     @GetMapping("/my")
     public ResponseEntity<UserResponse> getMyInfo(@AuthenticationPrincipal Long userId) {
@@ -81,5 +85,22 @@ public class UserController {
         UserStaticsResponse response = userService.getUserStatics(userId);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/init-settings")
+    public ResponseEntity<InitSettingsResponse> getInitSettings(@AuthenticationPrincipal Long userId) {
+
+        InitSettingsResponse response = userPolicyService.getInitSettings(userId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/policy-agreement")
+    public ResponseEntity<Void> agreePolicy(@Valid @RequestBody PolicyAgreementRequest request,
+                                            @AuthenticationPrincipal Long userId) {
+
+        userPolicyService.agreePolicy(userId, request);
+
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }
