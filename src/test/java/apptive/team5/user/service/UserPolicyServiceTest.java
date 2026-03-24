@@ -2,6 +2,7 @@ package apptive.team5.user.service;
 
 import apptive.team5.global.exception.BadRequestException;
 import apptive.team5.global.exception.ExceptionCode;
+import apptive.team5.user.domain.ClientType;
 import apptive.team5.user.domain.PolicyRevision;
 import apptive.team5.user.domain.PolicyType;
 import apptive.team5.user.domain.UserEntity;
@@ -53,11 +54,11 @@ class UserPolicyServiceTest {
         given(userPolicyLowService.getAgreementMap(user)).willReturn(Map.of());
 
         // when
-        InitSettingsResponse response = userPolicyService.getInitSettings(user.getId());
+        InitSettingsResponse response = userPolicyService.getInitSettings(user.getId(), ClientType.ANDROID, "1.0.0");
 
         // then
         assertSoftly(softly -> {
-            softly.assertThat(response.needsUpdate()).isTrue();
+            softly.assertThat(response.needsPolicyAgreement()).isTrue();
             softly.assertThat(response.needsTagSetup()).isFalse();
             softly.assertThat(response.policies()).hasSize(PolicyType.values().length);
 
@@ -84,11 +85,11 @@ class UserPolicyServiceTest {
         given(userPolicyLowService.getAgreementMap(user)).willReturn(agreementMap);
 
         // when
-        InitSettingsResponse response = userPolicyService.getInitSettings(user.getId());
+        InitSettingsResponse response = userPolicyService.getInitSettings(user.getId(), ClientType.ANDROID, "1.0.0");
 
         // then
         assertSoftly(softly -> {
-            softly.assertThat(response.needsUpdate()).isFalse();
+            softly.assertThat(response.needsPolicyAgreement()).isFalse();
             softly.assertThat(response.needsTagSetup()).isFalse();
 
             for (PolicyStatusResponse policy : response.policies()) {
@@ -114,11 +115,11 @@ class UserPolicyServiceTest {
         given(userPolicyLowService.getAgreementMap(user)).willReturn(agreementMap);
 
         // when
-        InitSettingsResponse response = userPolicyService.getInitSettings(user.getId());
+        InitSettingsResponse response = userPolicyService.getInitSettings(user.getId(), ClientType.ANDROID, "1.0.0");
 
         // then
         assertSoftly(softly -> {
-            softly.assertThat(response.needsUpdate()).isTrue();
+            softly.assertThat(response.needsPolicyAgreement()).isTrue();
 
             PolicyStatusResponse serviceTerms = response.policies().stream()
                     .filter(p -> p.policyType() == PolicyType.SERVICE_TERMS)
