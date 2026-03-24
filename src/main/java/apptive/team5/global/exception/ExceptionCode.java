@@ -21,7 +21,8 @@ public enum ExceptionCode {
     BAD_SUBSCRIBE_REQUEST("자기 자신은 구독할 수 없습니다."),
     DUPLICATE_SUBSCRIBE_REQUEST("이미 구독한 회원입니다."),
     INVALID_DIARY_LIST("유효하지 않은 다이어리 ID가 포함되어 있습니다."),
-    DUPLICATE_DIARY_REPORT("이미 신고한 게시글입니다.");
+    DUPLICATE_DIARY_REPORT("이미 신고한 게시글입니다."),
+    REQUIRED_POLICY_NOT_AGREED("필수 약관에 동의해야 합니다.");
 
     private final String description;
 

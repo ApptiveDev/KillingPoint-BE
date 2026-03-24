@@ -47,4 +47,8 @@ public class UserPolicyAgreementEntity extends BaseTimeEntity {
         this.revision = revision;
         this.agreedAt = agreed ? LocalDateTime.now() : null;
     }
+
+    public boolean needsUpdate(Long latestRevision) {
+        return !agreed || revision < latestRevision;
+    }
 }
