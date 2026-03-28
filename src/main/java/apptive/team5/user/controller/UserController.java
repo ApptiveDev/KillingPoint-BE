@@ -98,7 +98,7 @@ public class UserController {
                                                                 @Valid @ModelAttribute InitSettingsRequest request) {
 
         AppUpdateStatus appUpdateStatus = userInitSettingService.checkAppUpdate(request.clientType(), request.clientVersion());
-        List<PolicyStatusResponse> policies = userPolicyService.buildPolicyStatuses(userId);
+        List<PolicyStatusResponse> policies = userPolicyService.getPolicyStatuses(userId);
         boolean needsPolicyAgreement = policies.stream().anyMatch(PolicyStatusResponse::needsUpdate);
         boolean needsTagSetup = userInitSettingService.checkNeedsTagSetup(userId);
 

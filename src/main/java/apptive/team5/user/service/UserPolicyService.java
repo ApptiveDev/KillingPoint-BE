@@ -33,12 +33,12 @@ public class UserPolicyService {
     }
 
     @Transactional(readOnly = true)
-    public List<PolicyStatusResponse> buildPolicyStatuses(Long userId) {
+    public List<PolicyStatusResponse> getPolicyStatuses(Long userId) {
         UserEntity user = userLowService.findById(userId);
-        return buildPolicyStatuses(user);
+        return getPolicyStatuses(user);
     }
 
-    private List<PolicyStatusResponse> buildPolicyStatuses(UserEntity user) {
+    private List<PolicyStatusResponse> getPolicyStatuses(UserEntity user) {
         Map<PolicyType, UserPolicyAgreementEntity> agreementMap = userPolicyLowService.getAgreementMap(user);
 
         return Arrays.stream(PolicyType.values())
