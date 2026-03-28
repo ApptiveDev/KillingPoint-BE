@@ -11,7 +11,7 @@ import apptive.team5.user.domain.UserPolicyAgreementEntity;
 import apptive.team5.user.dto.InitSettingsResponse;
 import apptive.team5.user.dto.InitSettingsResponse.AppUpdateStatus;
 import apptive.team5.user.dto.PolicyAgreementRequest;
-import apptive.team5.user.dto.PolicyAgreementRequest.AgreementItem;
+import apptive.team5.user.dto.AgreementItem;
 import apptive.team5.user.dto.PolicyStatusResponse;
 import apptive.team5.user.util.VersionComparator;
 import lombok.RequiredArgsConstructor;
