@@ -38,8 +38,7 @@ public class UserPolicyService {
         return buildPolicyStatuses(user);
     }
 
-    @Transactional(readOnly = true)
-    public List<PolicyStatusResponse> buildPolicyStatuses(UserEntity user) {
+    private List<PolicyStatusResponse> buildPolicyStatuses(UserEntity user) {
         Map<PolicyType, UserPolicyAgreementEntity> agreementMap = userPolicyLowService.getAgreementMap(user);
 
         return Arrays.stream(PolicyType.values())
@@ -49,26 +48,39 @@ public class UserPolicyService {
 
     private void validateRequiredPolicies(List<AgreementItem> agreements) {
         for (AgreementItem item : agreements) {
-            if (item.policyType().isRequired() && !item.agreed()) {
-                throw new BadRequestException(ExceptionCode.REQUIRED_POLICY_NOT_AGREED.getDescription());
-            }
+            validateRequiredPolicy(item);
+        }
+    }
+
+    private void validateRequiredPolicy(AgreementItem item) {
+        if (item.policyType().isRequired() && !item.agreed()) {
+            throw new BadRequestException(ExceptionCode.REQUIRED_POLICY_NOT_AGREED.getDescription());
         }
     }
 
     private void upsertAgreements(UserEntity user, List<AgreementItem> agreements) {
         Map<PolicyType, UserPolicyAgreementEntity> agreementMap = userPolicyLowService.getAgreementMap(user);
-
         for (AgreementItem item : agreements) {
-            Long latestRevision = PolicyRevision.getLatest(item.policyType());
-            UserPolicyAgreementEntity existing = agreementMap.get(item.policyType());
+            upsertAgreement(user, item, agreementMap);
+        }
+    }
 
-            if (existing != null) {
-                existing.updateAgreement(item.agreed(), latestRevision);
-            } else {
-                userPolicyLowService.save(
-                        new UserPolicyAgreementEntity(user, item.policyType(), item.agreed(), latestRevision)
-                );
-            }
+    private void upsertAgreement(UserEntity user, AgreementItem item, Map<PolicyType, UserPolicyAgreementEntity> agreementMap) {
+        UserPolicyAgreementEntity existing = agreementMap.get(item.policyType());
+        Long latestRevision = PolicyRevision.getLatest(item.policyType());
+
+        if (existing != null) {
+            existing.updateAgreement(item.agreed(), latestRevision);
+        }
+        else {
+            userPolicyLowService.save(
+                    new UserPolicyAgreementEntity(
+                            user,
+                            item.policyType(),
+                            item.agreed(),
+                            latestRevision
+                    )
+            );
         }
     }
 }

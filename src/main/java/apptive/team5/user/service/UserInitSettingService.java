@@ -24,8 +24,7 @@ public class UserInitSettingService {
         return checkNeedsTagSetup(user);
     }
 
-    @Transactional(readOnly = true)
-    public boolean checkNeedsTagSetup(UserEntity user) {
+    private boolean checkNeedsTagSetup(UserEntity user) {
         return userInitSettingLowService.findByUserEntity(user)
                 .map(setting -> !setting.getIsTagSet())
                 .orElse(false);

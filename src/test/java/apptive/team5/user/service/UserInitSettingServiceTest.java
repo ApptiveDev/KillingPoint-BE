@@ -24,6 +24,9 @@ class UserInitSettingServiceTest {
     private UserInitSettingService userInitSettingService;
 
     @Mock
+    private UserLowService userLowService;
+
+    @Mock
     private UserInitSettingLowService userInitSettingLowService;
 
     @Test
@@ -31,10 +34,11 @@ class UserInitSettingServiceTest {
     void checkNeedsTagSetupNoRecord() {
         // given
         UserEntity user = TestUtil.makeUserEntityWithId();
+        given(userLowService.findById(user.getId())).willReturn(user);
         given(userInitSettingLowService.findByUserEntity(user)).willReturn(Optional.empty());
 
         // when
-        boolean result = userInitSettingService.checkNeedsTagSetup(user);
+        boolean result = userInitSettingService.checkNeedsTagSetup(user.getId());
 
         // then
         assertThat(result).isFalse();
@@ -46,10 +50,11 @@ class UserInitSettingServiceTest {
         // given
         UserEntity user = TestUtil.makeUserEntityWithId();
         UserInitSettingEntity initSetting = new UserInitSettingEntity(user, false);
+        given(userLowService.findById(user.getId())).willReturn(user);
         given(userInitSettingLowService.findByUserEntity(user)).willReturn(Optional.of(initSetting));
 
         // when
-        boolean result = userInitSettingService.checkNeedsTagSetup(user);
+        boolean result = userInitSettingService.checkNeedsTagSetup(user.getId());
 
         // then
         assertThat(result).isTrue();
@@ -61,10 +66,11 @@ class UserInitSettingServiceTest {
         // given
         UserEntity user = TestUtil.makeUserEntityWithId();
         UserInitSettingEntity initSetting = new UserInitSettingEntity(user, true);
+        given(userLowService.findById(user.getId())).willReturn(user);
         given(userInitSettingLowService.findByUserEntity(user)).willReturn(Optional.of(initSetting));
 
         // when
-        boolean result = userInitSettingService.checkNeedsTagSetup(user);
+        boolean result = userInitSettingService.checkNeedsTagSetup(user.getId());
 
         // then
         assertThat(result).isFalse();
