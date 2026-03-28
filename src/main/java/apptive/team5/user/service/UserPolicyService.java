@@ -2,18 +2,13 @@ package apptive.team5.user.service;
 
 import apptive.team5.global.exception.BadRequestException;
 import apptive.team5.global.exception.ExceptionCode;
-import apptive.team5.user.domain.ClientType;
-import apptive.team5.user.domain.ClientVersion;
 import apptive.team5.user.domain.PolicyRevision;
 import apptive.team5.user.domain.PolicyType;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.domain.UserPolicyAgreementEntity;
-import apptive.team5.user.dto.InitSettingsResponse;
-import apptive.team5.user.dto.InitSettingsResponse.AppUpdateStatus;
 import apptive.team5.user.dto.PolicyAgreementRequest;
 import apptive.team5.user.dto.AgreementItem;
 import apptive.team5.user.dto.PolicyStatusResponse;
-import apptive.team5.user.util.VersionComparator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,20 +24,6 @@ public class UserPolicyService {
 
     private final UserLowService userLowService;
     private final UserPolicyLowService userPolicyLowService;
-    private final UserInitSettingService userInitSettingService;
-
-    @Transactional(readOnly = true)
-    public InitSettingsResponse getInitSettings(Long userId, ClientType clientType, String clientVersion) {
-        UserEntity user = userLowService.findById(userId);
-
-        AppUpdateStatus appUpdateStatus = checkAppUpdate(clientType, clientVersion);
-        List<PolicyStatusResponse> policies = buildPolicyStatuses(user);
-        boolean needsPolicyAgreement = policies.stream()
-                .anyMatch(PolicyStatusResponse::needsUpdate);
-        boolean needsTagSetup = userInitSettingService.checkNeedsTagSetup(user);
-
-        return new InitSettingsResponse(appUpdateStatus, needsPolicyAgreement, needsTagSetup, policies);
-    }
 
     public void agreePolicy(Long userId, PolicyAgreementRequest request) {
         UserEntity user = userLowService.findById(userId);
@@ -51,13 +32,14 @@ public class UserPolicyService {
         upsertAgreements(user, request.agreements());
     }
 
-    private AppUpdateStatus checkAppUpdate(ClientType clientType, String clientVersion) {
-        boolean needsForceUpdate = VersionComparator.isLowerThan(clientVersion, ClientVersion.getMinVersion(clientType));
-        boolean needsOptionalUpdate = VersionComparator.isLowerThan(clientVersion, ClientVersion.getLatestVersion(clientType));
-        return new AppUpdateStatus(needsForceUpdate, needsOptionalUpdate);
+    @Transactional(readOnly = true)
+    public List<PolicyStatusResponse> buildPolicyStatuses(Long userId) {
+        UserEntity user = userLowService.findById(userId);
+        return buildPolicyStatuses(user);
     }
 
-    private List<PolicyStatusResponse> buildPolicyStatuses(UserEntity user) {
+    @Transactional(readOnly = true)
+    public List<PolicyStatusResponse> buildPolicyStatuses(UserEntity user) {
         Map<PolicyType, UserPolicyAgreementEntity> agreementMap = userPolicyLowService.getAgreementMap(user);
 
         return Arrays.stream(PolicyType.values())

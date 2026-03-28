@@ -3,14 +3,18 @@ package apptive.team5.user.controller;
 import apptive.team5.file.dto.FileUploadRequest;
 import apptive.team5.user.dto.InitSettingsRequest;
 import apptive.team5.user.dto.InitSettingsResponse;
+import apptive.team5.user.dto.InitSettingsResponse.AppUpdateStatus;
 import apptive.team5.user.dto.PolicyAgreementRequest;
+import apptive.team5.user.dto.PolicyStatusResponse;
 import apptive.team5.user.dto.UserResponse;
 import apptive.team5.user.dto.UserSearchResponse;
 import apptive.team5.user.dto.UserStaticsResponse;
 import apptive.team5.user.dto.UserTagUpdateRequest;
+import apptive.team5.user.service.UserInitSettingService;
 import apptive.team5.user.service.UserPolicyService;
 import apptive.team5.user.service.UserService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +30,7 @@ public class UserController {
 
     private final UserService userService;
     private final UserPolicyService userPolicyService;
+    private final UserInitSettingService userInitSettingService;
 
     @GetMapping("/my")
     public ResponseEntity<UserResponse> getMyInfo(@AuthenticationPrincipal Long userId) {
@@ -92,9 +97,12 @@ public class UserController {
     public ResponseEntity<InitSettingsResponse> getInitSettings(@AuthenticationPrincipal Long userId,
                                                                 @Valid @ModelAttribute InitSettingsRequest request) {
 
-        InitSettingsResponse response = userPolicyService.getInitSettings(userId, request.clientType(), request.clientVersion());
+        AppUpdateStatus appUpdateStatus = userInitSettingService.checkAppUpdate(request.clientType(), request.clientVersion());
+        List<PolicyStatusResponse> policies = userPolicyService.buildPolicyStatuses(userId);
+        boolean needsPolicyAgreement = policies.stream().anyMatch(PolicyStatusResponse::needsUpdate);
+        boolean needsTagSetup = userInitSettingService.checkNeedsTagSetup(userId);
 
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.ok(new InitSettingsResponse(appUpdateStatus, needsPolicyAgreement, needsTagSetup, policies));
     }
 
     @PostMapping("/policy-agreement")

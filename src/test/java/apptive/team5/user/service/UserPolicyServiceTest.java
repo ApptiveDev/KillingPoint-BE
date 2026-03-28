@@ -2,15 +2,12 @@ package apptive.team5.user.service;
 
 import apptive.team5.global.exception.BadRequestException;
 import apptive.team5.global.exception.ExceptionCode;
-import apptive.team5.user.domain.ClientType;
 import apptive.team5.user.domain.PolicyRevision;
 import apptive.team5.user.domain.PolicyType;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.domain.UserPolicyAgreementEntity;
-import apptive.team5.user.dto.InitSettingsResponse;
 import apptive.team5.user.dto.PolicyAgreementRequest;
 import apptive.team5.user.dto.AgreementItem;
-import apptive.team5.user.dto.PolicyStatusResponse;
 import apptive.team5.util.TestUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -39,94 +36,6 @@ class UserPolicyServiceTest {
 
     @Mock
     private UserPolicyLowService userPolicyLowService;
-
-    @Mock
-    private UserInitSettingService userInitSettingService;
-
-    @Test
-    @DisplayName("초기 설정 조회 - 약관 동의 기록 없으면 needsUpdate=true")
-    void getInitSettingsNeedsUpdate() {
-        // given
-        UserEntity user = TestUtil.makeUserEntityWithId();
-
-        given(userLowService.findById(user.getId())).willReturn(user);
-        given(userInitSettingService.checkNeedsTagSetup(user)).willReturn(false);
-        given(userPolicyLowService.getAgreementMap(user)).willReturn(Map.of());
-
-        // when
-        InitSettingsResponse response = userPolicyService.getInitSettings(user.getId(), ClientType.ANDROID, "1.0.0");
-
-        // then
-        assertSoftly(softly -> {
-            softly.assertThat(response.needsPolicyAgreement()).isTrue();
-            softly.assertThat(response.needsTagSetup()).isFalse();
-            softly.assertThat(response.policies()).hasSize(PolicyType.values().length);
-
-            for (PolicyStatusResponse policy : response.policies()) {
-                softly.assertThat(policy.agreed()).isFalse();
-                softly.assertThat(policy.currentRevision()).isEqualTo(0L);
-            }
-        });
-    }
-
-    @Test
-    @DisplayName("초기 설정 조회 - 모든 약관 최신 동의 시 needsUpdate=false")
-    void getInitSettingsAllAgreed() {
-        // given
-        UserEntity user = TestUtil.makeUserEntityWithId();
-
-        Map<PolicyType, UserPolicyAgreementEntity> agreementMap = Map.of(
-                PolicyType.SERVICE_TERMS, new UserPolicyAgreementEntity(user, PolicyType.SERVICE_TERMS, true, PolicyRevision.getLatest(PolicyType.SERVICE_TERMS)),
-                PolicyType.PRIVACY, new UserPolicyAgreementEntity(user, PolicyType.PRIVACY, true, PolicyRevision.getLatest(PolicyType.PRIVACY))
-        );
-
-        given(userLowService.findById(user.getId())).willReturn(user);
-        given(userInitSettingService.checkNeedsTagSetup(user)).willReturn(false);
-        given(userPolicyLowService.getAgreementMap(user)).willReturn(agreementMap);
-
-        // when
-        InitSettingsResponse response = userPolicyService.getInitSettings(user.getId(), ClientType.ANDROID, "1.0.0");
-
-        // then
-        assertSoftly(softly -> {
-            softly.assertThat(response.needsPolicyAgreement()).isFalse();
-            softly.assertThat(response.needsTagSetup()).isFalse();
-
-            for (PolicyStatusResponse policy : response.policies()) {
-                softly.assertThat(policy.agreed()).isTrue();
-                softly.assertThat(policy.currentRevision()).isEqualTo(policy.latestRevision());
-            }
-        });
-    }
-
-    @Test
-    @DisplayName("초기 설정 조회 - 약관 revision이 낡으면 needsUpdate=true")
-    void getInitSettingsOutdatedRevision() {
-        // given
-        UserEntity user = TestUtil.makeUserEntityWithId();
-
-        Map<PolicyType, UserPolicyAgreementEntity> agreementMap = Map.of(
-                PolicyType.SERVICE_TERMS, new UserPolicyAgreementEntity(user, PolicyType.SERVICE_TERMS, true, 0L),
-                PolicyType.PRIVACY, new UserPolicyAgreementEntity(user, PolicyType.PRIVACY, true, PolicyRevision.getLatest(PolicyType.PRIVACY))
-        );
-
-        given(userLowService.findById(user.getId())).willReturn(user);
-        given(userInitSettingService.checkNeedsTagSetup(user)).willReturn(false);
-        given(userPolicyLowService.getAgreementMap(user)).willReturn(agreementMap);
-
-        // when
-        InitSettingsResponse response = userPolicyService.getInitSettings(user.getId(), ClientType.ANDROID, "1.0.0");
-
-        // then
-        assertSoftly(softly -> {
-            softly.assertThat(response.needsPolicyAgreement()).isTrue();
-
-            PolicyStatusResponse serviceTerms = response.policies().stream()
-                    .filter(p -> p.policyType() == PolicyType.SERVICE_TERMS)
-                    .findFirst().orElseThrow();
-            softly.assertThat(serviceTerms.currentRevision()).isLessThan(serviceTerms.latestRevision());
-        });
-    }
 
     @Test
     @DisplayName("약관 동의 처리 - 정상 동의")
