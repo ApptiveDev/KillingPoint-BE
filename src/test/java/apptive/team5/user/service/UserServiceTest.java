@@ -24,6 +24,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import org.junit.jupiter.api.BeforeEach;
+
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.*;
 import static org.mockito.BDDMockito.*;
@@ -31,6 +33,11 @@ import static org.mockito.BDDMockito.*;
 
 @ExtendWith(SpringExtension.class)
 class UserServiceTest {
+
+    @BeforeEach
+    void setUp() {
+        S3Util.setS3Url("");
+    }
 
     @InjectMocks
     private UserService userService;
@@ -48,7 +55,13 @@ class UserServiceTest {
     private S3Service s3Service;
 
     @Mock
-    private TemporalLowService  temporalLowService;
+    private TemporalLowService temporalLowService;
+
+    @Mock
+    private UserInitSettingService userInitSettingService;
+
+    @Mock
+    private UserPolicyLowService userPolicyLowService;
 
     @Test
     @DisplayName("소셜 로그인 - 존재하는 회원이면 로그인")
