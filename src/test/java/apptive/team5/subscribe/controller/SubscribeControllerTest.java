@@ -6,6 +6,7 @@ import apptive.team5.subscribe.domain.Subscribe;
 import apptive.team5.subscribe.repository.SubscribeRepository;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.dto.UserResponse;
+import apptive.team5.user.dto.UserSearchResponse;
 import apptive.team5.user.repository.UserRepository;
 import apptive.team5.util.TestSecurityContextHolderInjection;
 import apptive.team5.util.TestUtil;
@@ -154,8 +155,9 @@ class SubscribeControllerTest {
         userRepository.save(subscriber);
         UserEntity subscribedTo = TestUtil.makeDifferentUserEntity(subscriber);
         userRepository.save(subscribedTo);
-        UserEntity otherUser = TestUtil.makeDifferentUserEntity(subscribedTo);
-        Subscribe subscribe = subscribeRepository.save(new Subscribe(subscriber, subscribedTo));
+        UserEntity otherUser = userRepository.save(TestUtil.makeDifferentUserEntity(subscribedTo));
+        subscribeRepository.save(new Subscribe(subscriber, subscribedTo));
+        subscribeRepository.save(new Subscribe(otherUser, subscribedTo));
 
         TestSecurityContextHolderInjection.inject(otherUser.getId(), otherUser.getRoleType());
 
@@ -168,14 +170,15 @@ class SubscribeControllerTest {
         // then
         JsonNode jsonNode = objectMapper.readTree(response);
 
-        List<UserResponse> content = objectMapper.convertValue(
+        List<UserSearchResponse> content = objectMapper.convertValue(
                 jsonNode.path("content"),
-                new TypeReference<List<UserResponse>>() {}
+                new TypeReference<List<UserSearchResponse>>() {}
         );
 
         assertSoftly(softly -> {
             softly.assertThat(content).hasSize(1);
             softly.assertThat(content.getFirst().userId()).isEqualTo(subscribedTo.getId());
+            softly.assertThat(content.getFirst().isMyPick()).isTrue();
         });
 
     }
@@ -189,8 +192,9 @@ class SubscribeControllerTest {
         userRepository.save(subscriber);
         UserEntity subscribedTo = TestUtil.makeDifferentUserEntity(subscriber);
         userRepository.save(subscribedTo);
-        UserEntity otherUser = TestUtil.makeDifferentUserEntity(subscribedTo);
+        UserEntity otherUser = userRepository.save(TestUtil.makeDifferentUserEntity(subscribedTo));
         Subscribe subscribe = subscribeRepository.save(new Subscribe(subscriber, subscribedTo));
+        subscribeRepository.save(new Subscribe(otherUser, subscriber));
 
         TestSecurityContextHolderInjection.inject(otherUser.getId(), otherUser.getRoleType());
 
@@ -203,14 +207,15 @@ class SubscribeControllerTest {
         // then
         JsonNode jsonNode = objectMapper.readTree(response);
 
-        List<UserResponse> content = objectMapper.convertValue(
+        List<UserSearchResponse> content = objectMapper.convertValue(
                 jsonNode.path("content"),
-                new TypeReference<List<UserResponse>>() {}
+                new TypeReference<List<UserSearchResponse>>() {}
         );
 
         assertSoftly(softly -> {
             softly.assertThat(content).hasSize(1);
             softly.assertThat(content.getFirst().userId()).isEqualTo(subscriber.getId());
+            softly.assertThat(content.getFirst().isMyPick()).isTrue();
         });
 
     }
