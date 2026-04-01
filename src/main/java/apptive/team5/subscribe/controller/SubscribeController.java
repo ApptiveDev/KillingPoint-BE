@@ -2,6 +2,7 @@ package apptive.team5.subscribe.controller;
 
 import apptive.team5.subscribe.service.SubscribeService;
 import apptive.team5.user.dto.UserResponse;
+import apptive.team5.user.dto.UserSearchResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,23 +36,25 @@ public class SubscribeController {
     }
 
     // 특정 사용자의 구독 목록 조회
-    @GetMapping("/{userId}")
-    public ResponseEntity<Page<UserResponse>> getSubscribe(@PathVariable Long userId,
+    @GetMapping("/{subscriberId}")
+    public ResponseEntity<Page<UserSearchResponse>> getSubscribe(@PathVariable Long subscriberId,
+                                                             @AuthenticationPrincipal Long userId,
                                                              @RequestParam(defaultValue = "0") int page,
                                                              @RequestParam(defaultValue = "5") int size
     ) {
-        Page<UserResponse> response = subscribeService.findMySubscribedUsers(userId, PageRequest.of(page, size));
+        Page<UserSearchResponse> response = subscribeService.findMySubscribedUsers(subscriberId, userId, PageRequest.of(page, size));
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     // 특정 사용자의 구독자 조회
-    @GetMapping("/{userId}/fans")
-    public ResponseEntity<Page<UserResponse>> getSubscriber(@PathVariable Long userId,
-                                                              @RequestParam(defaultValue = "0") int page,
-                                                              @RequestParam(defaultValue = "5") int size
+    @GetMapping("/{subscribedId}/fans")
+    public ResponseEntity<Page<UserSearchResponse>> getSubscriber(@PathVariable Long subscribedId,
+                                                                  @AuthenticationPrincipal Long userId,
+                                                                  @RequestParam(defaultValue = "0") int page,
+                                                                  @RequestParam(defaultValue = "5") int size
     ) {
-        Page<UserResponse> response = subscribeService.findMySubscriberUsers(userId, PageRequest.of(page, size));
+        Page<UserSearchResponse> response = subscribeService.findMySubscriberUsers(subscribedId, userId, PageRequest.of(page, size));
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }

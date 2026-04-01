@@ -6,12 +6,17 @@ import apptive.team5.global.exception.DuplicateException;
 import apptive.team5.subscribe.domain.Subscribe;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.dto.UserResponse;
+import apptive.team5.user.dto.UserSearchResponse;
 import apptive.team5.user.service.UserLowService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static apptive.team5.global.exception.ExceptionCode.BAD_SUBSCRIBE_REQUEST;
 import static apptive.team5.global.exception.ExceptionCode.DUPLICATE_SUBSCRIBE_REQUEST;
@@ -45,16 +50,46 @@ public class SubscribeService {
         subscribeLowService.deleteBySubscriberIdAndSubscribedToId(subscriberToUserId, subscriberId);
     }
 
-    public Page<UserResponse> findMySubscribedUsers(Long subscriberId, Pageable pageable) {
+    public Page<UserSearchResponse> findMySubscribedUsers(Long subscriberId, Long userId, Pageable pageable) {
 
-       return subscribeLowService.findBySubscriberIdWithSubscribedToPage(subscriberId, pageable)
-                .map(subscribe -> new UserResponse(subscribe.getSubscribedTo()));
+        // 특정 사용자가 구독한 사람 목록
+        Page<UserEntity> subscribedUsers = subscribeLowService.findBySubscriberIdWithSubscribedToPage(subscriberId, pageable)
+                .map(Subscribe::getSubscribedTo);
+
+        // 특정 사용자가 구독한 사람 Id
+        List<Long> subscribedIds = subscribedUsers.stream().map(UserEntity::getId).toList();
+
+        // 현재 로그인한 사용자가 구독한 Id
+        Set<Long> mySubscribedIds = subscribeLowService.findBySubscriberIdAndSubscribedToIds(userId, subscribedIds)
+                .stream()
+                .map(subscribe -> subscribe.getSubscribedTo().getId()).collect(Collectors.toSet());
+
+        return subscribedUsers
+                .map(user -> {
+                    boolean isMyPick = mySubscribedIds.contains(user.getId());
+                    return new UserSearchResponse(user, isMyPick);
+                });
     }
 
-    public Page<UserResponse> findMySubscriberUsers(Long subscribedToId, Pageable pageable) {
+    public Page<UserSearchResponse> findMySubscriberUsers(Long subscribedToId, Long userId, Pageable pageable) {
 
-        return subscribeLowService.findBySubscribedToIdWithSubscriberToPage(subscribedToId, pageable)
-                .map(subscribe -> new UserResponse(subscribe.getSubscriber()));
+        // 특정 사용자의 구독자
+        Page<UserEntity> subscribers = subscribeLowService.findBySubscribedToIdWithSubscriberToPage(subscribedToId, pageable)
+                .map(Subscribe::getSubscriber);
+
+        // 특정 사용자를 구독한 사람 Id
+        List<Long> subscriberIds = subscribers.stream().map(UserEntity::getId).toList();
+
+        // 현재 로그인한 사용자가 구독한 Id
+        Set<Long> mySubscribedIds = subscribeLowService.findBySubscriberIdAndSubscribedToIds(userId, subscriberIds)
+                .stream()
+                .map(subscribe -> subscribe.getSubscribedTo().getId()).collect(Collectors.toSet());
+
+        return subscribers
+                .map(user -> {
+                    boolean isMyPick = mySubscribedIds.contains(user.getId());
+                    return new UserSearchResponse(user, isMyPick);
+                });
     }
 }
 
