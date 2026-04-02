@@ -70,6 +70,10 @@ public class UserEntity extends BaseTimeEntity {
         this.tag = tag;
     }
 
+    public void changeName(String username) {
+        this.username = username;
+    }
+
     public void changeProfileImage(String profileImage) {
         this.profileImage = profileImage;
     }

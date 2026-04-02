@@ -22,10 +22,7 @@ import apptive.team5.survey.service.SurveyLowService;
 import apptive.team5.user.domain.SocialType;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.domain.UserRoleType;
-import apptive.team5.user.dto.UserResponse;
-import apptive.team5.user.dto.UserSearchResponse;
-import apptive.team5.user.dto.UserStaticsResponse;
-import apptive.team5.user.dto.UserTagUpdateRequest;
+import apptive.team5.user.dto.*;
 import apptive.team5.user.util.TagGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -131,6 +128,18 @@ public class UserService {
 
         findUser.changeTag(userTagUpdateRequest.tag());
         userInitSettingService.markTagSet(findUser);
+
+        return new UserResponse(findUser);
+    }
+
+    public UserResponse changeUserName(UserNameUpdateRequest userNameUpdateRequest, Long userId) {
+        UserEntity findUser = userLowService.findById(userId);
+
+        if (userNameUpdateRequest.username().equals(findUser.getUsername()))
+            return new UserResponse(findUser);
+
+
+        findUser.changeName(userNameUpdateRequest.username());
 
         return new UserResponse(findUser);
     }

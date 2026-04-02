@@ -1,15 +1,8 @@
 package apptive.team5.user.controller;
 
 import apptive.team5.file.dto.FileUploadRequest;
-import apptive.team5.user.dto.InitSettingsRequest;
-import apptive.team5.user.dto.InitSettingsResponse;
+import apptive.team5.user.dto.*;
 import apptive.team5.user.dto.InitSettingsResponse.AppUpdateStatus;
-import apptive.team5.user.dto.PolicyAgreementRequest;
-import apptive.team5.user.dto.PolicyStatusResponse;
-import apptive.team5.user.dto.UserResponse;
-import apptive.team5.user.dto.UserSearchResponse;
-import apptive.team5.user.dto.UserStaticsResponse;
-import apptive.team5.user.dto.UserTagUpdateRequest;
 import apptive.team5.user.service.UserInitSettingService;
 import apptive.team5.user.service.UserPolicyService;
 import apptive.team5.user.service.UserService;
@@ -56,6 +49,17 @@ public class UserController {
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    @PatchMapping("/my/names")
+    public ResponseEntity<UserResponse> changeUserName(@Valid @RequestBody UserNameUpdateRequest userNameUpdateRequest,
+                                                               @AuthenticationPrincipal Long userId) {
+
+        UserResponse response = userService.changeUserName(userNameUpdateRequest, userId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+
 
     @PatchMapping("/my/profile-image")
     public ResponseEntity<UserResponse> changeProfileImage(@Valid @RequestBody FileUploadRequest fileUploadRequest,
