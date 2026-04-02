@@ -13,10 +13,7 @@ import apptive.team5.subscribe.domain.Subscribe;
 import apptive.team5.subscribe.repository.SubscribeRepository;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.domain.UserRoleType;
-import apptive.team5.user.dto.UserResponse;
-import apptive.team5.user.dto.UserSearchResponse;
-import apptive.team5.user.dto.UserStaticsResponse;
-import apptive.team5.user.dto.UserTagUpdateRequest;
+import apptive.team5.user.dto.*;
 import apptive.team5.user.repository.UserRepository;
 import apptive.team5.util.TestSecurityContextHolderInjection;
 import apptive.team5.util.TestUtil;
@@ -187,6 +184,39 @@ class UserControllerTest {
 
         assertSoftly(softly -> {
             softly.assertThat(apiResponse.get("message")).isEqualTo(ExceptionCode.DUPLICATE_USER_TAG.getDescription());
+        });
+
+    }
+
+    @DisplayName("회원 name 변경 성공")
+    @Test
+    void changeUserNameSuccess() throws Exception {
+
+        // given
+        UserEntity user = TestUtil.makeUserEntity();
+        userRepository.save(user);
+        TestSecurityContextHolderInjection.inject(user.getId(), user.getRoleType());
+        UserNameUpdateRequest userNameUpdateRequest = new UserNameUpdateRequest("이진원");
+
+
+        // when
+        MockHttpServletResponse response = mockMvc.perform(patch("/api/users/my/names")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userNameUpdateRequest))
+                        .with(securityContext(SecurityContextHolder.getContext()))
+                )
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+
+        // then
+        String content = response.getContentAsString();
+
+        UserResponse userResponse = objectMapper.readValue(content, UserResponse.class);
+
+
+        assertSoftly(softly -> {
+            softly.assertThat(userResponse.userId()).isEqualTo(user.getId());
+            softly.assertThat(userResponse.username()).isEqualTo(userNameUpdateRequest.username());
         });
 
     }
