@@ -5,8 +5,10 @@ import apptive.team5.diary.domain.DiaryLikeEntity;
 import apptive.team5.diary.dto.DiaryLikeResponseDto;
 import apptive.team5.global.exception.DuplicateException;
 import apptive.team5.global.exception.ExceptionCode;
+import apptive.team5.subscribe.service.SubscribeLowService;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.dto.UserResponse;
+import apptive.team5.user.dto.UserSearchResponse;
 import apptive.team5.user.service.UserLowService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +27,7 @@ public class DiaryLikeService {
     private final DiaryLikeLowService diaryLikeLowService;
     private final UserLowService userLowService;
     private final DiaryLowService diaryLowService;
+    private final SubscribeLowService subscribeLowService;
 
     public DiaryLikeResponseDto toggleDiaryLike(Long userId, Long diaryId) {
         UserEntity user = userLowService.getReferenceById(userId);
@@ -40,13 +45,25 @@ public class DiaryLikeService {
     }
 
     @Transactional(readOnly = true)
-    public Page<UserResponse> getDiaryLikeUsers(Long diaryId, String searchCond, Pageable pageable) {
+    public Page<UserSearchResponse> getDiaryLikeUsers(Long diaryId, Long userId, String searchCond, Pageable pageable) {
 
         DiaryEntity findDiary = diaryLowService.findDiaryById(diaryId);
 
-        Page<UserResponse> userPages = diaryLikeLowService.findByDiaryIdLikeSearchCond(diaryId, searchCond, pageable)
-                .map(diaryLikeEntity -> new UserResponse(diaryLikeEntity.getUser()));
+        // 다이어리 좋야요를 누른 사용자
+        Page<UserEntity> likeUsers = diaryLikeLowService.findByDiaryIdLikeSearchCond(diaryId, searchCond, pageable)
+                .map(DiaryLikeEntity::getUser);
 
-        return userPages;
+        List<Long> diaryLikeUserIds = likeUsers.stream().map(UserEntity::getId).toList();
+
+        // 현재 로그인한 사용자가 구독한 Id
+        Set<Long> mySubscribedIds = subscribeLowService.findBySubscriberIdAndSubscribedToIds(userId, diaryLikeUserIds)
+                .stream()
+                .map(subscribe -> subscribe.getSubscribedTo().getId()).collect(Collectors.toSet());
+
+        return likeUsers
+                .map(user -> {
+                    boolean isMyPick = mySubscribedIds.contains(user.getId());
+                    return new UserSearchResponse(user, isMyPick);
+                });
     }
 }

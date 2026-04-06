@@ -3,6 +3,7 @@ package apptive.team5.diary.controller;
 import apptive.team5.diary.dto.DiaryLikeResponseDto;
 import apptive.team5.diary.service.DiaryLikeService;
 import apptive.team5.user.dto.UserResponse;
+import apptive.team5.user.dto.UserSearchResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,14 +33,15 @@ public class DiaryLikeController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<UserResponse>> getDiaryLikeUsers(
+    public ResponseEntity<Page<UserSearchResponse>> getDiaryLikeUsers(
             @PathVariable Long diaryId,
+            @AuthenticationPrincipal Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "100") int size,
             @RequestParam(required = false) String searchCond
     ) {
 
-        Page<UserResponse> response = diaryLikeService.getDiaryLikeUsers(diaryId, searchCond,
+        Page<UserSearchResponse> response = diaryLikeService.getDiaryLikeUsers(diaryId, userId, searchCond,
                 PageRequest.of(page, size));
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
