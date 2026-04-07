@@ -46,6 +46,7 @@ public class QDiaryLikeRepository {
                 .join(diaryLikeEntity.user, userEntity)
                 .where(
                         diaryLikeEntity.diary.id.eq(diaryId),
+                        diaryLikeEntity.user.id.notIn(blockedUserIds),
                         searchTagOrUserName(searchCond)
                 )
                 .from(diaryLikeEntity);

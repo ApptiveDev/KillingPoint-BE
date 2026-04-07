@@ -31,8 +31,8 @@ public class DiaryLikeLowService {
     }
 
     @Transactional(readOnly = true)
-    public Page<DiaryLikeEntity> findByDiaryIdLikeSearchCondExcludedBlockedUsers(Long diaryId, String searchCond, Pageable pageable) {
-        return qDiaryLikeRepository.findByDiaryIdLikeSearchCondExcludedBlockedUsers(diaryId, searchCond, pageable);
+    public Page<DiaryLikeEntity> findByDiaryIdLikeSearchCondExcludedBlockedUsers(Long diaryId, String searchCond, Set<Long> blockedUserIds, Pageable pageable) {
+        return qDiaryLikeRepository.findByDiaryIdLikeSearchCondExcludedBlockedUsers(diaryId, searchCond, blockedUserIds, pageable);
     }
 
     @Transactional(readOnly = true)

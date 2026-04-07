@@ -54,7 +54,7 @@ public class DiaryLikeService {
         Set<Long> blockedUserIds = userBlockLowService.getBlockedUserIds(userId);
 
         // 다이어리 좋야요를 누른 사용자 중 차단되지 않은 유저
-        Page<UserEntity> likeUsers = diaryLikeLowService.findByDiaryIdLikeSearchCondExcludedBlockedUsers(diaryId, searchCond, pageable)
+        Page<UserEntity> likeUsers = diaryLikeLowService.findByDiaryIdLikeSearchCondExcludedBlockedUsers(diaryId, searchCond, blockedUserIds, pageable)
                 .map(DiaryLikeEntity::getUser);
 
         List<Long> diaryLikeUserIds = likeUsers.stream().map(UserEntity::getId).toList();
