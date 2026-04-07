@@ -9,10 +9,12 @@ import apptive.team5.diary.repository.DiaryRepository;
 import apptive.team5.subscribe.domain.Subscribe;
 import apptive.team5.subscribe.repository.SubscribeRepository;
 import apptive.team5.user.domain.SocialType;
+import apptive.team5.user.domain.UserBlock;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.domain.UserRoleType;
 import apptive.team5.user.dto.UserResponse;
 import apptive.team5.user.dto.UserSearchResponse;
+import apptive.team5.user.repository.UserBlockRepository;
 import apptive.team5.user.repository.UserRepository;
 import apptive.team5.util.TestSecurityContextHolderInjection;
 import apptive.team5.util.TestUtil;
@@ -54,6 +56,8 @@ public class DiaryLikeControllerTest {
     private DiaryLikeRepository diaryLikeRepository;
     @Autowired
     private SubscribeRepository subscribeRepository;
+    @Autowired
+    private UserBlockRepository userBlockRepository;
 
     private UserEntity userLiker;
     private UserEntity userOwner;
@@ -183,6 +187,46 @@ public class DiaryLikeControllerTest {
         assertSoftly(softly -> {
             softly.assertThat(content.size()).isEqualTo(1);
             softly.assertThat(content.getFirst().userId()).isEqualTo(userLiker.getId());
+        });
+    }
+
+    @Test
+    @DisplayName("좋아요한 사람 조회 시 차단 유저는 제외되고 페이지 수가 맞다")
+    void getDiaryLikeUsersExcludeBlockedUsers() throws Exception {
+        // given
+        diaryLikeRepository.save(new DiaryLikeEntity(userLiker, diary));
+
+        UserEntity blockedLikeUser = userRepository.save(TestUtil.makeDifferentUserEntity(userOwner));
+        blockedLikeUser.changeTag(userLiker.getTag() + "-blocked");
+        diaryLikeRepository.save(new DiaryLikeEntity(blockedLikeUser, diary));
+
+        UserEntity visibleLikeUser = userRepository.save(TestUtil.makeDifferentUserEntity(blockedLikeUser));
+        visibleLikeUser.changeTag(userLiker.getTag() + "-visible");
+        diaryLikeRepository.save(new DiaryLikeEntity(visibleLikeUser, diary));
+
+        userBlockRepository.save(new UserBlock(userLiker, blockedLikeUser));
+
+        // when
+        String response = mockMvc.perform(get("/api/diaries/{diaryId}/like", diary.getId())
+                        .param("searchCond", userLiker.getTag())
+                        .with(securityContext(SecurityContextHolder.getContext()))
+                )
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        // then
+        JsonNode jsonNode = objectMapper.readTree(response);
+        List<UserSearchResponse> content = objectMapper.convertValue(
+                jsonNode.path("content"),
+                new TypeReference<List<UserSearchResponse>>() {}
+        );
+
+        assertSoftly(softly -> {
+            softly.assertThat(content).extracting(UserSearchResponse::userId)
+                    .containsExactlyInAnyOrder(userLiker.getId(), visibleLikeUser.getId());
+            softly.assertThat(content).extracting(UserSearchResponse::userId)
+                    .doesNotContain(blockedLikeUser.getId());
+            softly.assertThat(jsonNode.path("page").path("totalElements").asInt()).isEqualTo(2);
         });
     }
 }

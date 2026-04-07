@@ -11,9 +11,11 @@ import apptive.team5.global.exception.ExceptionCode;
 import apptive.team5.global.util.S3Util;
 import apptive.team5.subscribe.domain.Subscribe;
 import apptive.team5.subscribe.repository.SubscribeRepository;
+import apptive.team5.user.domain.UserBlock;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.domain.UserRoleType;
 import apptive.team5.user.dto.*;
+import apptive.team5.user.repository.UserBlockRepository;
 import apptive.team5.user.repository.UserRepository;
 import apptive.team5.util.TestSecurityContextHolderInjection;
 import apptive.team5.util.TestUtil;
@@ -69,6 +71,9 @@ class UserControllerTest {
 
     @Autowired
     private DiaryStoreRepository  diaryStoreRepository;
+
+    @Autowired
+    private UserBlockRepository userBlockRepository;
 
 
     @DisplayName("회원 정보 조회 성공")
@@ -295,6 +300,57 @@ class UserControllerTest {
             softly.assertThat(content.get(1).isMyPick()).isTrue();
         });
 
+    }
+
+    @DisplayName("tag 검색 시 차단한 유저와 나를 차단한 유저는 제외")
+    @Test
+    void getUserByTagExcludeBlockedUsers() throws Exception {
+
+        // given
+        UserEntity user = TestUtil.makeUserEntity();
+        userRepository.save(user);
+
+        UserEntity blockedUser = TestUtil.makeDifferentUserEntity(user);
+        userRepository.save(blockedUser);
+
+        UserEntity blockingUser = TestUtil.makeDifferentUserEntity(blockedUser);
+        userRepository.save(blockingUser);
+
+        UserEntity visibleUser = TestUtil.makeDifferentUserEntity(blockingUser);
+        userRepository.save(visibleUser);
+
+        blockedUser.changeTag(user.getTag() + "-blocked");
+        blockingUser.changeTag(user.getTag() + "-blocking");
+        visibleUser.changeTag(user.getTag() + "-visible");
+
+        userBlockRepository.save(new UserBlock(user, blockedUser));
+        userBlockRepository.save(new UserBlock(blockingUser, user));
+
+        TestSecurityContextHolderInjection.inject(user.getId(), user.getRoleType());
+
+        // when
+        String response = mockMvc.perform(get("/api/users")
+                        .param("searchCond", user.getTag())
+                        .with(securityContext(SecurityContextHolder.getContext()))
+                )
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(UTF_8);
+
+        // then
+        JsonNode jsonNode = objectMapper.readTree(response);
+
+        List<UserSearchResponse> content = objectMapper.convertValue(
+                jsonNode.path("content"),
+                new TypeReference<List<UserSearchResponse>>() {}
+        );
+
+        assertSoftly(softly -> {
+            softly.assertThat(content).extracting(UserSearchResponse::userId)
+                    .containsExactlyInAnyOrder(user.getId(), visibleUser.getId());
+            softly.assertThat(content).extracting(UserSearchResponse::userId)
+                    .doesNotContain(blockedUser.getId(), blockingUser.getId());
+            softly.assertThat(jsonNode.path("page").path("totalElements").asInt()).isEqualTo(2);
+        });
     }
 
     @DisplayName("회원 탈퇴 성공")
