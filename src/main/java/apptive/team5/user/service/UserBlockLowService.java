@@ -27,4 +27,8 @@ public class UserBlockLowService {
     public Page<UserBlock> findByBlockerIdWithBlockedUser(Long blockerId, Pageable pageable) {
         return userBlockRepository.findByBlockerIdWithBlockedUser(blockerId, pageable);
     }
+
+    public void deleteByUserId(Long userId) {
+        userBlockRepository.deleteByUserId(userId);
+    }
 }

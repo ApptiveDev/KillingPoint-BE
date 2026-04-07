@@ -11,7 +11,6 @@ import apptive.team5.jwt.component.JWTUtil;
 import apptive.team5.jwt.dto.TokenResponse;
 import apptive.team5.jwt.service.JwtService;
 import apptive.team5.oauth2.component.AppleApiConnector;
-import apptive.team5.oauth2.component.AppleKeyGenerator;
 import apptive.team5.oauth2.domain.AppleRefreshToken;
 import apptive.team5.oauth2.dto.OAuth2Response;
 import apptive.team5.oauth2.dto.apple.AppleOAuth2Rep;
@@ -56,6 +55,7 @@ public class UserService {
     private final AppleRefreshTokenLowService appleRefreshTokenLowService;
     private final UserInitSettingService userInitSettingService;
     private final UserPolicyLowService userPolicyLowService;
+    private final UserBlockLowService userBlockLowService;
 
     public TokenResponse socialLogin(OAuth2Response oAuth2Response) {
         String identifier = oAuth2Response.getProvider() + "-" +oAuth2Response.getProviderId();
@@ -111,6 +111,7 @@ public class UserService {
         jwtService.deleteRefreshTokenByUserId(userId);
         userPolicyLowService.deleteByUserEntity(findUser);
         userInitSettingService.deleteByUserEntity(findUser);
+        userBlockLowService.deleteByUserId(userId);
         userLowService.deleteByUserId(userId);
 
         s3Service.deleteS3File(findUser.getProfileImage());
