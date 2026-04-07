@@ -29,6 +29,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.securityContext;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -120,6 +121,28 @@ class UserBlockControllerTest {
         });
 
         assertThat(apiResponse.get("message")).isEqualTo(ExceptionCode.DUPLICATE_BLOCKED_USER.getDescription());
+    }
+
+    @DisplayName("회원 차단 해제 성공")
+    @Test
+    void removeBlockedUserSuccess() throws Exception {
+
+        // given
+        UserEntity blocker = userRepository.save(TestUtil.makeUserEntity());
+        UserEntity blockedUser = userRepository.save(TestUtil.makeDifferentUserEntity(blocker));
+        UserBlock userBlock = userBlockRepository.save(new UserBlock(blocker, blockedUser));
+
+        TestSecurityContextHolderInjection.inject(blocker.getId(), blocker.getRoleType());
+
+        // when
+        mockMvc.perform(delete("/api/users/{blockedId}/blocks", blockedUser.getId())
+                .with(securityContext(SecurityContextHolder.getContext()))
+        ).andExpect(status().isNoContent());
+
+        // then
+        boolean isPresent = userBlockRepository.findById(userBlock.getId()).isPresent();
+
+        assertThat(isPresent).isFalse();
     }
 
     @DisplayName("차단한 회원 목록 조회 성공")
