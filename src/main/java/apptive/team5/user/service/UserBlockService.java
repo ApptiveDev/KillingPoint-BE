@@ -36,7 +36,7 @@ public class UserBlockService {
         userBlockLowService.save(new UserBlock(blocker, blockedUser));
     }
 
-    public void removeBlockedUser(Long blockedUserId, Long blockerId) {
+    public void removeBlockedUser(Long blockerId, Long blockedUserId) {
 
         userBlockLowService.deleteByBlockerIdAndBlockedUserId(blockerId, blockedUserId);
     }
