@@ -29,12 +29,12 @@ public class QUserRepository {
     }
 
     public Page<UserEntity> findByTagOrUsernameExcludingBlocked(Set<Long> blockedUserIds, String searchCond, Pageable pageable) {
+        BooleanExpression searchCondition = tagLike(searchCond).or(usernameLike(searchCond));
+        BooleanExpression notBlockedCondition = userEntity.id.notIn(blockedUserIds);
 
         List<UserEntity> content = queryFactory
                 .selectFrom(userEntity)
-                .where(tagLike(searchCond)
-                        .or(usernameLike(searchCond))
-                        .and(userEntity.id.notIn(blockedUserIds)))
+                .where(searchCondition, notBlockedCondition)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -42,9 +42,7 @@ public class QUserRepository {
         JPAQuery<Long> countQuery = queryFactory
                 .select(userEntity.count())
                 .from(userEntity)
-                .where(tagLike(searchCond)
-                        .or(usernameLike(searchCond))
-                        .and(userEntity.id.notIn(blockedUserIds)));
+                .where(searchCondition, notBlockedCondition);
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
@@ -57,4 +55,3 @@ public class QUserRepository {
         return username != null ? userEntity.username.like("%" + username + "%") : null;
     }
 }
-
