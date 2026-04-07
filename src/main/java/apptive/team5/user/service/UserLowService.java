@@ -11,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 public class UserLowService {
@@ -55,7 +57,7 @@ public class UserLowService {
     }
 
     @Transactional(readOnly = true)
-    public Page<UserEntity> findByTagOrUsernameExcludingBlocked(Long currentUserId, String searchCond, Pageable pageable) {
-        return qUserRepository.findByTagOrUsernameExcludingBlocked(currentUserId, searchCond,pageable);
+    public Page<UserEntity> findByTagOrUsernameExcludingBlocked(Set<Long> blockedUserIds, String searchCond, Pageable pageable) {
+        return qUserRepository.findByTagOrUsernameExcludingBlocked(blockedUserIds, searchCond,pageable);
     }
 }

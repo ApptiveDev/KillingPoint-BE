@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 import static apptive.team5.user.domain.QUserBlock.userBlock;
 import static apptive.team5.user.domain.QUserEntity.userEntity;
@@ -27,14 +28,13 @@ public class QUserRepository {
         this.queryFactory = new JPAQueryFactory(entityManager);
     }
 
-    public Page<UserEntity> findByTagOrUsernameExcludingBlocked(Long currentUserId, String searchCond, Pageable pageable) {
-        BooleanExpression condition = tagLike(searchCond)
-                .or(usernameLike(searchCond))
-                .and(notBlockedWith(currentUserId));
+    public Page<UserEntity> findByTagOrUsernameExcludingBlocked(Set<Long> blockedUserIds, String searchCond, Pageable pageable) {
 
         List<UserEntity> content = queryFactory
                 .selectFrom(userEntity)
-                .where(condition)
+                .where(tagLike(searchCond)
+                        .or(usernameLike(searchCond))
+                        .and(userEntity.id.notIn(blockedUserIds)))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -42,24 +42,11 @@ public class QUserRepository {
         JPAQuery<Long> countQuery = queryFactory
                 .select(userEntity.count())
                 .from(userEntity)
-                .where(condition);
+                .where(tagLike(searchCond)
+                        .or(usernameLike(searchCond))
+                        .and(userEntity.id.notIn(blockedUserIds)));
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
-    }
-
-    private BooleanExpression notBlockedWith(Long currentUserId) {
-        return JPAExpressions
-                .selectOne()
-                .from(userBlock)
-                .where(
-                        userBlock.blocker.id.eq(currentUserId)
-                                .and(userBlock.blockedUser.id.eq(userEntity.id))
-                                .or(
-                                        userBlock.blocker.id.eq(userEntity.id)
-                                                .and(userBlock.blockedUser.id.eq(currentUserId))
-                                )
-                )
-                .notExists();
     }
 
     private BooleanExpression tagLike(String tag) {

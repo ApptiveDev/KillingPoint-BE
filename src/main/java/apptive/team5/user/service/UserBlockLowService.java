@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Transactional
 @RequiredArgsConstructor
@@ -33,8 +35,12 @@ public class UserBlockLowService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserBlock> findByUserId(Long userId) {
-        return userBlockRepository.findByUserId(userId);
+    public Set<Long> getBlockedUserIds(Long userId) {
+        return userBlockRepository.findByUserId(userId)
+                .stream().map(userBlock -> {
+                    if (userBlock.getBlockedUser().getId().equals(userId)) return userBlock.getBlocker().getId();
+                    return userBlock.getBlockedUser().getId();
+                }).collect(Collectors.toSet());
     }
 
     public void deleteByUserId(Long userId) {

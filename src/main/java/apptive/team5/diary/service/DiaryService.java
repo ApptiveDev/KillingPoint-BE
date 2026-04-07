@@ -93,13 +93,9 @@ public class DiaryService {
     @Transactional(readOnly = true)
     public RandomDiaryResponseDto getRandomDiaries(Long userId) {
 
-        Set<Long> blockedUserIds = userBlockLowService.findByUserId(userId)
-                .stream().map(userBlock -> {
-                    if (userBlock.getBlockedUser().getId().equals(userId)) return userBlock.getBlocker().getId();
-                    return userBlock.getBlockedUser().getId();
-                }).collect(Collectors.toSet());
+        Set<Long> blockedUserIds = userBlockLowService.getBlockedUserIds(userId);
 
-        blockedUserIds.add(userId);
+        blockedUserIds.add(userId); // 랜덤에서는 본인 아이디도 제외
 
         List<DiaryEntity> randomDiary = diaryLowService.findRandomDiary(blockedUserIds);
 

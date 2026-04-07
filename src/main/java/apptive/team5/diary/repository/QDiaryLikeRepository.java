@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 import static apptive.team5.diary.domain.QDiaryLikeEntity.*;
 import static apptive.team5.user.domain.QUserEntity.userEntity;
@@ -26,13 +27,14 @@ public class QDiaryLikeRepository {
         this.queryFactory = new JPAQueryFactory(entityManager);
     }
 
-    public Page<DiaryLikeEntity> findByDiaryIdLikeSearchCond(Long diaryId, String searchCond, Pageable pageable) {
+    public Page<DiaryLikeEntity> findByDiaryIdLikeSearchCondExcludedBlockedUsers(Long diaryId, String searchCond, Set<Long> blockedUserIds, Pageable pageable) {
 
         List<DiaryLikeEntity> content = queryFactory
                 .selectFrom(diaryLikeEntity)
                 .join(diaryLikeEntity.user, userEntity).fetchJoin()
                 .where(
                         diaryLikeEntity.diary.id.eq(diaryId),
+                        diaryLikeEntity.user.id.notIn(blockedUserIds),
                         searchTagOrUserName(searchCond)
                 )
                 .offset(pageable.getOffset())
