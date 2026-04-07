@@ -46,4 +46,8 @@ public class UserBlockLowService {
     public void deleteByUserId(Long userId) {
         userBlockRepository.deleteByUserId(userId);
     }
+
+    public void deleteByBlockerIdAndBlockedUserId(Long blockerId, Long blockedUserId) {
+        userBlockRepository.deleteByBlockerIdAndBlockedUserId(blockerId, blockedUserId);
+    }
 }

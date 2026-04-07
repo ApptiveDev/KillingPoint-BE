@@ -36,6 +36,12 @@ public class UserBlockService {
         userBlockLowService.save(new UserBlock(blocker, blockedUser));
     }
 
+    public void removeBlockedUser(Long blockedUserId, Long blockerId) {
+
+        userBlockLowService.deleteByBlockerIdAndBlockedUserId(blockerId, blockedUserId);
+    }
+
+
     public Page<UserResponse> getBlockedUser(Long blockerId, Pageable pageable) {
 
         return userBlockLowService.findByBlockerIdWithBlockedUser(blockerId, pageable)

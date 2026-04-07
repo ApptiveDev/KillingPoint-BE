@@ -28,6 +28,16 @@ public class UserBlockController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @DeleteMapping("/{blockedId}/blocks")
+    public ResponseEntity<Void> removeBlockedUser(
+            @PathVariable Long blockedId,
+            @AuthenticationPrincipal Long userId){
+
+        userBlockService.removeBlockedUser(userId, blockedId);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
     @GetMapping("/blocks")
     public ResponseEntity<Page<UserResponse>> getBlockedUser(
             @AuthenticationPrincipal Long userId,

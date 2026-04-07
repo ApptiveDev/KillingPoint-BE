@@ -19,9 +19,13 @@ public interface UserBlockRepository extends JpaRepository<UserBlock,Long> {
     Page<UserBlock> findByBlockerIdWithBlockedUser(Long blockerId, Pageable pageable);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("delete from UserBlock ub where ub.blockedUser.id = :userId or ub.blocker.id = :userId")
+    @Query("delete from UserBlock ub where ub.blocker.id = :userId or ub.blockedUser.id = :userId")
     void deleteByUserId(Long userId);
 
-    @Query("select ub from UserBlock ub where ub.blockedUser.id = :userId or ub.blocker.id = :userId")
+    @Query("select ub from UserBlock ub where ub.blocker.id = :userId or ub.blockedUser.id = :userId")
     List<UserBlock> findByUserId(Long userId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("delete from UserBlock ub where ub.blocker.id = :blockerId and ub.blockedUser.id = :blockedUserId")
+    void deleteByBlockerIdAndBlockedUserId(Long blockerId, Long blockedUserId);
 }
