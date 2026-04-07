@@ -2,6 +2,7 @@ package apptive.team5.user.service;
 
 import apptive.team5.global.exception.DuplicateException;
 import apptive.team5.global.exception.ExceptionCode;
+import apptive.team5.subscribe.service.SubscribeLowService;
 import apptive.team5.user.domain.UserBlock;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.dto.UserResponse;
@@ -18,15 +19,19 @@ public class UserBlockService {
 
     private final UserBlockLowService userBlockLowService;
     private final UserLowService userLowService;
+    private final SubscribeLowService subscribeLowService;
 
-    public void addBlockedUser(Long blockedId, Long blockerId) {
+    public void addBlockedUser(Long blockedUserId, Long blockerId) {
 
-        if(userBlockLowService.existsByBlockerIdAndBlockedUserId(blockerId, blockedId))
+        if(userBlockLowService.existsByBlockerIdAndBlockedUserId(blockerId, blockedUserId))
             throw new DuplicateException(ExceptionCode.DUPLICATE_BLOCKED_USER.getDescription());
 
         UserEntity blocker = userLowService.getReferenceById(blockerId);
 
-        UserEntity blockedUser = userLowService.findById(blockedId);
+        UserEntity blockedUser = userLowService.findById(blockedUserId);
+
+        subscribeLowService.deleteBySubscriberIdAndSubscribedToId(blockerId, blockedUserId);
+        subscribeLowService.deleteBySubscriberIdAndSubscribedToId(blockedUserId, blockerId);
 
         userBlockLowService.save(new UserBlock(blocker, blockedUser));
     }

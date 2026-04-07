@@ -1,6 +1,8 @@
 package apptive.team5.user.controller;
 
 import apptive.team5.global.exception.ExceptionCode;
+import apptive.team5.subscribe.domain.Subscribe;
+import apptive.team5.subscribe.repository.SubscribeRepository;
 import apptive.team5.user.domain.UserBlock;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.dto.UserResponse;
@@ -46,6 +48,9 @@ class UserBlockControllerTest {
     private UserBlockRepository userBlockRepository;
 
     @Autowired
+    private SubscribeRepository subscribeRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     @DisplayName("회원 차단 성공")
@@ -55,6 +60,9 @@ class UserBlockControllerTest {
         // given
         UserEntity blocker = userRepository.save(TestUtil.makeUserEntity());
         UserEntity blockedUser = userRepository.save(TestUtil.makeDifferentUserEntity(blocker));
+
+        subscribeRepository.save(new Subscribe(blocker, blockedUser));
+        subscribeRepository.save(new Subscribe(blockedUser, blocker));
 
         TestSecurityContextHolderInjection.inject(blocker.getId(), blocker.getRoleType());
 
@@ -70,6 +78,8 @@ class UserBlockControllerTest {
             softly.assertThat(userBlocks).hasSize(1);
             softly.assertThat(userBlocks.getFirst().getBlocker().getId()).isEqualTo(blocker.getId());
             softly.assertThat(userBlocks.getFirst().getBlockedUser().getId()).isEqualTo(blockedUser.getId());
+            softly.assertThat(subscribeRepository.existsBySubscriberIdAndSubscribedToId(blockedUser.getId(), blocker.getId())).isFalse();
+            softly.assertThat(subscribeRepository.existsBySubscriberIdAndSubscribedToId(blocker.getId(), blockedUser.getId())).isFalse();
         });
     }
 
