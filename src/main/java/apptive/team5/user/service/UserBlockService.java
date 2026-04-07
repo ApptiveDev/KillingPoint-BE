@@ -26,7 +26,7 @@ public class UserBlockService {
 
         UserEntity blocker = userLowService.getReferenceById(blockerId);
 
-        UserEntity blockedUser = userLowService.findById(blockerId);
+        UserEntity blockedUser = userLowService.findById(blockedId);
 
         userBlockLowService.save(new UserBlock(blocker, blockedUser));
     }
