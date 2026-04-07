@@ -147,7 +147,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Page<UserSearchResponse> findByTagOrUserName(Long subscriberId, String searchCond, Pageable pageable) {
-        Page<UserEntity> findUsers = userLowService.findByTagOrUsername(searchCond, pageable);
+        Page<UserEntity> findUsers = userLowService.findByTagOrUsernameExcludingBlocked(subscriberId, searchCond, pageable);
 
         List<Long> userIds = findUsers.stream().map(UserEntity::getId).toList();
 

@@ -2,6 +2,7 @@ package apptive.team5.user.repository;
 
 import apptive.team5.user.domain.UserEntity;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static apptive.team5.user.domain.QUserBlock.userBlock;
 import static apptive.team5.user.domain.QUserEntity.userEntity;
 
 @Transactional
@@ -25,27 +27,47 @@ public class QUserRepository {
         this.queryFactory = new JPAQueryFactory(entityManager);
     }
 
-    public Page<UserEntity> findByTagOrUsername(String searchCond, Pageable pageable) {
+    public Page<UserEntity> findByTagOrUsernameExcludingBlocked(Long currentUserId, String searchCond, Pageable pageable) {
+        BooleanExpression condition = tagLike(searchCond)
+                .or(usernameLike(searchCond))
+                .and(notBlockedWith(currentUserId));
 
         List<UserEntity> content = queryFactory
                 .selectFrom(userEntity)
-                .where(tagLike(searchCond).or(usernameLike(searchCond)))
+                .where(condition)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        JPAQuery<Long> countQuery = queryFactory.select(userEntity.count())
-                .where(tagLike(searchCond).or(usernameLike(searchCond)))
-                .from(userEntity);
+        JPAQuery<Long> countQuery = queryFactory
+                .select(userEntity.count())
+                .from(userEntity)
+                .where(condition);
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
+    private BooleanExpression notBlockedWith(Long currentUserId) {
+        return JPAExpressions
+                .selectOne()
+                .from(userBlock)
+                .where(
+                        userBlock.blocker.id.eq(currentUserId)
+                                .and(userBlock.blockedUser.id.eq(userEntity.id))
+                                .or(
+                                        userBlock.blocker.id.eq(userEntity.id)
+                                                .and(userBlock.blockedUser.id.eq(currentUserId))
+                                )
+                )
+                .notExists();
+    }
+
     private BooleanExpression tagLike(String tag) {
-        return tag != null ? userEntity.tag.like("%"+tag+"%") : null;
+        return tag != null ? userEntity.tag.like("%" + tag + "%") : null;
     }
 
     private BooleanExpression usernameLike(String username) {
-        return username != null ? userEntity.username.like("%"+username+"%") : null;
+        return username != null ? userEntity.username.like("%" + username + "%") : null;
     }
 }
+
