@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
                 name = "unique_user_block",
                 columnNames = {
                         "blocker_id",
-                        "blocked_to_id"
+                        "blocked_id"
                 }
         ),
 }
@@ -28,11 +28,11 @@ public class UserBlock {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "blocked_id", nullable = false)
+    @JoinColumn(name = "blocker_id", nullable = false)
     private UserEntity blocker;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subscribed_to_id", nullable = false)
+    @JoinColumn(name = "blocked_id", nullable = false)
     private UserEntity blockedUser;
 
     public UserBlock(UserEntity blocker, UserEntity blockedUser) {
