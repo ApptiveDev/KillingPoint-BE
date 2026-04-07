@@ -32,11 +32,11 @@ public interface DiaryRepository extends JpaRepository<DiaryEntity, Long> {
     @Query("select max(d.id) from DiaryEntity d")
     Long findMaxId();
 
-    @Query("select d from DiaryEntity d where d.user.id != :userId and d.id >= :diaryId and d.scope in :scopes")
-    List<DiaryEntity> findDiaryNotMineGreaterThanIdAndScopeIn(Long userId, Long diaryId, List<DiaryScope> scopes, Pageable pageable);
+    @Query("select d from DiaryEntity d where d.user.id not in :blockedUserIds and d.id >= :diaryId and d.scope in :scopes")
+    List<DiaryEntity> findDiaryNotMineGreaterThanIdAndScopeIn(Set<Long> blockedUserIds, Long diaryId, List<DiaryScope> scopes, Pageable pageable);
 
-    @Query("select d from DiaryEntity d where d.user.id != :userId and d.id <= :diaryId and d.scope in :scopes")
-    List<DiaryEntity> findDiaryByNotMineAndLessThanIdAndScopeIn(Long userId, Long diaryId, List<DiaryScope> scopes, Pageable pageable);
+    @Query("select d from DiaryEntity d where d.user.id not in :blockedUserIds and d.id <= :diaryId and d.scope in :scopes")
+    List<DiaryEntity> findDiaryByNotMineAndLessThanIdAndScopeIn(Set<Long> blockedUserIds, Long diaryId, List<DiaryScope> scopes, Pageable pageable);
 
     @Query("delete from DiaryEntity d where d.user.id = :userId")
     @Modifying(clearAutomatically = true, flushAutomatically = true)

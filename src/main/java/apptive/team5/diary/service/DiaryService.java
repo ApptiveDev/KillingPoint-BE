@@ -7,6 +7,7 @@ import apptive.team5.diary.dto.*;
 import apptive.team5.diary.mapper.DiaryResponseMapper;
 import apptive.team5.subscribe.service.SubscribeLowService;
 import apptive.team5.user.domain.UserEntity;
+import apptive.team5.user.service.UserBlockLowService;
 import apptive.team5.user.service.UserLowService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -35,6 +36,7 @@ public class DiaryService {
     private final SubscribeLowService subscribeLowService;
     private final DiaryReportLowService diaryReportLowService;
     private final DiaryStoreLowService diaryStoreLowService;
+    private final UserBlockLowService userBlockLowService;
 
     @Transactional(readOnly = true)
     public Page<MyDiaryResponseDto> getMyDiaries(Long userId, Pageable pageable) {
@@ -90,7 +92,16 @@ public class DiaryService {
 
     @Transactional(readOnly = true)
     public RandomDiaryResponseDto getRandomDiaries(Long userId) {
-        List<DiaryEntity> randomDiary = diaryLowService.findRandomDiary(userId);
+
+        Set<Long> blockedUserIds = userBlockLowService.findByUserId(userId)
+                .stream().map(userBlock -> {
+                    if (userBlock.getBlockedUser().getId().equals(userId)) return userBlock.getBlocker().getId();
+                    return userBlock.getBlockedUser().getId();
+                }).collect(Collectors.toSet());
+
+        blockedUserIds.add(userId);
+
+        List<DiaryEntity> randomDiary = diaryLowService.findRandomDiary(blockedUserIds);
 
         Collections.shuffle(randomDiary);
 

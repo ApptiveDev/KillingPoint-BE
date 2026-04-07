@@ -62,7 +62,7 @@ public class DiaryLowService {
     }
 
     @Transactional(readOnly = true)
-    public List<DiaryEntity> findRandomDiary(Long userId) {
+    public List<DiaryEntity> findRandomDiary(Set<Long> blockedUserIds) {
 
         Long maxId = diaryRepository.findMaxId();
 
@@ -70,9 +70,9 @@ public class DiaryLowService {
 
         List<DiaryScope> scopes = List.of(DiaryScope.PUBLIC,  DiaryScope.KILLING_PART);
 
-        List<DiaryEntity> randomDiaries = diaryRepository.findDiaryNotMineGreaterThanIdAndScopeIn(userId, randomId, scopes, PageRequest.of(0, 5));
+        List<DiaryEntity> randomDiaries = diaryRepository.findDiaryNotMineGreaterThanIdAndScopeIn(blockedUserIds, randomId, scopes, PageRequest.of(0, 5));
 
-        if (randomDiaries.isEmpty()) return diaryRepository.findDiaryByNotMineAndLessThanIdAndScopeIn(userId, randomId, scopes, PageRequest.of(0, 5));
+        if (randomDiaries.isEmpty()) return diaryRepository.findDiaryByNotMineAndLessThanIdAndScopeIn(blockedUserIds, randomId, scopes, PageRequest.of(0, 5));
 
         return randomDiaries;
     }
