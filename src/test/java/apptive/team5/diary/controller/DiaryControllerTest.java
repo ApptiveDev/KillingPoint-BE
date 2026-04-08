@@ -10,7 +10,9 @@ import apptive.team5.diary.service.DiaryLikeLowService;
 import apptive.team5.diary.service.DiaryLowService;
 import apptive.team5.subscribe.domain.Subscribe;
 import apptive.team5.subscribe.repository.SubscribeRepository;
+import apptive.team5.user.domain.UserBlock;
 import apptive.team5.user.domain.UserEntity;
+import apptive.team5.user.repository.UserBlockRepository;
 import apptive.team5.user.repository.UserRepository;
 import apptive.team5.util.TestSecurityContextHolderInjection;
 import apptive.team5.util.TestUtil;
@@ -77,6 +79,9 @@ public class DiaryControllerTest {
 
     @Autowired
     private SubscribeRepository subscribeRepository;
+
+    @Autowired
+    private UserBlockRepository userBlockRepository;
 
     private UserEntity testUser;
 
@@ -385,6 +390,44 @@ public class DiaryControllerTest {
         assertSoftly(softly -> {
             softly.assertThat(randomDiaryResponseDto.pageSize()).isEqualTo(1);
             softly.assertThat(randomDiaryResponseDto.content().get(0).diaryId()).isEqualTo(diary.getId());
+        });
+    }
+
+    @Test
+    @DisplayName("랜덤 다이어리 조회 시 본인과 차단 유저 다이어리는 제외")
+    void getRandomDiariesExcludeBlockedUsersAndMine() throws Exception {
+
+        // given
+        DiaryEntity myDiary = diaryRepository.save(TestUtil.makeDiaryEntity(testUser));
+
+        UserEntity blockedUser = userRepository.save(TestUtil.makeDifferentUserEntity(testUser));
+        DiaryEntity blockedDiary = diaryRepository.save(TestUtil.makeDiaryEntity(blockedUser));
+
+        UserEntity visibleUser = userRepository.save(TestUtil.makeDifferentUserEntity(blockedUser));
+        DiaryEntity visibleDiary = diaryRepository.save(TestUtil.makeDiaryEntity(visibleUser));
+
+        userBlockRepository.save(new UserBlock(testUser, blockedUser));
+
+        TestSecurityContextHolderInjection.inject(testUser.getId(), testUser.getRoleType());
+
+        // when
+        String response = mockMvc.perform(get("/api/diaries/randoms")
+                        .with(securityContext(SecurityContextHolder.getContext()))
+                )
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        // then
+        RandomDiaryResponseDto randomDiaryResponseDto = objectMapper.readValue(response, new TypeReference<>() {
+        });
+
+        assertSoftly(softly -> {
+            softly.assertThat(randomDiaryResponseDto.content()).extracting(FeedDiaryResponseDto::diaryId)
+                    .contains(visibleDiary.getId())
+                    .doesNotContain(myDiary.getId(), blockedDiary.getId());
+            softly.assertThat(randomDiaryResponseDto.content()).extracting(FeedDiaryResponseDto::userId)
+                    .contains(visibleUser.getId())
+                    .doesNotContain(testUser.getId(), blockedUser.getId());
         });
     }
 }

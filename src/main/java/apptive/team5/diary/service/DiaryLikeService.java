@@ -9,6 +9,7 @@ import apptive.team5.subscribe.service.SubscribeLowService;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.dto.UserResponse;
 import apptive.team5.user.dto.UserSearchResponse;
+import apptive.team5.user.service.UserBlockLowService;
 import apptive.team5.user.service.UserLowService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,7 @@ public class DiaryLikeService {
     private final UserLowService userLowService;
     private final DiaryLowService diaryLowService;
     private final SubscribeLowService subscribeLowService;
+    private final UserBlockLowService userBlockLowService;
 
     public DiaryLikeResponseDto toggleDiaryLike(Long userId, Long diaryId) {
         UserEntity user = userLowService.getReferenceById(userId);
@@ -49,8 +51,10 @@ public class DiaryLikeService {
 
         DiaryEntity findDiary = diaryLowService.findDiaryById(diaryId);
 
-        // 다이어리 좋야요를 누른 사용자
-        Page<UserEntity> likeUsers = diaryLikeLowService.findByDiaryIdLikeSearchCond(diaryId, searchCond, pageable)
+        Set<Long> blockedUserIds = userBlockLowService.getBlockedUserIds(userId);
+
+        // 다이어리 좋야요를 누른 사용자 중 차단되지 않은 유저
+        Page<UserEntity> likeUsers = diaryLikeLowService.findByDiaryIdLikeSearchCondExcludedBlockedUsers(diaryId, searchCond, blockedUserIds, pageable)
                 .map(DiaryLikeEntity::getUser);
 
         List<Long> diaryLikeUserIds = likeUsers.stream().map(UserEntity::getId).toList();
