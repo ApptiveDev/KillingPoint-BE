@@ -22,6 +22,7 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Transactional
 @Service
@@ -93,9 +94,10 @@ public class DiaryService {
     @Transactional(readOnly = true)
     public RandomDiaryResponseDto getRandomDiaries(Long userId) {
 
-        Set<Long> blockedUserIds = userBlockLowService.getBlockedUserIds(userId);
-
-        blockedUserIds.add(userId); // 랜덤에서는 본인 아이디도 제외
+        Set<Long> blockedUserIds = Stream.concat(
+                userBlockLowService.getBlockedUserIds(userId).stream(),
+                Stream.of(userId) // 랜덤에서는 본인 id도 제외
+        ).collect(Collectors.toSet());
 
         List<DiaryEntity> randomDiary = diaryLowService.findRandomDiary(blockedUserIds);
 
