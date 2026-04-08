@@ -1,5 +1,6 @@
 package apptive.team5.user.service;
 
+import apptive.team5.global.exception.BadRequestException;
 import apptive.team5.global.exception.DuplicateException;
 import apptive.team5.global.exception.ExceptionCode;
 import apptive.team5.subscribe.service.SubscribeLowService;
@@ -23,6 +24,10 @@ public class UserBlockService {
 
     public void addBlockedUser(Long blockedUserId, Long blockerId) {
 
+        if (blockedUserId.equals(blockerId)) {
+            throw new BadRequestException(ExceptionCode.BAD_BLOCK_REQUEST.getDescription());
+        }
+
         if(userBlockLowService.existsByBlockerIdAndBlockedUserId(blockerId, blockedUserId))
             throw new DuplicateException(ExceptionCode.DUPLICATE_BLOCKED_USER.getDescription());
 
@@ -37,6 +42,10 @@ public class UserBlockService {
     }
 
     public void removeBlockedUser(Long blockerId, Long blockedUserId) {
+
+        if (blockedUserId.equals(blockerId)) {
+            throw new BadRequestException(ExceptionCode.BAD_BLOCK_REQUEST.getDescription());
+        }
 
         userBlockLowService.deleteByBlockerIdAndBlockedUserId(blockerId, blockedUserId);
     }

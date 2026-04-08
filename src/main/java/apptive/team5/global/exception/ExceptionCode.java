@@ -23,7 +23,8 @@ public enum ExceptionCode {
     INVALID_DIARY_LIST("유효하지 않은 다이어리 ID가 포함되어 있습니다."),
     DUPLICATE_DIARY_REPORT("이미 신고한 게시글입니다."),
     REQUIRED_POLICY_NOT_AGREED("필수 약관에 동의해야 합니다."),
-    DUPLICATE_BLOCKED_USER("이미 차단한 회원입니다.");
+    DUPLICATE_BLOCKED_USER("이미 차단한 회원입니다."),
+    BAD_BLOCK_REQUEST("자신을 차단할 수는 없습니다.");
 
     private final String description;
 
