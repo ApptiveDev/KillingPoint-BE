@@ -34,7 +34,7 @@ public class QDiaryLikeRepository {
                 .join(diaryLikeEntity.user, userEntity).fetchJoin()
                 .where(
                         diaryLikeEntity.diary.id.eq(diaryId),
-                        diaryLikeEntity.user.id.notIn(blockedUserIds),
+                        notInBlockedUserIds(blockedUserIds),
                         searchTagOrUserName(searchCond)
                 )
                 .offset(pageable.getOffset())
@@ -46,12 +46,19 @@ public class QDiaryLikeRepository {
                 .join(diaryLikeEntity.user, userEntity)
                 .where(
                         diaryLikeEntity.diary.id.eq(diaryId),
-                        diaryLikeEntity.user.id.notIn(blockedUserIds),
+                        notInBlockedUserIds(blockedUserIds),
                         searchTagOrUserName(searchCond)
                 )
                 .from(diaryLikeEntity);
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    private BooleanExpression notInBlockedUserIds(Set<Long> blockedUserIds) {
+        if (blockedUserIds == null || blockedUserIds.isEmpty()) {
+            return null;
+        }
+        return diaryLikeEntity.user.id.notIn(blockedUserIds);
     }
 
     private BooleanExpression searchTagOrUserName(String searchCond) {

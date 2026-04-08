@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Set;
 
-import static apptive.team5.user.domain.QUserBlock.userBlock;
+import static apptive.team5.diary.domain.QDiaryLikeEntity.diaryLikeEntity;
 import static apptive.team5.user.domain.QUserEntity.userEntity;
 
 @Transactional
@@ -30,7 +30,7 @@ public class QUserRepository {
 
     public Page<UserEntity> findByTagOrUsernameExcludingBlocked(Set<Long> blockedUserIds, String searchCond, Pageable pageable) {
         BooleanExpression searchCondition = tagLike(searchCond).or(usernameLike(searchCond));
-        BooleanExpression notBlockedCondition = userEntity.id.notIn(blockedUserIds);
+        BooleanExpression notBlockedCondition = notInBlockedUserIds(blockedUserIds);
 
         List<UserEntity> content = queryFactory
                 .selectFrom(userEntity)
@@ -45,6 +45,13 @@ public class QUserRepository {
                 .where(searchCondition, notBlockedCondition);
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    private BooleanExpression notInBlockedUserIds(Set<Long> blockedUserIds) {
+        if (blockedUserIds == null || blockedUserIds.isEmpty()) {
+            return null;
+        }
+        return userEntity.id.notIn(blockedUserIds);
     }
 
     private BooleanExpression tagLike(String tag) {
