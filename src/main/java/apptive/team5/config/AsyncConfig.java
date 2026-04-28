@@ -27,6 +27,18 @@ public class AsyncConfig implements AsyncConfigurer {
         return executor;
     }
 
+    @Bean("sendAlarm")
+    public Executor sendAlarmExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(10);
+        executor.setMaxPoolSize(50);
+        executor.setQueueCapacity(1000);
+        executor.setThreadNamePrefix("AlarmPush-");
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
+        executor.initialize();
+        return executor;
+    }
+
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
         return new AsyncExceptionHandler();

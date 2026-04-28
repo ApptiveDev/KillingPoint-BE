@@ -40,3 +40,4 @@ out/
 .env
 src/main/resources/application-prod.properties
 src/test/resources/application-prod.properties
+src/main/resources/firebase/

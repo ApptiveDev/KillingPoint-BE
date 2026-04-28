@@ -1,5 +1,7 @@
 package apptive.team5.user.service;
+import apptive.team5.alarm.service.AlarmLowService;
 import apptive.team5.diary.service.*;
+import apptive.team5.fcm.service.DeviceTokenLowService;
 import apptive.team5.file.dto.FileUploadRequest;
 import apptive.team5.file.service.S3Service;
 import apptive.team5.file.service.TemporalLowService;
@@ -56,6 +58,8 @@ public class UserService {
     private final UserInitSettingService userInitSettingService;
     private final UserPolicyLowService userPolicyLowService;
     private final UserBlockLowService userBlockLowService;
+    private final DeviceTokenLowService deviceTokenLowService;
+    private final AlarmLowService alarmLowService;
 
     public TokenResponse socialLogin(OAuth2Response oAuth2Response) {
         String identifier = oAuth2Response.getProvider() + "-" +oAuth2Response.getProviderId();
@@ -100,6 +104,8 @@ public class UserService {
             appleRefreshTokenLowService.deleteByUserId(userId);
         }
 
+        alarmLowService.deleteByUserId(userId);
+        deviceTokenLowService.deleteByUserId(userId);
         surveyLowService.deleteByUserId(userId);
         subscribeLowService.deleteByUserId(userId);
         diaryStoreLowService.deleteByUserId(userId);
