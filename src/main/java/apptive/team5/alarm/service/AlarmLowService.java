@@ -16,8 +16,8 @@ public class AlarmLowService {
     private final AlarmRepository alarmRepository;
 
     @Transactional(readOnly = true)
-    public Page<Alarm> findByUserIdWithPage(Long memberId, Pageable pageable) {
-        return alarmRepository.findByUserIdWithPage(memberId, pageable);
+    public Page<Alarm> findByUserIdWithPage(Long userId, Pageable pageable) {
+        return alarmRepository.findByUserIdWithPage(userId, pageable);
     }
 
 
@@ -25,7 +25,7 @@ public class AlarmLowService {
         return alarmRepository.save(alarm);
     }
 
-    public void deleteByUserId(Long memberId) {
-        alarmRepository.deleteByUserId(memberId);
+    public void deleteByUserId(Long userId) {
+        alarmRepository.deleteByUserId(userId);
     }
 }

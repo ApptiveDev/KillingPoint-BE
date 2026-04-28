@@ -29,7 +29,7 @@ public class FcmService {
 
 
         if (deviceToken.isPresent()) {
-            deviceToken.get().updateMember(user);
+            deviceToken.get().updateUser(user);
             return deviceToken.get();
         }
 
@@ -37,13 +37,13 @@ public class FcmService {
     }
 
     @Async("sendAlarm")
-    public void sendArticleAlarm(Long memberId, String articleTitle, String articleComment) {
+    public void sendAlarm(Long userId, String title, String content) {
 
-        List<DeviceToken> deviceTokens = deviceTokenLowService.findByUserId(memberId);
+        List<DeviceToken> deviceTokens = deviceTokenLowService.findByUserId(userId);
 
 
         deviceTokens.forEach(deviceToken -> {
-            sendMessageTo(deviceToken.getToken(), articleTitle, articleComment);
+            sendMessageTo(deviceToken.getToken(), title, content);
         });
 
     }

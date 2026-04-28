@@ -42,8 +42,8 @@ public class DeviceToken extends BaseTimeEntity {
         this.token = token;
     }
 
-    public void updateMember(UserEntity member) {
-        this.user = member;
+    public void updateUser(UserEntity user) {
+        this.user = user;
     }
 
 }
