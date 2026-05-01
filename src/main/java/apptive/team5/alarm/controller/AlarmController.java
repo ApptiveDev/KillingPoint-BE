@@ -29,7 +29,14 @@ public class AlarmController {
             @RequestParam(name = "size", defaultValue = "5") int size,
             @AuthenticationPrincipal Long userId
     ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(
+                        Sort.Order.desc("createDateTime"),
+                        Sort.Order.desc("id")
+                )
+        );
         Page<AlarmResponse> alarms = alarmService.getAlarms(userId, pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(alarms);
