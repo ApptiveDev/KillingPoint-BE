@@ -56,9 +56,9 @@ class AlarmControllerTest {
         UserEntity user = userRepository.save(TestUtil.makeUserEntity());
         UserEntity otherUser = userRepository.save(TestUtil.makeDifferentUserEntity(user));
 
-        alarmRepository.save(new Alarm("first title", "first content", user));
-        Alarm secondAlarm = alarmRepository.save(new Alarm("second title", "second content", user));
-        alarmRepository.save(new Alarm("other title", "other content", otherUser));
+        alarmRepository.save(new Alarm("first title", "first content", "/diaries/1", user));
+        Alarm secondAlarm = alarmRepository.save(new Alarm("second title", "second content", "/diaries/2", user));
+        alarmRepository.save(new Alarm("other title", "other content", "/diaries/3", otherUser));
 
         TestSecurityContextHolderInjection.inject(user.getId(), user.getRoleType());
 
@@ -83,6 +83,7 @@ class AlarmControllerTest {
             softly.assertThat(content.getFirst().alarmId()).isEqualTo(secondAlarm.getId());
             softly.assertThat(content.getFirst().title()).isEqualTo(secondAlarm.getTitle());
             softly.assertThat(content.getFirst().content()).isEqualTo(secondAlarm.getContent());
+            softly.assertThat(content.getFirst().deepLink()).isEqualTo(secondAlarm.getDeepLink());
             softly.assertThat(jsonNode.path("page").path("totalElements").asInt()).isEqualTo(2);
             softly.assertThat(jsonNode.path("page").path("size").asInt()).isEqualTo(1);
             softly.assertThat(jsonNode.path("page").path("number").asInt()).isEqualTo(0);

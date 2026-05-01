@@ -6,14 +6,16 @@ import apptive.team5.alarm.entity.Alarm;
 public record AlarmResponse(
         Long alarmId,
         String title,
-        String content
+        String content,
+        String deepLink
 ) {
 
     public AlarmResponse(Alarm alarm) {
         this(
                 alarm.getId(),
                 alarm.getTitle(),
-                alarm.getContent()
+                alarm.getContent(),
+                alarm.getDeepLink()
         );
     }
 }

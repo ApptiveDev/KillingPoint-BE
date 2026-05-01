@@ -37,18 +37,18 @@ public class FcmService {
     }
 
     @Async("sendAlarm")
-    public void sendAlarm(Long userId, String title, String content) {
+    public void sendAlarm(Long userId, String title, String content, String deepLink) {
 
         List<DeviceToken> deviceTokens = deviceTokenLowService.findByUserId(userId);
 
 
         deviceTokens.forEach(deviceToken -> {
-            sendMessageTo(deviceToken.getToken(), title, content);
+            sendMessageTo(deviceToken.getToken(), title, content, deepLink);
         });
 
     }
 
-    private void sendMessageTo(String targetToken, String title, String body) {
+    private void sendMessageTo(String targetToken, String title, String body, String deepLink) {
 
         Message message = Message.builder()
                 .setToken(targetToken)
@@ -58,6 +58,7 @@ public class FcmService {
                                 .setBody(body)
                                 .build()
                 )
+                .putData("deepLink", deepLink)
                 .build();
 
         FirebaseMessaging firebaseMessaging = FirebaseMessaging.getInstance();

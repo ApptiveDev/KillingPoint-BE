@@ -24,6 +24,9 @@ public class Alarm {
     @Column(nullable = false, length = 1000)
     private String content;
 
+    @Column(nullable = false, length = 1000)
+    private String deepLink;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
             name = "user_id",
@@ -31,9 +34,10 @@ public class Alarm {
     )
     private UserEntity user;
 
-    public Alarm(String title, String content, UserEntity user) {
+    public Alarm(String title, String content, String deepLink, UserEntity user) {
         this.title = title;
         this.content = content;
+        this.deepLink = deepLink;
         this.user = user;
     }
 }

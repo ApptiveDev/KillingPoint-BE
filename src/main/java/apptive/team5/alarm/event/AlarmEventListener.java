@@ -14,6 +14,6 @@ public class AlarmEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleAlarmCreated(AlarmCreatedEvent event) {
-        fcmService.sendAlarm(event.receiverId(), event.title(), event.content());
+        fcmService.sendAlarm(event.receiverId(), event.title(), event.content(), event.deepLink());
     }
 }

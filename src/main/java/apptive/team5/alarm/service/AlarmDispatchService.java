@@ -19,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AlarmDispatchService {
 
+    private static final String DIARY_DEEP_LINK_FORMAT = "/diaries/%d";
+
     private final AlarmLowService alarmLowService;
     private final DiaryLowService diaryLowService;
     private final UserLowService userLowService;
@@ -34,17 +36,20 @@ public class AlarmDispatchService {
 
         String title = AlarmMessage.LIKE_ALARM.getMessage();
         String content = actor.getUsername() + "님이 회원님의 킬링파트를 좋아합니다.";
+        String deepLink = DIARY_DEEP_LINK_FORMAT.formatted(diary.getId());
 
         alarmLowService.save(new Alarm(
                 title,
                 content,
+                deepLink,
                 receiver
         ));
 
         eventPublisher.publishEvent(new AlarmCreatedEvent(
                 receiver.getId(),
                 title,
-                content
+                content,
+                deepLink
         ));
     }
 }
