@@ -25,14 +25,11 @@ import java.util.stream.Collectors;
 @Transactional
 public class DiaryLikeService {
 
-    private static final String KILLING_PART_LIKE_TITLE = "킬링파트에 좋아요가 도착했어요";
-
     private final DiaryLikeLowService diaryLikeLowService;
     private final UserLowService userLowService;
     private final DiaryLowService diaryLowService;
     private final SubscribeLowService subscribeLowService;
     private final UserBlockLowService userBlockLowService;
-    private final AlarmDispatchService alarmDispatchService;
 
     public DiaryLikeResponseDto toggleDiaryLike(Long userId, Long diaryId) {
         UserEntity user = userLowService.getReferenceById(userId);
@@ -45,19 +42,8 @@ public class DiaryLikeService {
         }
         else {
             diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(user, diary));
-            sendKillingPartLikeAlarm(user, diary);
             return new DiaryLikeResponseDto(true);
         }
-    }
-
-    private void sendKillingPartLikeAlarm(UserEntity actor, DiaryEntity diary) {
-        UserEntity receiver = diary.getUser();
-
-        alarmDispatchService.saveAndDispatch(new AlarmSendRequest(
-                receiver,
-                KILLING_PART_LIKE_TITLE,
-                actor.getUsername() + "님이 회원님의 킬링파트를 좋아합니다."
-        ));
     }
 
     @Transactional(readOnly = true)

@@ -69,7 +69,6 @@ class DiaryLikeServiceTest {
         verify(diaryLowService).findDiaryById(diaryId);
         verify(diaryLikeLowService).existsByUserAndDiary(user, diary);
         verify(diaryLikeLowService).saveDiaryLike(any(DiaryLikeEntity.class));
-        verify(alarmDispatchService).saveAndDispatch(any());
         verifyNoMoreInteractions(userLowService, diaryLowService, diaryLikeLowService, alarmDispatchService);
     }
 

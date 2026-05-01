@@ -11,12 +11,16 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface DiaryRepository extends JpaRepository<DiaryEntity, Long> {
 
     @Query("select d from DiaryEntity d where d.user = :user order by d.id desc")
     Page<DiaryEntity> findByUser(UserEntity user, Pageable pageable);
+
+    @Query("select d from DiaryEntity d join fetch d.user where d.id = :diaryId")
+    Optional<DiaryEntity> findByIdWithUser(Long diaryId);
 
     List<DiaryEntity> findByUserId(Long userId);
 
