@@ -30,7 +30,8 @@ public class DiaryLikeController {
             Long diaryId
     ) {
         DiaryLikeResponseDto responseDto = diaryLikeService.toggleDiaryLike(userId, diaryId);
-        alarmDispatchService.saveAndDispatchForLike(new AlarmSendRequest(
+
+        if (responseDto.isLiked()) alarmDispatchService.saveAndDispatchForLike(new AlarmSendRequest(
                 diaryId,
                 userId
         ));
