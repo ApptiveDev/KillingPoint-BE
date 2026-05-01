@@ -40,12 +40,11 @@ public class FcmService {
     public void sendAlarm(Long userId, String title, String content, String deepLink) {
 
         List<DeviceToken> deviceTokens = deviceTokenLowService.findByUserId(userId);
+        if (deviceTokens.isEmpty()) {
+            return;
+        }
 
-
-        deviceTokens.forEach(deviceToken -> {
-            sendMessageTo(deviceToken.getToken(), title, content, deepLink);
-        });
-
+        deviceTokens.forEach(deviceToken -> sendMessageTo(deviceToken.getToken(), title, content, deepLink));
     }
 
     private void sendMessageTo(String targetToken, String title, String body, String deepLink) {
@@ -64,18 +63,23 @@ public class FcmService {
         FirebaseMessaging firebaseMessaging = FirebaseMessaging.getInstance();
 
         ApiFuture<String> future = firebaseMessaging.sendAsync(message);
+        future.addListener(() -> handleSendResult(future, targetToken), Runnable::run);
+    }
 
-        future.addListener(() -> {
-            try {
-                future.get();
-            } catch (Exception ex) {
-                Throwable cause = ex.getCause();
-                if (cause instanceof FirebaseMessagingException fme) {
-                    if (fme.getMessagingErrorCode() == MessagingErrorCode.UNREGISTERED) {
-                        deviceTokenLowService.deleteByToken(targetToken);
-                    }
-                }
+    private void handleSendResult(ApiFuture<String> future, String targetToken) {
+        try {
+            future.get();
+            return;
+        } catch (Exception ex) {
+            Throwable cause = ex.getCause();
+            if (!(cause instanceof FirebaseMessagingException fme)) {
+                return;
             }
-        }, Runnable::run);
+            if (fme.getMessagingErrorCode() != MessagingErrorCode.UNREGISTERED) {
+                return;
+            }
+        }
+
+        deviceTokenLowService.deleteByToken(targetToken);
     }
 }
