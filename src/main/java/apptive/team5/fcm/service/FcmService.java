@@ -36,6 +36,11 @@ public class FcmService {
         return deviceTokenLowService.save(new DeviceToken(user, deviceTokenRequest.token()));
     }
 
+    public void deleteDeviceTokenByUserId(Long userId) {
+
+        deviceTokenLowService.deleteByUserId(userId);
+    }
+
     @Async("sendAlarm")
     public void sendAlarm(Long userId, String title, String content, String deepLink) {
 
