@@ -72,6 +72,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
 	implementation 'org.springframework.ai:spring-ai-starter-model-openai:1.1.0'
+
+	// firebase
+	implementation 'com.google.firebase:firebase-admin:9.2.0'
 }
 
 

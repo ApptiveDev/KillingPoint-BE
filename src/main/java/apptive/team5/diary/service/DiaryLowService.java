@@ -37,6 +37,12 @@ public class DiaryLowService {
     }
 
     @Transactional(readOnly = true)
+    public DiaryEntity findByIdWithUser(Long diaryId) {
+        return diaryRepository.findByIdWithUser(diaryId)
+                .orElseThrow(() -> new NotFoundEntityException(ExceptionCode.NOT_FOUND_DIARY.getDescription()));
+    }
+
+    @Transactional(readOnly = true)
     public Page<DiaryEntity> findDiaryByUser(UserEntity user, Pageable pageable) {
         return diaryRepository.findByUser(user, pageable);
     }

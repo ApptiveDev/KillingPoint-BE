@@ -1,7 +1,9 @@
 package apptive.team5.diary.service;
 
+import apptive.team5.alarm.service.AlarmDispatchService;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryLikeEntity;
+import apptive.team5.diary.domain.DiaryScope;
 import apptive.team5.diary.dto.DiaryLikeResponseDto;
 import apptive.team5.global.exception.DuplicateException;
 import apptive.team5.global.exception.NotFoundEntityException;
@@ -20,6 +22,7 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,12 +40,16 @@ class DiaryLikeServiceTest {
     @Mock
     private DiaryLowService diaryLowService;
 
+    @Mock
+    private AlarmDispatchService alarmDispatchService;
+
     @Test
     @DisplayName("좋아요 토글 - 좋아요 없을 때")
     void toggleDiaryLike_add() {
         // given
         UserEntity user = TestUtil.makeUserEntityWithId();
-        DiaryEntity diary = TestUtil.makeDiaryEntity(user);
+        UserEntity diaryOwner = new UserEntity(2L, "owner-1", "owner@gmail.com", "owner", "ownerTag", user.getRoleType(), user.getSocialType());
+        DiaryEntity diary = TestUtil.makeDiaryEntityWithScope(diaryOwner, DiaryScope.KILLING_PART);
         Long userId = user.getId();
         Long diaryId = 1L;
 
@@ -62,7 +69,7 @@ class DiaryLikeServiceTest {
         verify(diaryLowService).findDiaryById(diaryId);
         verify(diaryLikeLowService).existsByUserAndDiary(user, diary);
         verify(diaryLikeLowService).saveDiaryLike(any(DiaryLikeEntity.class));
-        verifyNoMoreInteractions(userLowService, diaryLowService, diaryLikeLowService);
+        verifyNoMoreInteractions(userLowService, diaryLowService, diaryLikeLowService, alarmDispatchService);
     }
 
     @Test
@@ -94,6 +101,7 @@ class DiaryLikeServiceTest {
         verify(diaryLikeLowService).existsByUserAndDiary(user, diary);
         verify(diaryLikeLowService).findByUserAndDiary(user, diary);
         verify(diaryLikeLowService).deleteDiaryLike(diaryLike);
+        verifyNoInteractions(alarmDispatchService);
         verifyNoMoreInteractions(userLowService, diaryLowService, diaryLikeLowService);
     }
 }

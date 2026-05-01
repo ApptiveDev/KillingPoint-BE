@@ -1,13 +1,12 @@
 package apptive.team5.diary.service;
 
+import apptive.team5.alarm.dto.AlarmSendRequest;
+import apptive.team5.alarm.service.AlarmDispatchService;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryLikeEntity;
 import apptive.team5.diary.dto.DiaryLikeResponseDto;
-import apptive.team5.global.exception.DuplicateException;
-import apptive.team5.global.exception.ExceptionCode;
 import apptive.team5.subscribe.service.SubscribeLowService;
 import apptive.team5.user.domain.UserEntity;
-import apptive.team5.user.dto.UserResponse;
 import apptive.team5.user.dto.UserSearchResponse;
 import apptive.team5.user.service.UserBlockLowService;
 import apptive.team5.user.service.UserLowService;
@@ -25,6 +24,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional
 public class DiaryLikeService {
+
     private final DiaryLikeLowService diaryLikeLowService;
     private final UserLowService userLowService;
     private final DiaryLowService diaryLowService;

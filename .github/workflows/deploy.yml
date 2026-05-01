@@ -34,6 +34,18 @@ jobs:
       - name: 테스트 환경변수 주입
         run: echo "${{ secrets.APPLICATION_TEST_PROPERTIES }}" > ./src/test/resources/application.properties
 
+      - name: firebase 디렉토리 생성
+        run: mkdir -p ./src/main/resources/firebase
+
+      - name: fcm.json 파일 주입
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.2
+        with:
+          name: "killing-part-32870-firebase-adminsdk-fbsvc-f5c0d13f5b.json"
+          json: ${{ secrets.FIREBASE_KEY }}
+          dir: 'src/main/resources/firebase/'
+
+
       - name: 테스트 및 빌드하기
         run: ./gradlew clean build
 
