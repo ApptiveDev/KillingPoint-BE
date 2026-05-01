@@ -11,6 +11,7 @@ public record UserResponse(
         String tag,
         String identifier,
         String profileImageUrl,
+        boolean alarmEnabled,
         UserRoleType userRoleType,
         SocialType socialType
 ) {
@@ -21,6 +22,7 @@ public record UserResponse(
                 userEntity.getTag(),
                 userEntity.getIdentifier(),
                 S3Util.s3Url + userEntity.getProfileImage(),
+                userEntity.isAlarmEnabled(),
                 userEntity.getRoleType(),
                 userEntity.getSocialType());
     }

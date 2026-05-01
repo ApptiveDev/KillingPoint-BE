@@ -98,6 +98,7 @@ class UserControllerTest {
             softly.assertThat(userResponse.identifier()).isEqualTo(user.getIdentifier());
             softly.assertThat(userResponse.socialType()).isEqualTo(user.getSocialType());
             softly.assertThat(userResponse.userRoleType()).isEqualTo(user.getRoleType());
+            softly.assertThat(userResponse.alarmEnabled()).isFalse();
             softly.assertThat(S3Util.extractFileName(userResponse.profileImageUrl())).isEqualTo(user.getProfileImage());
         });
     }
@@ -224,6 +225,84 @@ class UserControllerTest {
             softly.assertThat(userResponse.username()).isEqualTo(userNameUpdateRequest.username());
         });
 
+    }
+
+    @DisplayName("알림 설정 조회 성공")
+    @Test
+    void getNotificationSettingSuccess() throws Exception {
+
+        // given
+        UserEntity user = TestUtil.makeUserEntity();
+        userRepository.save(user);
+        TestSecurityContextHolderInjection.inject(user.getId(), user.getRoleType());
+
+        // when
+        String response = mockMvc.perform(get("/api/users/my/notification-settings")
+                        .with(securityContext(SecurityContextHolder.getContext()))
+                )
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        // then
+        NotificationSettingResponse notificationSettingResponse =
+                objectMapper.readValue(response, NotificationSettingResponse.class);
+
+        assertThat(notificationSettingResponse.alarmEnabled()).isFalse();
+    }
+
+    @DisplayName("알림 설정 변경 성공")
+    @Test
+    void updateNotificationSettingSuccess() throws Exception {
+
+        // given
+        UserEntity user = TestUtil.makeUserEntity();
+        userRepository.save(user);
+        TestSecurityContextHolderInjection.inject(user.getId(), user.getRoleType());
+        NotificationSettingUpdateRequest request = new NotificationSettingUpdateRequest(true);
+
+        // when
+        String response = mockMvc.perform(patch("/api/users/my/notification-settings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .with(securityContext(SecurityContextHolder.getContext()))
+                )
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        // then
+        NotificationSettingResponse notificationSettingResponse =
+                objectMapper.readValue(response, NotificationSettingResponse.class);
+        UserEntity updatedUser = userRepository.findById(user.getId()).orElseThrow();
+
+        assertSoftly(softly -> {
+            softly.assertThat(notificationSettingResponse.alarmEnabled()).isTrue();
+            softly.assertThat(updatedUser.isAlarmEnabled()).isTrue();
+        });
+    }
+
+    @DisplayName("알림 설정 변경 실패 - 알림 수신 여부 누락")
+    @Test
+    void updateNotificationSettingFailWhenAlarmEnabledMissing() throws Exception {
+
+        // given
+        UserEntity user = TestUtil.makeUserEntity();
+        userRepository.save(user);
+        TestSecurityContextHolderInjection.inject(user.getId(), user.getRoleType());
+
+        // when
+        MockHttpServletResponse response = mockMvc.perform(patch("/api/users/my/notification-settings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}")
+                        .with(securityContext(SecurityContextHolder.getContext()))
+                )
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse();
+
+        // then
+        Map<String, List<Map<String, String>>> apiResponse = objectMapper.readValue(response.getContentAsString(), Map.class);
+
+        assertThat(apiResponse.get("fieldErrors"))
+                .contains(Map.of("alarmEnabled", "알림 수신 여부는 필수입니다."));
     }
 
     @DisplayName("tag를 통해 유저 조회 성공")

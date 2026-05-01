@@ -43,6 +43,10 @@ public class FcmService {
 
     @Async("sendAlarm")
     public void sendAlarm(Long userId, String title, String content, String deepLink) {
+        UserEntity user = userLowService.findById(userId);
+        if (!user.isAlarmEnabled()) {
+            return;
+        }
 
         List<DeviceToken> deviceTokens = deviceTokenLowService.findByUserId(userId);
         if (deviceTokens.isEmpty()) {

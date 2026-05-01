@@ -77,6 +77,22 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userResponse);
     }
 
+    @GetMapping("/my/notification-settings")
+    public ResponseEntity<NotificationSettingResponse> getNotificationSetting(@AuthenticationPrincipal Long userId) {
+        NotificationSettingResponse response = userService.getNotificationSetting(userId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PatchMapping("/my/notification-settings")
+    public ResponseEntity<NotificationSettingResponse> updateNotificationSetting(
+            @Valid @RequestBody NotificationSettingUpdateRequest request,
+            @AuthenticationPrincipal Long userId) {
+        NotificationSettingResponse response = userService.updateNotificationSetting(userId, request);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
 
     @GetMapping
     public ResponseEntity<Page<UserSearchResponse>> getUserList(@RequestParam(required = false) String searchCond,

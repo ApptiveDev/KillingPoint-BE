@@ -198,6 +198,20 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    public NotificationSettingResponse getNotificationSetting(Long userId) {
+        UserEntity findUser = userLowService.findById(userId);
+
+        return new NotificationSettingResponse(findUser.isAlarmEnabled());
+    }
+
+    public NotificationSettingResponse updateNotificationSetting(Long userId, NotificationSettingUpdateRequest request) {
+        UserEntity findUser = userLowService.findById(userId);
+        findUser.changeAlarmEnabled(request.alarmEnabled());
+
+        return new NotificationSettingResponse(findUser.isAlarmEnabled());
+    }
+
+    @Transactional(readOnly = true)
     public UserStaticsResponse getUserStatics(Long userId) {
         int killingPartCount = diaryLowService.countByUserId(userId);
         int fanCount = subscribeLowService.countSubscriberBySubscribedToId(userId);
