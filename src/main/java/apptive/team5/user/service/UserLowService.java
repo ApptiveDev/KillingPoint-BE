@@ -57,6 +57,12 @@ public class UserLowService {
     }
 
     @Transactional(readOnly = true)
+    public UserEntity findByTag(String tag) {
+        return userRepository.findByTag(tag)
+                .orElseThrow(() -> new NotFoundEntityException(ExceptionCode.NOT_FOUND_USER.getDescription()));
+    }
+
+    @Transactional(readOnly = true)
     public Page<UserEntity> findByTagOrUsernameExcludingBlocked(Set<Long> blockedUserIds, String searchCond, Pageable pageable) {
         return qUserRepository.findByTagOrUsernameExcludingBlocked(blockedUserIds, searchCond,pageable);
     }
