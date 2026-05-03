@@ -45,6 +45,9 @@ public class FcmService {
 
     @Async("sendAlarm")
     public void sendAlarm(Long userId, String title, String content, String deepLink) {
+
+        log.info("fcm send");
+
         UserEntity user = userLowService.findById(userId);
         if (!user.isAlarmEnabled()) {
             return;
