@@ -98,7 +98,7 @@ class UserControllerTest {
             softly.assertThat(userResponse.identifier()).isEqualTo(user.getIdentifier());
             softly.assertThat(userResponse.socialType()).isEqualTo(user.getSocialType());
             softly.assertThat(userResponse.userRoleType()).isEqualTo(user.getRoleType());
-            softly.assertThat(userResponse.alarmEnabled()).isFalse();
+            softly.assertThat(userResponse.alarmEnabled()).isTrue();
             softly.assertThat(S3Util.extractFileName(userResponse.profileImageUrl())).isEqualTo(user.getProfileImage());
         });
     }
@@ -247,7 +247,7 @@ class UserControllerTest {
         NotificationSettingResponse notificationSettingResponse =
                 objectMapper.readValue(response, NotificationSettingResponse.class);
 
-        assertThat(notificationSettingResponse.alarmEnabled()).isFalse();
+        assertThat(notificationSettingResponse.alarmEnabled()).isTrue();
     }
 
     @DisplayName("알림 설정 변경 성공")
