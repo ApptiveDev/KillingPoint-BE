@@ -7,6 +7,7 @@ import apptive.team5.user.service.UserLowService;
 import com.google.api.core.ApiFuture;
 import com.google.firebase.messaging.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import java.util.Optional;
 @Transactional
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FcmService {
 
     private final DeviceTokenLowService deviceTokenLowService;
@@ -81,6 +83,7 @@ public class FcmService {
             return;
         } catch (Exception ex) {
             Throwable cause = ex.getCause();
+            log.error("fcm 전송 실패 : {}", ex.getMessage());
             if (!(cause instanceof FirebaseMessagingException fme)) {
                 return;
             }
