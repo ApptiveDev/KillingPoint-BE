@@ -81,6 +81,12 @@ public class DiaryService {
     }
 
     @Transactional(readOnly = true)
+    public UserDiaryResponseDto getDiary(Long diaryId, Long currentUserId) {
+        DiaryEntity foundDiary = diaryLowService.findDiaryById(diaryId);
+        return getDiaryResponseDto(currentUserId, foundDiary, UserDiaryResponseDto::from);
+    }
+
+    @Transactional(readOnly = true)
     public List<CalendarDiaryResponseDto> getMyDiariesByPeriod(Long userId, LocalDate startDate, LocalDate endDate) {
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
@@ -191,6 +197,21 @@ public class DiaryService {
                 likeCountsMap,
                 userId,
                 mapper
+        );
+    }
+
+    private <T extends DiaryResponseDto> T getDiaryResponseDto(Long userId, DiaryEntity diary, DiaryResponseMapper.DiaryResponseDtoMapper<T> mapper) {
+        Long diaryId = diary.getId();
+        Set<Long> likedDiaryIds = diaryLikeLowService.findLikedDiaryIdsByUser(userId, List.of(diaryId));
+        Map<Long, Long> likeCountsMap = diaryLikeLowService.findLikeCountsByDiaryIds(List.of(diaryId));
+        Set<Long> storedDiaryIds = diaryStoreLowService.findStoredDiaryIdsByUser(userId, List.of(diaryId));
+
+        return mapper.map(
+                diary,
+                likedDiaryIds.contains(diaryId),
+                storedDiaryIds.contains(diaryId),
+                likeCountsMap.getOrDefault(diaryId, 0L),
+                userId
         );
     }
 

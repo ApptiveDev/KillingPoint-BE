@@ -69,6 +69,17 @@ public class DiaryController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @GetMapping("/{diaryId}")
+    public ResponseEntity<UserDiaryResponseDto> getDiary(
+            @PathVariable
+            Long diaryId,
+            @AuthenticationPrincipal
+            Long userId
+    ) {
+        UserDiaryResponseDto response = diaryService.getDiary(diaryId, userId);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
     @GetMapping("/my/calendar")
     public ResponseEntity<List<CalendarDiaryResponseDto>> getMyDiariesByPeriod(
             @AuthenticationPrincipal
