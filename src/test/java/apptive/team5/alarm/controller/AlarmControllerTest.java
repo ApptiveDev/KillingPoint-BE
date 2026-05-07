@@ -84,6 +84,7 @@ class AlarmControllerTest {
             softly.assertThat(content.getFirst().title()).isEqualTo(secondAlarm.getTitle());
             softly.assertThat(content.getFirst().content()).isEqualTo(secondAlarm.getContent());
             softly.assertThat(content.getFirst().deepLink()).isEqualTo(secondAlarm.getDeepLink());
+            softly.assertThat(content.getFirst().createDate()).isEqualTo(secondAlarm.getCreateDateTime());
             softly.assertThat(jsonNode.path("page").path("totalElements").asInt()).isEqualTo(2);
             softly.assertThat(jsonNode.path("page").path("size").asInt()).isEqualTo(1);
             softly.assertThat(jsonNode.path("page").path("number").asInt()).isEqualTo(0);
