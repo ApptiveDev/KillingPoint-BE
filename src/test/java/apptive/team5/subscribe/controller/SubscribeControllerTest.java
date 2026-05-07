@@ -2,6 +2,8 @@ package apptive.team5.subscribe.controller;
 
 
 import apptive.team5.global.exception.ExceptionCode;
+import apptive.team5.alarm.entity.Alarm;
+import apptive.team5.alarm.repository.AlarmRepository;
 import apptive.team5.subscribe.domain.Subscribe;
 import apptive.team5.subscribe.repository.SubscribeRepository;
 import apptive.team5.user.domain.UserEntity;
@@ -45,6 +47,9 @@ class SubscribeControllerTest {
 
     @Autowired
     private SubscribeRepository subscribeRepository;
+
+    @Autowired
+    private AlarmRepository alarmRepository;
 
     @Autowired
     private ObjectMapper objectMapper;

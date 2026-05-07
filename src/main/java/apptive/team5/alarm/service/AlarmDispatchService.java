@@ -1,6 +1,7 @@
 package apptive.team5.alarm.service;
 
-import apptive.team5.alarm.dto.AlarmSendRequest;
+import apptive.team5.alarm.dto.DiaryLikeAlarmSendRequest;
+import apptive.team5.alarm.dto.SubscribeAlarmSendRequest;
 import apptive.team5.alarm.entity.Alarm;
 import apptive.team5.alarm.entity.AlarmMessage;
 import apptive.team5.alarm.event.AlarmCreatedEvent;
@@ -19,7 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AlarmDispatchService {
 
-    private static final String DIARY_DEEP_LINK_FORMAT = "/diaries/%d";
+    private static final String DIARY_DEEP_LINK_FORMAT = "/api/diaries/%d";
+    private static final String SUBSCRIBE_DEEP_LINK_FORMAT = "/api/subscribes/%d/fans";
 
     private final AlarmLowService alarmLowService;
     private final DiaryLowService diaryLowService;
@@ -27,7 +29,7 @@ public class AlarmDispatchService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Async("sendAlarm")
-    public void saveAndDispatchForLike(AlarmSendRequest request) {
+    public void saveAndDispatchForLike(DiaryLikeAlarmSendRequest request) {
 
         Long actorId = request.actorId();
         UserEntity actor = userLowService.findById(actorId);
@@ -38,6 +40,22 @@ public class AlarmDispatchService {
         String content = actor.getUsername() + "님이 회원님의 킬링파트를 좋아합니다.";
         String deepLink = DIARY_DEEP_LINK_FORMAT.formatted(diary.getId());
 
+        saveAndPublish(receiver, title, content, deepLink);
+    }
+
+    @Async("sendAlarm")
+    public void saveAndDispatchForSubscribe(SubscribeAlarmSendRequest request) {
+        UserEntity subscriber = userLowService.findById(request.subscriberId());
+        UserEntity receiver = userLowService.findById(request.subscribedToUserId());
+
+        String title = AlarmMessage.SUBSCRIBE_ALARM.getMessage();
+        String content = subscriber.getUsername() + "님이 회원님을 픽했어요.";
+        String deepLink = SUBSCRIBE_DEEP_LINK_FORMAT.formatted(receiver.getId());
+
+        saveAndPublish(receiver, title, content, deepLink);
+    }
+
+    private void saveAndPublish(UserEntity receiver, String title, String content, String deepLink) {
         alarmLowService.save(new Alarm(
                 title,
                 content,

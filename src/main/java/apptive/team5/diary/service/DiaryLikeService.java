@@ -1,7 +1,5 @@
 package apptive.team5.diary.service;
 
-import apptive.team5.alarm.dto.AlarmSendRequest;
-import apptive.team5.alarm.service.AlarmDispatchService;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryLikeEntity;
 import apptive.team5.diary.dto.DiaryLikeResponseDto;

@@ -1,5 +1,7 @@
 package apptive.team5.subscribe.controller;
 
+import apptive.team5.alarm.dto.SubscribeAlarmSendRequest;
+import apptive.team5.alarm.service.AlarmDispatchService;
 import apptive.team5.subscribe.service.SubscribeService;
 import apptive.team5.user.dto.UserResponse;
 import apptive.team5.user.dto.UserSearchResponse;
@@ -17,12 +19,17 @@ import org.springframework.web.bind.annotation.*;
 public class SubscribeController {
 
     private final SubscribeService subscribeService;
+    private final AlarmDispatchService alarmDispatchService;
 
 
     @PostMapping("/{subscribeToUserId}")
     public ResponseEntity<Void> subscribe(@PathVariable Long subscribeToUserId, @AuthenticationPrincipal Long userId) {
 
         subscribeService.save(subscribeToUserId, userId);
+        alarmDispatchService.saveAndDispatchForSubscribe(new SubscribeAlarmSendRequest(
+                subscribeToUserId,
+                userId
+        ));
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

@@ -5,7 +5,6 @@ import apptive.team5.global.exception.BadRequestException;
 import apptive.team5.global.exception.DuplicateException;
 import apptive.team5.subscribe.domain.Subscribe;
 import apptive.team5.user.domain.UserEntity;
-import apptive.team5.user.dto.UserResponse;
 import apptive.team5.user.dto.UserSearchResponse;
 import apptive.team5.user.service.UserLowService;
 import lombok.RequiredArgsConstructor;
@@ -92,4 +91,3 @@ public class SubscribeService {
                 });
     }
 }
-
