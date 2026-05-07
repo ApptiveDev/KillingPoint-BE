@@ -1,6 +1,9 @@
 package apptive.team5.diary.controller;
 
+import apptive.team5.alarm.dto.DiaryCreateAlarmSendRequest;
+import apptive.team5.alarm.service.AlarmDispatchService;
 import apptive.team5.diary.domain.DiaryEntity;
+import apptive.team5.diary.domain.DiaryScope;
 import apptive.team5.diary.dto.*;
 import apptive.team5.diary.service.DiaryService;
 import jakarta.validation.Valid;
@@ -23,6 +26,7 @@ import java.util.List;
 public class DiaryController {
 
     private final DiaryService diaryService;
+    private final AlarmDispatchService alarmDispatchService;
 
     @GetMapping("/my")
     public ResponseEntity<Page<MyDiaryResponseDto>> getMyMusicDiary(
@@ -96,6 +100,8 @@ public class DiaryController {
     @PostMapping
     public ResponseEntity<Void> createDiary(@AuthenticationPrincipal Long userId, @Valid @RequestBody DiaryCreateRequest diaryRequest) {
         DiaryEntity diary = diaryService.createDiary(userId, diaryRequest);
+
+        if(!diary.getScope().equals(DiaryScope.PRIVATE)) alarmDispatchService.saveAndDispatchForDiaryCreate(new DiaryCreateAlarmSendRequest(diary.getId(), userId));
 
         return ResponseEntity.status(HttpStatus.CREATED).location(URI.create("/api/diaries/" + diary.getId())).build();
     }

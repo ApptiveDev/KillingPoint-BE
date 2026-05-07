@@ -14,6 +14,9 @@ public interface SubscribeRepository extends JpaRepository<Subscribe, Long> {
     @Query("select s from Subscribe s where s.subscriber.id = :subscriberId")
     List<Subscribe> findBySubscriberId(Long subscriberId);
 
+    @Query("select s from Subscribe s where s.subscribedTo.id = :subscribedToId")
+    List<Subscribe> findBySubscribedToId(Long subscribedToId);
+
     @Query(
             value = "select s from Subscribe s join fetch s.subscribedTo where s.subscriber.id = :subscriberId",
             countQuery = "select count(s.id) from Subscribe s where s.subscriber.id = :subscriberId "
