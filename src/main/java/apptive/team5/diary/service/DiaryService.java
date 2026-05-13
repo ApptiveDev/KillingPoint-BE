@@ -81,9 +81,9 @@ public class DiaryService {
     }
 
     @Transactional(readOnly = true)
-    public UserDiaryResponseDto getDiary(Long diaryId, Long currentUserId) {
+    public FeedDiaryResponseDto getDiary(Long diaryId, Long currentUserId) {
         DiaryEntity foundDiary = diaryLowService.findDiaryById(diaryId);
-        return getDiaryResponseDto(currentUserId, foundDiary, UserDiaryResponseDto::from);
+        return getDiaryResponseDto(currentUserId, foundDiary, FeedDiaryResponseDto::from);
     }
 
     @Transactional(readOnly = true)

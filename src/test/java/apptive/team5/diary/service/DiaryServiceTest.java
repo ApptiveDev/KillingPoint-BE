@@ -234,13 +234,16 @@ public class DiaryServiceTest {
         given(diaryStoreLowService.findStoredDiaryIdsByUser(viewer.getId(), List.of(publicDiary.getId())))
                 .willReturn(Set.of(publicDiary.getId()));
 
-        UserDiaryResponseDto result = diaryService.getDiary(publicDiary.getId(), viewer.getId());
+        FeedDiaryResponseDto result = diaryService.getDiary(publicDiary.getId(), viewer.getId());
 
         assertThat(result.diaryId()).isEqualTo(publicDiary.getId());
         assertThat(result.content()).isEqualTo(publicDiary.getContent());
         assertThat(result.isLiked()).isTrue();
         assertThat(result.isStored()).isTrue();
         assertThat(result.likeCount()).isEqualTo(3L);
+        assertThat(result.userId()).isEqualTo(owner.getId());
+        assertThat(result.username()).isEqualTo(owner.getUsername());
+        assertThat(result.tag()).isEqualTo(owner.getTag());
 
         verify(diaryLowService).findDiaryById(publicDiary.getId());
         verify(diaryLikeLowService).findLikedDiaryIdsByUser(viewer.getId(), List.of(publicDiary.getId()));

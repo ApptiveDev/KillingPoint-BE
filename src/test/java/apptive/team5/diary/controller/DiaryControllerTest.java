@@ -216,7 +216,7 @@ public class DiaryControllerTest {
                 .getResponse()
                 .getContentAsString(StandardCharsets.UTF_8);
 
-        UserDiaryResponseDto diaryResponse = objectMapper.readValue(response, UserDiaryResponseDto.class);
+        FeedDiaryResponseDto diaryResponse = objectMapper.readValue(response, FeedDiaryResponseDto.class);
 
         assertSoftly(softly -> {
             softly.assertThat(diaryResponse.diaryId()).isEqualTo(publicDiary.getId());
@@ -224,6 +224,9 @@ public class DiaryControllerTest {
             softly.assertThat(diaryResponse.isLiked()).isTrue();
             softly.assertThat(diaryResponse.isStored()).isTrue();
             softly.assertThat(diaryResponse.likeCount()).isEqualTo(2L);
+            softly.assertThat(diaryResponse.userId()).isEqualTo(testUser.getId());
+            softly.assertThat(diaryResponse.username()).isEqualTo(testUser.getUsername());
+            softly.assertThat(diaryResponse.tag()).isEqualTo(testUser.getTag());
         });
     }
 

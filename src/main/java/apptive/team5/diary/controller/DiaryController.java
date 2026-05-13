@@ -74,13 +74,13 @@ public class DiaryController {
     }
 
     @GetMapping("/{diaryId}")
-    public ResponseEntity<UserDiaryResponseDto> getDiary(
+    public ResponseEntity<FeedDiaryResponseDto> getDiary(
             @PathVariable
             Long diaryId,
             @AuthenticationPrincipal
             Long userId
     ) {
-        UserDiaryResponseDto response = diaryService.getDiary(diaryId, userId);
+        FeedDiaryResponseDto response = diaryService.getDiary(diaryId, userId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
