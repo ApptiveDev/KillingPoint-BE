@@ -31,6 +31,11 @@ public class SubscribeLowService {
     }
 
     @Transactional(readOnly = true)
+    public List<Subscribe> findBySubscribedToId(Long subscribedToId) {
+        return  subscribeRepository.findBySubscribedToId(subscribedToId);
+    }
+
+    @Transactional(readOnly = true)
     public Page<Subscribe> findBySubscriberIdWithSubscribedToPage(Long subscriberId, Pageable pageable) {
         return subscribeRepository.findBySubscriberIdWithSubscribedToPage(subscriberId, pageable);
     }

@@ -196,6 +196,38 @@ public class DiaryControllerTest {
     }
 
     @Test
+    @DisplayName("특정 다이어리 조회")
+    void getDiary() throws Exception {
+        DiaryEntity publicDiary = diaryLowService.saveDiary(TestUtil.makeDiaryEntityWithScope(testUser, DiaryScope.PUBLIC));
+        UserEntity viewer = userRepository.save(TestUtil.makeDifferentUserEntity(testUser));
+
+        diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(viewer, publicDiary));
+        diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(testUser, publicDiary));
+        DiaryStoreInfo storeInfo = DiaryStoreInfo.from(publicDiary, viewer);
+        diaryStoreRepository.save(new DiaryStoreEntity(viewer, storeInfo));
+
+        TestSecurityContextHolderInjection.inject(viewer.getId(), viewer.getRoleType());
+
+        String response = mockMvc.perform(get("/api/diaries/{diaryId}", publicDiary.getId())
+                        .with(securityContext(SecurityContextHolder.getContext()))
+                )
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+
+        UserDiaryResponseDto diaryResponse = objectMapper.readValue(response, UserDiaryResponseDto.class);
+
+        assertSoftly(softly -> {
+            softly.assertThat(diaryResponse.diaryId()).isEqualTo(publicDiary.getId());
+            softly.assertThat(diaryResponse.content()).isEqualTo(publicDiary.getContent());
+            softly.assertThat(diaryResponse.isLiked()).isTrue();
+            softly.assertThat(diaryResponse.isStored()).isTrue();
+            softly.assertThat(diaryResponse.likeCount()).isEqualTo(2L);
+        });
+    }
+
+    @Test
     @DisplayName("내 다이어리 기간 조회 (캘린더 용)")
     void getMyDiariesByPeriod() throws Exception {
         // given

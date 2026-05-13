@@ -1,7 +1,6 @@
 package apptive.team5.diary.controller;
 
-import apptive.team5.alarm.dto.AlarmSendRequest;
-import apptive.team5.alarm.entity.AlarmMessage;
+import apptive.team5.alarm.dto.DiaryLikeAlarmSendRequest;
 import apptive.team5.alarm.service.AlarmDispatchService;
 import apptive.team5.diary.dto.DiaryLikeResponseDto;
 import apptive.team5.diary.service.DiaryLikeService;
@@ -31,7 +30,7 @@ public class DiaryLikeController {
     ) {
         DiaryLikeResponseDto responseDto = diaryLikeService.toggleDiaryLike(userId, diaryId);
 
-        if (responseDto.isLiked()) alarmDispatchService.saveAndDispatchForLike(new AlarmSendRequest(
+        if (responseDto.isLiked()) alarmDispatchService.saveAndDispatchForLike(new DiaryLikeAlarmSendRequest(
                 diaryId,
                 userId
         ));

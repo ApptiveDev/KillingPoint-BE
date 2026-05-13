@@ -215,6 +215,40 @@ public class DiaryServiceTest {
     }
 
     @Test
+    @DisplayName("특정 다이어리 조회")
+    void getDiary() {
+        UserEntity owner = TestUtil.makeUserEntityWithId();
+        UserEntity viewer = new UserEntity(
+                2L, "viewer-id", "viewer@email.com", "viewer",
+                "viewerTag", UserRoleType.USER, SocialType.GOOGLE
+        );
+
+        DiaryEntity publicDiary = TestUtil.makeDiaryEntityWithScope(owner, DiaryScope.PUBLIC);
+        ReflectionTestUtils.setField(publicDiary, "id", 10L);
+
+        given(diaryLowService.findDiaryById(publicDiary.getId())).willReturn(publicDiary);
+        given(diaryLikeLowService.findLikedDiaryIdsByUser(viewer.getId(), List.of(publicDiary.getId())))
+                .willReturn(Set.of(publicDiary.getId()));
+        given(diaryLikeLowService.findLikeCountsByDiaryIds(List.of(publicDiary.getId())))
+                .willReturn(java.util.Map.of(publicDiary.getId(), 3L));
+        given(diaryStoreLowService.findStoredDiaryIdsByUser(viewer.getId(), List.of(publicDiary.getId())))
+                .willReturn(Set.of(publicDiary.getId()));
+
+        UserDiaryResponseDto result = diaryService.getDiary(publicDiary.getId(), viewer.getId());
+
+        assertThat(result.diaryId()).isEqualTo(publicDiary.getId());
+        assertThat(result.content()).isEqualTo(publicDiary.getContent());
+        assertThat(result.isLiked()).isTrue();
+        assertThat(result.isStored()).isTrue();
+        assertThat(result.likeCount()).isEqualTo(3L);
+
+        verify(diaryLowService).findDiaryById(publicDiary.getId());
+        verify(diaryLikeLowService).findLikedDiaryIdsByUser(viewer.getId(), List.of(publicDiary.getId()));
+        verify(diaryLikeLowService).findLikeCountsByDiaryIds(List.of(publicDiary.getId()));
+        verify(diaryStoreLowService).findStoredDiaryIdsByUser(viewer.getId(), List.of(publicDiary.getId()));
+    }
+
+    @Test
     @DisplayName("다이어리 생성")
     void createDiary() {
         // given

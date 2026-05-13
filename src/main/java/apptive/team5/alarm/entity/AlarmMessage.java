@@ -5,7 +5,9 @@ import lombok.Getter;
 @Getter
 public enum AlarmMessage {
 
-    LIKE_ALARM("킬링파트에 좋아요가 도착했어요");
+    LIKE_ALARM("킬링파트에 좋아요가 도착했어요"),
+    SUBSCRIBE_ALARM("새로운 구독자가 생겼어요"),
+    DIARY_ALARM("새로운 킬링파트 등록됐어요");
 
     private final String message;
 
