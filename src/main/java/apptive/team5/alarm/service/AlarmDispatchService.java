@@ -46,7 +46,7 @@ public class AlarmDispatchService {
         String content = actor.getUsername() + "님이 회원님의 킬링파트를 좋아합니다.";
         String deepLink = DIARY_DEEP_LINK_FORMAT.formatted(diary.getId());
 
-        saveAndPublish(receiver, title, content, deepLink);
+        saveAndPublish(receiver, AlarmMessage.LIKE_ALARM, content, deepLink);
     }
 
     @Async("sendAlarm")
@@ -58,7 +58,7 @@ public class AlarmDispatchService {
         String content = subscriber.getUsername() + "님이 회원님을 픽했어요.";
         String deepLink = SUBSCRIBE_DEEP_LINK_FORMAT.formatted(receiver.getId());
 
-        saveAndPublish(receiver, title, content, deepLink);
+        saveAndPublish(receiver, AlarmMessage.SUBSCRIBE_ALARM, content, deepLink);
     }
 
     @Async("sendAlarm")
@@ -66,27 +66,25 @@ public class AlarmDispatchService {
         UserEntity actor = userLowService.findById(request.actorId());
         List<Subscribe> subscribers = subscribeLowService.findBySubscribedToId(actor.getId());
 
-
-        String title = AlarmMessage.DIARY_ALARM.getMessage();
         String content = actor.getUsername() + "님이 새 킬링파트를 등록했어요.";
         String deepLink = DIARY_DEEP_LINK_FORMAT.formatted(request.diaryId());
 
 
         subscribers.forEach(subscriber ->
-                saveAndPublish(subscriber.getSubscriber(), title, content, deepLink));
+                saveAndPublish(subscriber.getSubscriber(), AlarmMessage.DIARY_ALARM, content, deepLink));
     }
 
-    private void saveAndPublish(UserEntity receiver, String title, String content, String deepLink) {
+    private void saveAndPublish(UserEntity receiver, AlarmMessage alarmMessage, String content, String deepLink) {
         alarmLowService.save(new Alarm(
-                title,
                 content,
                 deepLink,
-                receiver
+                receiver,
+                alarmMessage
         ));
 
         eventPublisher.publishEvent(new AlarmCreatedEvent(
                 receiver.getId(),
-                title,
+                alarmMessage,
                 content,
                 deepLink
         ));

@@ -28,6 +28,9 @@ public class Alarm extends BaseTimeEntity {
     @Column(nullable = false, length = 1000)
     private String deepLink;
 
+    @Column(length = 1000)
+    private String alarmType;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
             name = "user_id",
@@ -35,10 +38,11 @@ public class Alarm extends BaseTimeEntity {
     )
     private UserEntity user;
 
-    public Alarm(String title, String content, String deepLink, UserEntity user) {
-        this.title = title;
+    public Alarm(String content, String deepLink, UserEntity user, AlarmMessage alarmMessage) {
+        this.title = alarmMessage.getMessage();
         this.content = content;
         this.deepLink = deepLink;
         this.user = user;
+        this.alarmType = alarmMessage.name();
     }
 }

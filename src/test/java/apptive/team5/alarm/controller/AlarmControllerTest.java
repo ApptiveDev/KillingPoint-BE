@@ -2,6 +2,7 @@ package apptive.team5.alarm.controller;
 
 import apptive.team5.alarm.dto.AlarmResponse;
 import apptive.team5.alarm.entity.Alarm;
+import apptive.team5.alarm.entity.AlarmMessage;
 import apptive.team5.alarm.repository.AlarmRepository;
 import apptive.team5.global.exception.ExceptionCode;
 import apptive.team5.user.domain.UserEntity;
@@ -56,9 +57,9 @@ class AlarmControllerTest {
         UserEntity user = userRepository.save(TestUtil.makeUserEntity());
         UserEntity otherUser = userRepository.save(TestUtil.makeDifferentUserEntity(user));
 
-        alarmRepository.save(new Alarm("first title", "first content", "/diaries/1", user));
-        Alarm secondAlarm = alarmRepository.save(new Alarm("second title", "second content", "/diaries/2", user));
-        alarmRepository.save(new Alarm("other title", "other content", "/diaries/3", otherUser));
+        alarmRepository.save(new Alarm("first content", "/diaries/1", user, AlarmMessage.DIARY_ALARM));
+        Alarm secondAlarm = alarmRepository.save(new Alarm("second content", "/diaries/2", user, AlarmMessage.DIARY_ALARM));
+        alarmRepository.save(new Alarm("other content", "/diaries/3", otherUser, AlarmMessage.DIARY_ALARM));
 
         TestSecurityContextHolderInjection.inject(user.getId(), user.getRoleType());
 
@@ -85,6 +86,7 @@ class AlarmControllerTest {
             softly.assertThat(content.getFirst().content()).isEqualTo(secondAlarm.getContent());
             softly.assertThat(content.getFirst().deepLink()).isEqualTo(secondAlarm.getDeepLink());
             softly.assertThat(content.getFirst().createDate()).isEqualTo(secondAlarm.getCreateDateTime());
+            softly.assertThat(content.getFirst().type()).isEqualTo(AlarmMessage.DIARY_ALARM.name());
             softly.assertThat(jsonNode.path("page").path("totalElements").asInt()).isEqualTo(2);
             softly.assertThat(jsonNode.path("page").path("size").asInt()).isEqualTo(1);
             softly.assertThat(jsonNode.path("page").path("number").asInt()).isEqualTo(0);

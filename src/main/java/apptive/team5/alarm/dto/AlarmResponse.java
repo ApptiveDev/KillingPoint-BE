@@ -2,6 +2,7 @@ package apptive.team5.alarm.dto;
 
 
 import apptive.team5.alarm.entity.Alarm;
+import apptive.team5.alarm.entity.AlarmMessage;
 
 import java.time.LocalDateTime;
 
@@ -10,6 +11,7 @@ public record AlarmResponse(
         String title,
         String content,
         String deepLink,
+        String type,
         LocalDateTime createDate
 ) {
 
@@ -19,6 +21,7 @@ public record AlarmResponse(
                 alarm.getTitle(),
                 alarm.getContent(),
                 alarm.getDeepLink(),
+                alarm.getAlarmType(),
                 alarm.getCreateDateTime()
         );
     }

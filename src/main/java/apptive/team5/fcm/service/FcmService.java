@@ -1,5 +1,6 @@
 package apptive.team5.fcm.service;
 
+import apptive.team5.alarm.entity.AlarmMessage;
 import apptive.team5.fcm.dto.DeviceTokenRequest;
 import apptive.team5.fcm.entity.DeviceToken;
 import apptive.team5.user.domain.UserEntity;
@@ -44,7 +45,7 @@ public class FcmService {
     }
 
     @Async("sendAlarm")
-    public void sendAlarm(Long userId, String title, String content, String deepLink) {
+    public void sendAlarm(Long userId, AlarmMessage alarmMessage, String content, String deepLink) {
 
         UserEntity user = userLowService.findById(userId);
         if (!user.isAlarmEnabled()) {
@@ -56,20 +57,21 @@ public class FcmService {
             return;
         }
 
-        deviceTokens.forEach(deviceToken -> sendMessageTo(deviceToken.getToken(), title, content, deepLink));
+        deviceTokens.forEach(deviceToken -> sendMessageTo(deviceToken.getToken(), alarmMessage, content, deepLink));
     }
 
-    private void sendMessageTo(String targetToken, String title, String body, String deepLink) {
+    private void sendMessageTo(String targetToken, AlarmMessage alarmMessage, String body, String deepLink) {
 
         Message message = Message.builder()
                 .setToken(targetToken)
                 .setNotification(
                         Notification.builder()
-                                .setTitle(title)
+                                .setTitle(alarmMessage.getMessage())
                                 .setBody(body)
                                 .build()
                 )
                 .putData("deepLink", deepLink)
+                .putData("type", alarmMessage.name())
                 .build();
 
         FirebaseMessaging firebaseMessaging = FirebaseMessaging.getInstance();
