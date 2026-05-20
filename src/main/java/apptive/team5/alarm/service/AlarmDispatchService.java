@@ -6,6 +6,7 @@ import apptive.team5.alarm.dto.SubscribeAlarmSendRequest;
 import apptive.team5.alarm.entity.Alarm;
 import apptive.team5.alarm.entity.AlarmMessage;
 import apptive.team5.alarm.event.AlarmCreatedEvent;
+import apptive.team5.config.CacheConfig;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.service.DiaryLowService;
 import apptive.team5.subscribe.domain.Subscribe;
@@ -13,12 +14,15 @@ import apptive.team5.subscribe.service.SubscribeLowService;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.service.UserLowService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import static apptive.team5.config.CacheConfig.*;
 
 @Service
 @Transactional
@@ -35,6 +39,7 @@ public class AlarmDispatchService {
     private final SubscribeLowService subscribeLowService;
 
     @Async("sendAlarm")
+    @Cacheable(value = LIKE_ALARM_CACHE, key = "'actor:' + #request.actorId() + ':' + 'diary:' + #request.diaryId()")
     public void saveAndDispatchForLike(DiaryLikeAlarmSendRequest request) {
 
         Long actorId = request.actorId();
@@ -42,7 +47,6 @@ public class AlarmDispatchService {
         DiaryEntity diary = diaryLowService.findByIdWithUser(request.diaryId());
         UserEntity receiver = diary.getUser();
 
-        String title = AlarmMessage.LIKE_ALARM.getMessage();
         String content = actor.getUsername() + "님이 회원님의 킬링파트를 좋아합니다.";
         String deepLink = DIARY_DEEP_LINK_FORMAT.formatted(diary.getId());
 
@@ -50,11 +54,11 @@ public class AlarmDispatchService {
     }
 
     @Async("sendAlarm")
+    @Cacheable(value = SUBSCRIBE_ALARM_CACHE, key = "'subscriber:' + #request.subscriberId() + ':' + 'subscribedToUser:' + #request.subscribedToUserId()")
     public void saveAndDispatchForSubscribe(SubscribeAlarmSendRequest request) {
         UserEntity subscriber = userLowService.findById(request.subscriberId());
         UserEntity receiver = userLowService.findById(request.subscribedToUserId());
 
-        String title = AlarmMessage.SUBSCRIBE_ALARM.getMessage();
         String content = subscriber.getUsername() + "님이 회원님을 픽했어요.";
         String deepLink = SUBSCRIBE_DEEP_LINK_FORMAT.formatted(receiver.getId());
 
