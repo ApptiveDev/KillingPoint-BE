@@ -35,14 +35,14 @@ public class QUserRepository {
 
         List<UserEntity> content = queryFactory
                 .selectFrom(userEntity)
-                .where(searchCondition, notBlockedCondition)
-                .where(userEntity.id.ne(userId))
+                .where(searchCondition, notBlockedCondition, userEntity.id.ne(userId))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
         JPAQuery<Long> countQuery = queryFactory
                 .select(userEntity.count())
+                .where(userEntity.id.ne(userId))
                 .from(userEntity)
                 .where(searchCondition, notBlockedCondition);
 
