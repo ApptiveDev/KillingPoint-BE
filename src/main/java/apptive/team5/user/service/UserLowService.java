@@ -63,7 +63,7 @@ public class UserLowService {
     }
 
     @Transactional(readOnly = true)
-    public Page<UserEntity> findByTagOrUsernameExcludingBlocked(Set<Long> blockedUserIds, String searchCond, Pageable pageable) {
-        return qUserRepository.findByTagOrUsernameExcludingBlocked(blockedUserIds, searchCond,pageable);
+    public Page<UserEntity> findByTagOrUsernameExcludingBlocked(Long userId, Set<Long> blockedUserIds, String searchCond, Pageable pageable) {
+        return qUserRepository.findByTagOrUsernameExcludingBlocked(userId, blockedUserIds, searchCond,pageable);
     }
 }

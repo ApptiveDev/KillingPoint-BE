@@ -156,7 +156,7 @@ public class UserService {
 
         Set<Long> blockedUserIds = userBlockLowService.getBlockedUserIds(subscriberId);
 
-        Page<UserEntity> findUsers = userLowService.findByTagOrUsernameExcludingBlocked(blockedUserIds, searchCond, pageable);
+        Page<UserEntity> findUsers = userLowService.findByTagOrUsernameExcludingBlocked(subscriberId, blockedUserIds, searchCond, pageable);
 
         List<Long> userIds = findUsers.stream().map(UserEntity::getId).toList();
 

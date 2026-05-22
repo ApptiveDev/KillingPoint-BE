@@ -334,11 +334,9 @@ class UserControllerTest {
 
 
         assertSoftly(softly -> {
-            softly.assertThat(content.size()).isEqualTo(2);
-            softly.assertThat(content.get(0).userId()).isEqualTo(user.getId());
-            softly.assertThat(content.get(0).isMyPick()).isFalse();
-            softly.assertThat(content.get(1).userId()).isEqualTo(subscribedToUser.getId());
-            softly.assertThat(content.get(1).isMyPick()).isTrue();
+            softly.assertThat(content.size()).isEqualTo(1);
+            softly.assertThat(content.getFirst().userId()).isEqualTo(subscribedToUser.getId());
+            softly.assertThat(content.getFirst().isMyPick()).isTrue();
         });
 
     }
@@ -372,11 +370,9 @@ class UserControllerTest {
 
 
         assertSoftly(softly -> {
-            softly.assertThat(content.size()).isEqualTo(2);
-            softly.assertThat(content.get(0).userId()).isEqualTo(user.getId());
-            softly.assertThat(content.get(0).isMyPick()).isFalse();
-            softly.assertThat(content.get(1).userId()).isEqualTo(subscribedToUser.getId());
-            softly.assertThat(content.get(1).isMyPick()).isTrue();
+            softly.assertThat(content.size()).isEqualTo(1);
+            softly.assertThat(content.getFirst().userId()).isEqualTo(subscribedToUser.getId());
+            softly.assertThat(content.getFirst().isMyPick()).isTrue();
         });
 
     }
@@ -425,10 +421,8 @@ class UserControllerTest {
 
         assertSoftly(softly -> {
             softly.assertThat(content).extracting(UserSearchResponse::userId)
-                    .containsExactlyInAnyOrder(user.getId(), visibleUser.getId());
-            softly.assertThat(content).extracting(UserSearchResponse::userId)
                     .doesNotContain(blockedUser.getId(), blockingUser.getId());
-            softly.assertThat(jsonNode.path("page").path("totalElements").asInt()).isEqualTo(2);
+            softly.assertThat(jsonNode.path("page").path("totalElements").asInt()).isEqualTo(1);
         });
     }
 

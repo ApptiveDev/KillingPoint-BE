@@ -1,5 +1,6 @@
 package apptive.team5.user.repository;
 
+import apptive.team5.user.domain.QUserEntity;
 import apptive.team5.user.domain.UserEntity;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
@@ -28,13 +29,14 @@ public class QUserRepository {
         this.queryFactory = new JPAQueryFactory(entityManager);
     }
 
-    public Page<UserEntity> findByTagOrUsernameExcludingBlocked(Set<Long> blockedUserIds, String searchCond, Pageable pageable) {
+    public Page<UserEntity> findByTagOrUsernameExcludingBlocked(Long userId, Set<Long> blockedUserIds, String searchCond, Pageable pageable) {
         BooleanExpression searchCondition = tagLike(searchCond).or(usernameLike(searchCond));
         BooleanExpression notBlockedCondition = notInBlockedUserIds(blockedUserIds);
 
         List<UserEntity> content = queryFactory
                 .selectFrom(userEntity)
                 .where(searchCondition, notBlockedCondition)
+                .where(userEntity.id.ne(userId))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
