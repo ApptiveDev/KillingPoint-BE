@@ -35,4 +35,7 @@ public interface DiaryReportRepository extends JpaRepository<DiaryReportEntity, 
 
     @Query("select dr from DiaryReportEntity dr order by dr.createDateTime")
     List<DiaryReportEntity> findRecentDiaryReport(Pageable pageable);
+
+    @Query("select dr.diary.id, count(dr) from DiaryReportEntity dr where dr.diary.id in :diaryIds group by dr.diary.id")
+    List<Object[]> countByDiaryIds(List<Long> diaryIds);
 }
