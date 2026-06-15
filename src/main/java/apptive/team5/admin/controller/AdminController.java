@@ -75,13 +75,31 @@ public class AdminController {
 
     @GetMapping("/dashboard")
     public String dashboard(@RequestParam(defaultValue = "0") int page,
-                            @RequestParam(defaultValue = "20") int size,
+                            @RequestParam(defaultValue = "10") int size,
+                            @RequestParam(defaultValue = "ugc") String view,
                             @RequestParam(defaultValue = "all") String filter,
                             @RequestParam(defaultValue = "MUSIC_TITLE") String searchType,
                             @RequestParam(defaultValue = "") String q,
                             Model model) {
         int pageNumber = Math.max(page, 0);
         int pageSize = Math.min(Math.max(size, 10), 50);
+        String adminView = "cs".equals(view) ? "cs" : "ugc";
+        int csPageSize = 10;
+
+        model.addAttribute("adminView", adminView);
+
+        if ("cs".equals(adminView)) {
+            var memoPage = adminUgcService.getMemoItems(
+                    PageRequest.of(pageNumber, csPageSize, Sort.by(Sort.Direction.DESC, "id"))
+            );
+
+            model.addAttribute("memoItems", memoPage.getContent());
+            model.addAttribute("memoPage", memoPage);
+            model.addAttribute("pageSize", csPageSize);
+            return "admin/dashboard";
+        }
+
+        model.addAttribute("pageSize", pageSize);
         String ugcFilter = "reported".equals(filter) ? "reported" : "all";
         AdminUgcSearchType ugcSearchType = AdminUgcSearchType.from(searchType);
         String query = q == null ? "" : q.trim();
@@ -100,7 +118,6 @@ public class AdminController {
         model.addAttribute("ugcSearchTypes", AdminUgcSearchType.values());
         model.addAttribute("ugcSearchType", ugcSearchType);
         model.addAttribute("ugcQuery", query);
-        model.addAttribute("pageSize", pageSize);
         return "admin/dashboard";
     }
 
@@ -108,7 +125,7 @@ public class AdminController {
     public String saveMemo(@PathVariable Long diaryId,
                            @RequestParam(defaultValue = "") String memo,
                            @RequestParam(defaultValue = "0") int page,
-                           @RequestParam(defaultValue = "20") int size,
+                           @RequestParam(defaultValue = "10") int size,
                            @RequestParam(defaultValue = "all") String filter,
                            @RequestParam(defaultValue = "MUSIC_TITLE") String searchType,
                            @RequestParam(defaultValue = "") String q,
@@ -117,16 +134,31 @@ public class AdminController {
 
         redirectAttributes.addAttribute("page", Math.max(page, 0));
         redirectAttributes.addAttribute("size", Math.min(Math.max(size, 10), 50));
+        redirectAttributes.addAttribute("view", "ugc");
         redirectAttributes.addAttribute("filter", "reported".equals(filter) ? "reported" : "all");
         redirectAttributes.addAttribute("searchType", AdminUgcSearchType.from(searchType).name());
         redirectAttributes.addAttribute("q", q == null ? "" : q.trim());
         return "redirect:/admin/dashboard";
     }
 
+    @PostMapping("/dashboard/memos/{memoId}/delete")
+    public String deleteMemo(@PathVariable Long memoId,
+                             @RequestParam(defaultValue = "0") int page,
+                             RedirectAttributes redirectAttributes) {
+        int pageSize = 10;
+        long remainingCount = adminUgcService.deleteMemo(memoId);
+        int lastPage = remainingCount == 0 ? 0 : (int) ((remainingCount - 1) / pageSize);
+
+        redirectAttributes.addAttribute("view", "cs");
+        redirectAttributes.addAttribute("page", Math.min(Math.max(page, 0), lastPage));
+        redirectAttributes.addAttribute("size", pageSize);
+        return "redirect:/admin/dashboard";
+    }
+
     @PostMapping("/dashboard/{diaryId}/delete")
     public String deleteDiary(@PathVariable Long diaryId,
                               @RequestParam(defaultValue = "0") int page,
-                              @RequestParam(defaultValue = "20") int size,
+                              @RequestParam(defaultValue = "10") int size,
                               @RequestParam(defaultValue = "all") String filter,
                               @RequestParam(defaultValue = "MUSIC_TITLE") String searchType,
                               @RequestParam(defaultValue = "") String q,
@@ -135,6 +167,7 @@ public class AdminController {
 
         redirectAttributes.addAttribute("page", Math.max(page, 0));
         redirectAttributes.addAttribute("size", Math.min(Math.max(size, 10), 50));
+        redirectAttributes.addAttribute("view", "ugc");
         redirectAttributes.addAttribute("filter", "reported".equals(filter) ? "reported" : "all");
         redirectAttributes.addAttribute("searchType", AdminUgcSearchType.from(searchType).name());
         redirectAttributes.addAttribute("q", q == null ? "" : q.trim());

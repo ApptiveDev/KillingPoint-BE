@@ -19,6 +19,15 @@ public class DiaryMemoLowService {
         return diaryMemoRepository.save(diaryMemo);
     }
 
+    public void deleteById(Long memoId) {
+        diaryMemoRepository.deleteById(memoId);
+    }
+
+    @Transactional(readOnly = true)
+    public long count() {
+        return diaryMemoRepository.count();
+    }
+
     public void deleteByDiaryId(Long diaryId) {
         diaryMemoRepository.deleteByDiaryId(diaryId);
     }

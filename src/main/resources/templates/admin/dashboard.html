@@ -67,17 +67,29 @@
             align-items: center;
             gap: 9px;
             width: 100%;
+            margin-bottom: 6px;
             padding: 12px 10px;
-            border-left: 3px solid #c7f23f;
-            background: #1c1c19;
-            color: #fff;
+            border-left: 3px solid transparent;
+            background: transparent;
+            color: #9a9a92;
             font-size: 14px;
             font-weight: 700;
+            text-decoration: none;
+        }
+
+        .nav-item.is-active {
+            border-left-color: #c7f23f;
+            background: #1c1c19;
+            color: #fff;
         }
 
         .nav-dot {
             width: 7px;
             height: 7px;
+            background: #4a4a44;
+        }
+
+        .nav-item.is-active .nav-dot {
             background: #c7f23f;
         }
 
@@ -286,6 +298,92 @@
             overflow: hidden;
             border: 1px solid #e7e7e2;
             background: #fff;
+        }
+
+        .memo-board {
+            max-width: 1040px;
+            margin: 0 auto;
+            border: 1px solid #e7e7e2;
+            background: #fff;
+        }
+
+        .memo-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .memo-card {
+            display: grid;
+            grid-template-columns: 62px minmax(0, 1fr);
+            gap: 14px;
+            padding: 16px;
+            border-bottom: 1px solid #f1f1ed;
+        }
+
+        .memo-card:last-child {
+            border-bottom: 0;
+        }
+
+        .memo-thumb {
+            width: 62px;
+            height: 62px;
+            border: 1px solid #e2e2dc;
+            background: #ecece6;
+            object-fit: cover;
+        }
+
+        .memo-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            color: #16160f;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .memo-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .memo-delete-form {
+            flex: 0 0 auto;
+        }
+
+        .memo-delete-button {
+            padding: 7px 11px;
+            border: 1px solid #ecc3bc;
+            background: #fdf6f5;
+            color: #bf4a3c;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .memo-meta {
+            margin-top: 3px;
+            color: #8a8a82;
+            font-size: 12px;
+        }
+
+        .memo-content {
+            margin: 12px 0 0;
+            padding: 11px 12px;
+            border: 1px solid #e7e7e2;
+            background: #fcfcfb;
+            color: #1a1a17;
+            font-size: 13px;
+            line-height: 1.55;
+            white-space: pre-wrap;
+        }
+
+        .memo-diary {
+            margin: 8px 0 0;
+            color: #8a8a82;
+            font-size: 12px;
+            line-height: 1.5;
         }
 
         .panel-header {
@@ -687,7 +785,8 @@
     <aside class="sidebar">
         <img class="logo" th:src="@{/admin/images/killing-part-logo.svg}" alt="Killing Part">
         <div class="nav-group">운영</div>
-        <span class="nav-item"><span class="nav-dot"></span>UGC 검수</span>
+        <a class="nav-item" th:classappend="${adminView == 'ugc'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='ugc')}"><span class="nav-dot"></span>UGC 검수</a>
+        <a class="nav-item" th:classappend="${adminView == 'cs'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='cs')}"><span class="nav-dot"></span>CS</a>
         <form class="sidebar-footer" th:action="@{/admin/logout}" method="post">
             <div class="sidebar-user">
                 <strong>admin</strong>
@@ -699,14 +798,15 @@
 
     <section class="content">
         <header class="topbar">
-            <h1 class="title">UGC 검수</h1>
+            <h1 class="title" th:text="${adminView == 'cs'} ? 'CS' : 'UGC 검수'">UGC 검수</h1>
         </header>
 
         <section class="workspace">
-            <div class="ugc-shell">
+            <div class="ugc-shell" th:if="${adminView == 'ugc'}">
                 <div class="toolbar">
                     <form class="search-form" th:action="@{/admin/dashboard}" method="get">
                         <input type="hidden" name="filter" th:value="${ugcFilter}">
+                        <input type="hidden" name="view" value="ugc">
                         <input type="hidden" name="size" th:value="${pageSize}">
                         <div class="search-type-tabs" aria-label="검색 조건">
                             <label class="search-type-option" th:each="type : ${ugcSearchTypes}">
@@ -719,14 +819,14 @@
                                 <circle cx="11" cy="11" r="7"></circle>
                                 <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
                             </svg>
-                            <input id="ugcSearch" name="q" type="search" th:value="${ugcQuery}" placeholder="검색어 입력">
+                            <input id="ugcSearch" name="q" type="search" th:value="${ugcQuery}">
                         </label>
                         <button class="search-button" type="submit">검색</button>
                     </form>
 
                     <div class="filter-tabs" aria-label="UGC 필터">
-                        <a class="filter-tab" th:classappend="${ugcFilter == 'reported'} ? ' is-active' : ''" th:href="@{/admin/dashboard(filter='reported', page=0, size=${pageSize}, searchType=${ugcSearchType.name()}, q=${ugcQuery})}">신고/깨짐</a>
-                        <a class="filter-tab" th:classappend="${ugcFilter == 'all'} ? ' is-active' : ''" th:href="@{/admin/dashboard(filter='all', page=0, size=${pageSize}, searchType=${ugcSearchType.name()}, q=${ugcQuery})}">전체</a>
+                        <a class="filter-tab" th:classappend="${ugcFilter == 'reported'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='ugc', filter='reported', page=0, size=${pageSize}, searchType=${ugcSearchType.name()}, q=${ugcQuery})}">신고/깨짐</a>
+                        <a class="filter-tab" th:classappend="${ugcFilter == 'all'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='ugc', filter='all', page=0, size=${pageSize}, searchType=${ugcSearchType.name()}, q=${ugcQuery})}">전체</a>
                     </div>
                 </div>
 
@@ -756,6 +856,7 @@
                                 <span class="row-main">
                                     <span class="row-line">
                                         <span class="song" th:text="${ugc.musicTitle}">음악 제목</span>
+                                        <span class="status" th:text="${ugc.displayId}">KP-0</span>
                                     </span>
                                     <span class="row-sub" th:text="|${ugc.artist} · ${ugc.username}|">아티스트 · 작성자</span>
                                 </span>
@@ -770,8 +871,8 @@
                         <nav class="pagination" th:if="${ugcPage.totalPages > 0}" aria-label="UGC 페이지">
                             <span class="page-status" th:text="|${ugcPage.number + 1} / ${ugcPage.totalPages} 페이지|">1 / 1 페이지</span>
                             <div class="page-actions">
-                                <a class="page-link" th:classappend="${ugcPage.first} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(filter=${ugcFilter}, page=${ugcPage.number - 1}, size=${pageSize}, searchType=${ugcSearchType.name()}, q=${ugcQuery})}">이전</a>
-                                <a class="page-link" th:classappend="${ugcPage.last} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(filter=${ugcFilter}, page=${ugcPage.number + 1}, size=${pageSize}, searchType=${ugcSearchType.name()}, q=${ugcQuery})}">다음</a>
+                                <a class="page-link" th:classappend="${ugcPage.first} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='ugc', filter=${ugcFilter}, page=${ugcPage.number - 1}, size=${pageSize}, searchType=${ugcSearchType.name()}, q=${ugcQuery})}">이전</a>
+                                <a class="page-link" th:classappend="${ugcPage.last} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='ugc', filter=${ugcFilter}, page=${ugcPage.number + 1}, size=${pageSize}, searchType=${ugcSearchType.name()}, q=${ugcQuery})}">다음</a>
                             </div>
                         </nav>
                     </section>
@@ -789,7 +890,10 @@
                         <div class="detail-body">
                             <div class="detail-head">
                                 <div>
-                                    <div class="detail-song" id="detailSong" th:text="${selectedUgc.musicTitle}">음악 제목</div>
+                                    <div class="detail-song">
+                                        <span id="detailSong" th:text="${selectedUgc.musicTitle}">음악 제목</span>
+                                        <span class="status" id="detailDisplayId" th:text="${selectedUgc.displayId}">KP-0</span>
+                                    </div>
                                     <div class="detail-artist" id="detailArtist" th:text="${selectedUgc.artist}">아티스트</div>
                                 </div>
                                 <button class="secondary-button" type="button" id="detailUserButton" th:text="|${selectedUgc.username} →|">유저 정보 →</button>
@@ -831,6 +935,42 @@
                     </section>
                 </div>
             </div>
+            <section class="memo-board" th:if="${adminView == 'cs'}">
+                <div class="panel-header">
+                    <span class="panel-title">메모 남긴 Diary</span>
+                    <span class="panel-count" th:text="'총 ' + ${memoPage.totalElements} + '건'">총 0건</span>
+                </div>
+                <div class="memo-list">
+                    <article class="memo-card" th:each="memo : ${memoItems}">
+                        <img class="memo-thumb" th:src="${memo.albumImageUrl}" th:alt="${memo.musicTitle}">
+                        <div>
+                            <div class="memo-head">
+                                <div>
+                                    <div class="memo-title">
+                                        <span th:text="${memo.musicTitle}">음악 제목</span>
+                                        <span class="status" th:text="${memo.displayId}">KP-0</span>
+                                    </div>
+                                    <div class="memo-meta" th:text="|${memo.artist} · ${memo.username} (${memo.userId})|">아티스트 · 작성자</div>
+                                </div>
+                                <form class="memo-delete-form" th:action="@{/admin/dashboard/memos/{memoId}/delete(memoId=${memo.memoId})}" method="post">
+                                    <input type="hidden" name="page" th:value="${memoPage.number}">
+                                    <button class="memo-delete-button" type="submit">메모 삭제</button>
+                                </form>
+                            </div>
+                            <p class="memo-content" th:text="${memo.memoContent}">메모 내용</p>
+                            <p class="memo-diary" th:text="${memo.diaryContent}">Diary 내용</p>
+                        </div>
+                    </article>
+                    <div class="empty-state" th:if="${#lists.isEmpty(memoItems)}">아직 남긴 메모가 없습니다</div>
+                </div>
+                <nav class="pagination" th:if="${memoPage.totalPages > 0}" aria-label="CS 메모 페이지">
+                    <span class="page-status" th:text="|${memoPage.number + 1} / ${memoPage.totalPages} 페이지|">1 / 1 페이지</span>
+                    <div class="page-actions">
+                        <a class="page-link" th:classappend="${memoPage.first} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='cs', page=${memoPage.number - 1}, size=${pageSize})}">이전</a>
+                        <a class="page-link" th:classappend="${memoPage.last} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='cs', page=${memoPage.number + 1}, size=${pageSize})}">다음</a>
+                    </div>
+                </nav>
+            </section>
         </section>
     </section>
 </main>
@@ -844,6 +984,7 @@
         document.getElementById("detailVideo").title = row.dataset.song;
         document.getElementById("detailSegment").textContent = "구간 " + row.dataset.segment + " 자동 재생";
         document.getElementById("detailSong").textContent = row.dataset.song;
+        document.getElementById("detailDisplayId").textContent = row.dataset.id;
         document.getElementById("detailArtist").textContent = row.dataset.artist;
         document.getElementById("detailMemo").value = row.dataset.memo;
         document.getElementById("detailMemoForm").action = row.dataset.memoAction;
@@ -864,6 +1005,14 @@
         if (!confirm("이 킬링파트를 삭제하시겠습니까?")) {
             event.preventDefault();
         }
+    });
+
+    document.querySelectorAll(".memo-delete-form").forEach(form => {
+        form.addEventListener("submit", event => {
+            if (!confirm("이 메모를 삭제하시겠습니까?")) {
+                event.preventDefault();
+            }
+        });
     });
 
 </script>

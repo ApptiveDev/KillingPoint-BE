@@ -1,6 +1,7 @@
 package apptive.team5.admin.service;
 
 import apptive.team5.admin.dto.AdminUgcItem;
+import apptive.team5.admin.dto.AdminMemoItem;
 import apptive.team5.admin.dto.AdminUgcSearchType;
 import apptive.team5.admin.repository.AdminUgcQueryRepository;
 import apptive.team5.diary.domain.DiaryEntity;
@@ -51,6 +52,12 @@ public class AdminUgcService {
         return diaryPage.map(diary -> AdminUgcItem.from(diary, reportCounts.getOrDefault(diary.getId(), 0L), now));
     }
 
+    @Transactional(readOnly = true)
+    public Page<AdminMemoItem> getMemoItems(Pageable pageable) {
+        return adminUgcQueryRepository.findMemoItems(pageable)
+                .map(AdminMemoItem::from);
+    }
+
     @Transactional
     public void saveMemo(Long diaryId, String content) {
         if (content == null || content.isBlank()) {
@@ -59,6 +66,12 @@ public class AdminUgcService {
 
         DiaryEntity diary = diaryLowService.findDiaryById(diaryId);
         diaryMemoLowService.save(new DiaryMemoEntity(content.trim(), diary));
+    }
+
+    @Transactional
+    public long deleteMemo(Long memoId) {
+        diaryMemoLowService.deleteById(memoId);
+        return diaryMemoLowService.count();
     }
 
     @Transactional
