@@ -1,13 +1,13 @@
 package apptive.team5.admin.service;
 
 import apptive.team5.admin.entity.Admin;
+import apptive.team5.admin.exception.AdminException;
 import apptive.team5.admin.repository.AdminRepository;
-import apptive.team5.global.exception.NotFoundEntityException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import static apptive.team5.admin.exception.AdminErrorCode.NOT_FOUND_ADMIN;
 
 @Service
 @Transactional
@@ -19,6 +19,6 @@ public class AdminLowService {
     Admin findByAdminId(String adminId) {
         return  adminRepository
                 .findByAdminId(adminId)
-                .orElseThrow(() -> new NotFoundEntityException("존재하지 않는 관리자 ID입니다."));
+                .orElseThrow(() -> new AdminException(NOT_FOUND_ADMIN));
     }
 }
