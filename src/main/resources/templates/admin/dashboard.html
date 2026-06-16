@@ -386,6 +386,10 @@
             line-height: 1.5;
         }
 
+        .memo-card .secondary-button {
+            margin-top: 10px;
+        }
+
         .user-board {
             max-width: 1040px;
             margin: 0 auto;
@@ -1108,8 +1112,7 @@
                             </div>
 
                             <div class="audit-note" id="detailMeta">
-                                등록 <span th:text="${selectedUgc.registeredLabel}">방금 전</span> · 작성자 <span th:text="${selectedUgc.username}">작성자</span> (<span th:text="${selectedUgc.userId}">0</span>) · <span th:text="${selectedUgc.scopeLabel}">전체공개</span><br>
-                                메모 저장과 삭제 액션은 운영 기록에 남습니다
+                                등록 <span th:text="${selectedUgc.registeredLabel}">방금 전</span> · 작성자 <span th:text="${selectedUgc.username}">작성자</span> (<span th:text="${selectedUgc.userId}">0</span>) · <span th:text="${selectedUgc.scopeLabel}">전체공개</span>
                             </div>
                         </div>
                     </section>
@@ -1142,6 +1145,7 @@
                             </div>
                             <p class="memo-content" th:text="${memo.memoContent}">메모 내용</p>
                             <p class="memo-diary" th:text="${memo.diaryContent}">Diary 내용</p>
+                            <a class="secondary-button" th:href="@{/admin/dashboard(view='ugc', searchType='DIARY_ID', q=${memo.diaryId})}">UGC 검수로 이동</a>
                         </div>
                     </article>
                     <div class="empty-state" th:if="${#lists.isEmpty(memoItems)}">아직 남긴 메모가 없습니다</div>
@@ -1308,9 +1312,7 @@
         document.getElementById("detailUserButton").textContent = row.dataset.user + " →";
         document.getElementById("detailUserButton").href = "/admin/dashboard?view=users&selectedUserId=" + encodeURIComponent(row.dataset.userId);
         document.getElementById("detailMeta").replaceChildren(
-            document.createTextNode("등록 " + row.dataset.registered + " · 작성자 " + row.dataset.user + " (" + row.dataset.userId + ") · " + row.dataset.platform),
-            document.createElement("br"),
-            document.createTextNode("메모 저장과 삭제 액션은 운영 기록에 남습니다")
+            document.createTextNode("등록 " + row.dataset.registered + " · 작성자 " + row.dataset.user + " (" + row.dataset.userId + ") · " + row.dataset.platform)
         );
     }
 
