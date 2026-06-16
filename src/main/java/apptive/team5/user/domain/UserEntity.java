@@ -48,6 +48,9 @@ public class UserEntity extends BaseTimeEntity {
     @Column(nullable = false, columnDefinition = "boolean default true")
     private boolean alarmEnabled = true;
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean locked = false;
+
     public UserEntity(String identifier, String email, String username, String tag, UserRoleType roleType, SocialType socialType) {
         this.identifier = identifier;
         this.email = email;
@@ -57,6 +60,7 @@ public class UserEntity extends BaseTimeEntity {
         this.socialType = socialType;
         this.profileImage = DEFAULT_IMAGE;
         this.alarmEnabled = true;
+        this.locked = false;
     }
 
     public UserEntity(Long id, String identifier, String email, String username, String tag, UserRoleType roleType, SocialType socialType) {
@@ -69,6 +73,7 @@ public class UserEntity extends BaseTimeEntity {
         this.socialType = socialType;
         this.profileImage = DEFAULT_IMAGE;
         this.alarmEnabled = true;
+        this.locked = false;
     }
 
     public void changeTag(String tag) {
@@ -89,5 +94,9 @@ public class UserEntity extends BaseTimeEntity {
 
     public void changeAlarmEnabled(boolean alarmEnabled) {
         this.alarmEnabled = alarmEnabled;
+    }
+
+    public void changeLocked(boolean locked) {
+        this.locked = locked;
     }
 }

@@ -386,6 +386,123 @@
             line-height: 1.5;
         }
 
+        .user-board {
+            max-width: 1040px;
+            margin: 0 auto;
+        }
+
+        .user-list {
+            border: 1px solid #e7e7e2;
+            background: #fff;
+        }
+
+        .user-detail-panel {
+            margin-top: 18px;
+            border: 1px solid #e7e7e2;
+            background: #fff;
+        }
+
+        .user-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr) auto;
+            gap: 16px;
+            align-items: center;
+            padding: 14px 16px;
+            border-bottom: 1px solid #f1f1ed;
+            border-left: 3px solid transparent;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .user-row:last-child {
+            border-bottom: 0;
+        }
+
+        .user-row.is-selected {
+            border-left-color: #c7f23f;
+            background: #fbfcf6;
+        }
+
+        .user-main {
+            min-width: 0;
+        }
+
+        .user-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+            color: #16160f;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .user-name strong,
+        .user-email {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .user-sub,
+        .user-email {
+            margin-top: 3px;
+            color: #8a8a82;
+            font-size: 12px;
+        }
+
+        .user-platforms {
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .user-kp-row {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f1f1ed;
+        }
+
+        .user-kp-row:last-child {
+            border-bottom: 0;
+        }
+
+        .user-kp-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            color: #16160f;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .user-kp-meta {
+            margin-top: 3px;
+            color: #8a8a82;
+            font-size: 12px;
+        }
+
+        .user-kp-content {
+            margin: 9px 0 0;
+            color: #5a5a54;
+            font-size: 12.5px;
+            line-height: 1.5;
+        }
+
+        .user-panel-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .user-lock-form .danger-button {
+            width: auto;
+            padding: 8px 11px;
+            font-size: 12px;
+        }
+
         .panel-header {
             display: flex;
             align-items: center;
@@ -774,6 +891,14 @@
                 flex-direction: column;
             }
 
+            .user-row {
+                grid-template-columns: 1fr;
+            }
+
+            .user-platforms {
+                justify-content: flex-start;
+            }
+
             .row-meta {
                 align-items: flex-start;
             }
@@ -787,6 +912,7 @@
         <div class="nav-group">운영</div>
         <a class="nav-item" th:classappend="${adminView == 'ugc'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='ugc')}"><span class="nav-dot"></span>UGC 검수</a>
         <a class="nav-item" th:classappend="${adminView == 'cs'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='cs')}"><span class="nav-dot"></span>CS</a>
+        <a class="nav-item" th:classappend="${adminView == 'users'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='users')}"><span class="nav-dot"></span>유저</a>
         <form class="sidebar-footer" th:action="@{/admin/logout}" method="post">
             <div class="sidebar-user">
                 <strong>admin</strong>
@@ -798,7 +924,7 @@
 
     <section class="content">
         <header class="topbar">
-            <h1 class="title" th:text="${adminView == 'cs'} ? 'CS' : 'UGC 검수'">UGC 검수</h1>
+            <h1 class="title" th:text="${pageTitle}">UGC 검수</h1>
         </header>
 
         <section class="workspace">
@@ -971,6 +1097,100 @@
                     </div>
                 </nav>
             </section>
+            <section class="user-board" th:if="${adminView == 'users'}">
+                <div class="toolbar">
+                    <form class="search-form" th:action="@{/admin/dashboard}" method="get">
+                        <input type="hidden" name="view" value="users">
+                        <input type="hidden" name="size" th:value="${pageSize}">
+                        <div class="search-type-tabs" aria-label="유저 검색 조건">
+                            <label class="search-type-option" th:each="type : ${userSearchTypes}">
+                                <input type="radio" name="userSearchType" th:value="${type.name()}" th:checked="${type == userSearchType}">
+                                <span th:text="${type.label}">검색 조건</span>
+                            </label>
+                        </div>
+                        <label class="search-box" aria-label="유저 검색어">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9a9a92" stroke-width="2" aria-hidden="true">
+                                <circle cx="11" cy="11" r="7"></circle>
+                                <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
+                            </svg>
+                            <input name="userQ" type="search" th:value="${userQuery}">
+                        </label>
+                        <button class="search-button" type="submit">검색</button>
+                    </form>
+                </div>
+
+                <section class="user-list">
+                    <div class="panel-header">
+                        <span class="panel-title">유저 리스트</span>
+                        <span class="panel-count" th:text="'총 ' + ${userPage.totalElements} + '명'">총 0명</span>
+                    </div>
+                    <a class="user-row" th:each="user : ${userItems}"
+                       th:classappend="${selectedUserId != null and selectedUserId == user.userId} ? ' is-selected' : ''"
+                       th:href="@{/admin/dashboard(view='users', page=${userPage.number}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, selectedUserId=${user.userId}, kpPage=0)}">
+                        <div class="user-main">
+                            <div class="user-name">
+                                <strong th:text="${user.username}">username</strong>
+                                <span class="status" th:text="|USER-${user.userId}|">USER-0</span>
+                            </div>
+                            <div class="user-sub" th:text="${user.tag}">tag</div>
+                        </div>
+                        <div class="user-email" th:text="${user.email}">email@example.com</div>
+                        <div class="user-platforms">
+                            <span class="status" th:text="${user.socialType}">SOCIAL</span>
+                            <span class="status" th:text="${user.roleType}">USER</span>
+                            <span class="status" th:classappend="${user.lockedStatusClass}" th:text="${user.lockedLabel}">정상</span>
+                        </div>
+                    </a>
+                    <div class="empty-state" th:if="${#lists.isEmpty(userItems)}">조건에 맞는 유저가 없습니다</div>
+                    <nav class="pagination" th:if="${userPage.totalPages > 0}" aria-label="유저 페이지">
+                        <span class="page-status" th:text="|${userPage.number + 1} / ${userPage.totalPages} 페이지|">1 / 1 페이지</span>
+                        <div class="page-actions">
+                            <a class="page-link" th:classappend="${userPage.first} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number - 1}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, selectedUserId=${selectedUserId})}">이전</a>
+                            <a class="page-link" th:classappend="${userPage.last} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number + 1}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, selectedUserId=${selectedUserId})}">다음</a>
+                        </div>
+                    </nav>
+                </section>
+                <section class="user-detail-panel" th:if="${selectedUserId != null}">
+                    <div class="panel-header">
+                        <span class="panel-title">생성한 킬링파트</span>
+                        <div class="filter-tabs" aria-label="선택 유저 킬링파트 필터">
+                            <a class="filter-tab" th:classappend="${selectedUserDiaryFilter == 'all'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, selectedUserId=${selectedUserId}, kpFilter='all', kpPage=0)}">전체</a>
+                            <a class="filter-tab" th:classappend="${selectedUserDiaryFilter == 'reported'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, selectedUserId=${selectedUserId}, kpFilter='reported', kpPage=0)}">신고받은 것</a>
+                        </div>
+                        <div class="user-panel-actions">
+                            <span class="panel-count" th:text="'총 ' + ${selectedUserDiaryPage.totalElements} + '건'">총 0건</span>
+                            <form class="user-lock-form" th:action="@{/admin/dashboard/users/{userId}/lock(userId=${selectedUserId})}" method="post">
+                                <input type="hidden" name="locked" th:value="${!selectedUser.locked}">
+                                <input type="hidden" name="page" th:value="${userPage.number}">
+                                <input type="hidden" name="size" th:value="${pageSize}">
+                                <input type="hidden" name="userSearchType" th:value="${userSearchType.name()}">
+                                <input type="hidden" name="userQ" th:value="${userQuery}">
+                                <input type="hidden" name="kpFilter" th:value="${selectedUserDiaryFilter}">
+                                <input type="hidden" name="kpPage" th:value="${selectedUserDiaryPage.number}">
+                                <button class="danger-button" type="submit" th:text="${selectedUser.locked} ? '정지 해제' : '계정 정지'">계정 정지</button>
+                            </form>
+                        </div>
+                    </div>
+                    <article class="user-kp-row" th:each="diary : ${selectedUserDiaryItems}">
+                        <div class="user-kp-title">
+                            <span th:text="${diary.musicTitle}">음악 제목</span>
+                            <span class="status" th:text="${diary.displayId}">KP-0</span>
+                            <span class="status" th:if="${diary.reportCount > 0}" th:classappend="${diary.reportStatusClass}" th:text="${diary.reportLabel}">신고-0</span>
+                            <span class="status" th:text="${diary.scopeLabel}">전체공개</span>
+                        </div>
+                        <div class="user-kp-meta" th:text="${diary.artist}">아티스트</div>
+                        <p class="user-kp-content" th:text="${diary.content}">Diary 내용</p>
+                    </article>
+                    <div class="empty-state" th:if="${#lists.isEmpty(selectedUserDiaryItems)}">생성한 킬링파트가 없습니다</div>
+                    <nav class="pagination" th:if="${selectedUserDiaryPage.totalPages > 0}" aria-label="선택 유저 킬링파트 페이지">
+                        <span class="page-status" th:text="|${selectedUserDiaryPage.number + 1} / ${selectedUserDiaryPage.totalPages} 페이지|">1 / 1 페이지</span>
+                        <div class="page-actions">
+                            <a class="page-link" th:classappend="${selectedUserDiaryPage.first} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, selectedUserId=${selectedUserId}, kpFilter=${selectedUserDiaryFilter}, kpPage=${selectedUserDiaryPage.number - 1})}">이전</a>
+                            <a class="page-link" th:classappend="${selectedUserDiaryPage.last} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, selectedUserId=${selectedUserId}, kpFilter=${selectedUserDiaryFilter}, kpPage=${selectedUserDiaryPage.number + 1})}">다음</a>
+                        </div>
+                    </nav>
+                </section>
+            </section>
         </section>
     </section>
 </main>
@@ -1010,6 +1230,16 @@
     document.querySelectorAll(".memo-delete-form").forEach(form => {
         form.addEventListener("submit", event => {
             if (!confirm("이 메모를 삭제하시겠습니까?")) {
+                event.preventDefault();
+            }
+        });
+    });
+
+    document.querySelectorAll(".user-lock-form").forEach(form => {
+        form.addEventListener("submit", event => {
+            const lockInput = form.querySelector("input[name='locked']");
+            const message = lockInput?.value === "true" ? "이 유저의 계정을 정지하시겠습니까?" : "이 유저의 정지를 해제하시겠습니까?";
+            if (!confirm(message)) {
                 event.preventDefault();
             }
         });
