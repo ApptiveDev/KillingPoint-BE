@@ -85,6 +85,7 @@ public class AdminController {
                             @RequestParam(defaultValue = "") String q,
                             @RequestParam(defaultValue = "USER_ID") String userSearchType,
                             @RequestParam(defaultValue = "") String userQ,
+                            @RequestParam(defaultValue = "all") String userFilter,
                             @RequestParam(defaultValue = "") String selectedUserId,
                             @RequestParam(defaultValue = "0") int kpPage,
                             @RequestParam(defaultValue = "all") String kpFilter,
@@ -111,11 +112,13 @@ public class AdminController {
         if ("users".equals(adminView)) {
             UserSearchType searchTypeForUser = UserSearchType.from(userSearchType);
             String query = userQ == null ? "" : userQ.trim();
+            String selectedUserFilter = "locked".equals(userFilter) ? "locked" : "all";
             Long selectedUserIdValue = parseLongOrNull(selectedUserId);
             String selectedUserDiaryFilter = "reported".equals(kpFilter) ? "reported" : "all";
             var userPage = userManagementService.getUsers(
                     searchTypeForUser,
                     query,
+                    "locked".equals(selectedUserFilter),
                     PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "id"))
             );
             if (selectedUserIdValue != null) {
@@ -134,6 +137,7 @@ public class AdminController {
             model.addAttribute("userSearchTypes", UserSearchType.values());
             model.addAttribute("userSearchType", searchTypeForUser);
             model.addAttribute("userQuery", query);
+            model.addAttribute("userFilter", selectedUserFilter);
             model.addAttribute("selectedUserId", selectedUserIdValue);
             model.addAttribute("selectedUserDiaryFilter", selectedUserDiaryFilter);
             model.addAttribute("pageSize", pageSize);
@@ -203,6 +207,7 @@ public class AdminController {
                                    @RequestParam(defaultValue = "10") int size,
                                    @RequestParam(defaultValue = "USER_ID") String userSearchType,
                                    @RequestParam(defaultValue = "") String userQ,
+                                   @RequestParam(defaultValue = "all") String userFilter,
                                    @RequestParam(defaultValue = "all") String kpFilter,
                                    @RequestParam(defaultValue = "0") int kpPage,
                                    RedirectAttributes redirectAttributes) {
@@ -213,6 +218,7 @@ public class AdminController {
         redirectAttributes.addAttribute("size", Math.min(Math.max(size, 10), 50));
         redirectAttributes.addAttribute("userSearchType", UserSearchType.from(userSearchType).name());
         redirectAttributes.addAttribute("userQ", userQ == null ? "" : userQ.trim());
+        redirectAttributes.addAttribute("userFilter", "locked".equals(userFilter) ? "locked" : "all");
         redirectAttributes.addAttribute("selectedUserId", userId);
         redirectAttributes.addAttribute("kpFilter", "reported".equals(kpFilter) ? "reported" : "all");
         redirectAttributes.addAttribute("kpPage", Math.max(kpPage, 0));

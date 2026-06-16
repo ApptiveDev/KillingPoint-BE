@@ -26,8 +26,8 @@ public class UserManagementService {
     private final UserLowService userLowService;
 
     @Transactional(readOnly = true)
-    public Page<UserListItem> getUsers(UserSearchType searchType, String query, Pageable pageable) {
-        return userManagementQueryRepository.findUsers(searchType, normalizedQuery(query), pageable)
+    public Page<UserListItem> getUsers(UserSearchType searchType, String query, boolean lockedOnly, Pageable pageable) {
+        return userManagementQueryRepository.findUsers(searchType, normalizedQuery(query), lockedOnly, pageable)
                 .map(UserListItem::from);
     }
 

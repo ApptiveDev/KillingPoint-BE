@@ -1159,6 +1159,7 @@
                     <form class="search-form" th:action="@{/admin/dashboard}" method="get">
                         <input type="hidden" name="view" value="users">
                         <input type="hidden" name="size" th:value="${pageSize}">
+                        <input type="hidden" name="userFilter" th:value="${userFilter}">
                         <div class="search-type-tabs" aria-label="유저 검색 조건">
                             <label class="search-type-option" th:each="type : ${userSearchTypes}">
                                 <input type="radio" name="userSearchType" th:value="${type.name()}" th:checked="${type == userSearchType}">
@@ -1174,6 +1175,10 @@
                         </label>
                         <button class="search-button" type="submit">검색</button>
                     </form>
+                    <div class="filter-tabs" aria-label="유저 필터">
+                        <a class="filter-tab" th:classappend="${userFilter == 'all'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='users', page=0, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, userFilter='all')}">전체</a>
+                        <a class="filter-tab" th:classappend="${userFilter == 'locked'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='users', page=0, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, userFilter='locked')}">정지</a>
+                    </div>
                 </div>
 
                 <section class="user-list">
@@ -1183,7 +1188,7 @@
                     </div>
                     <a class="user-row" th:each="user : ${userItems}"
                        th:classappend="${selectedUserId != null and selectedUserId == user.userId} ? ' is-selected' : ''"
-                       th:href="@{/admin/dashboard(view='users', page=${userPage.number}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, selectedUserId=${user.userId}, kpPage=0)}">
+                       th:href="@{/admin/dashboard(view='users', page=${userPage.number}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, userFilter=${userFilter}, selectedUserId=${user.userId}, kpPage=0)}">
                         <div class="user-main">
                             <div class="user-name">
                                 <strong th:text="${user.username}">username</strong>
@@ -1202,8 +1207,8 @@
                     <nav class="pagination" th:if="${userPage.totalPages > 0}" aria-label="유저 페이지">
                         <span class="page-status" th:text="|${userPage.number + 1} / ${userPage.totalPages} 페이지|">1 / 1 페이지</span>
                         <div class="page-actions">
-                            <a class="page-link" th:classappend="${userPage.first} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number - 1}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, selectedUserId=${selectedUserId})}">이전</a>
-                            <a class="page-link" th:classappend="${userPage.last} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number + 1}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, selectedUserId=${selectedUserId})}">다음</a>
+                            <a class="page-link" th:classappend="${userPage.first} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number - 1}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, userFilter=${userFilter}, selectedUserId=${selectedUserId})}">이전</a>
+                            <a class="page-link" th:classappend="${userPage.last} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number + 1}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, userFilter=${userFilter}, selectedUserId=${selectedUserId})}">다음</a>
                         </div>
                     </nav>
                 </section>
@@ -1243,6 +1248,7 @@
                             <input type="hidden" name="size" th:value="${pageSize}">
                             <input type="hidden" name="userSearchType" th:value="${userSearchType.name()}">
                             <input type="hidden" name="userQ" th:value="${userQuery}">
+                            <input type="hidden" name="userFilter" th:value="${userFilter}">
                             <input type="hidden" name="kpFilter" th:value="${selectedUserDiaryFilter}">
                             <input type="hidden" name="kpPage" th:value="${selectedUserDiaryPage.number}">
                             <button class="danger-button" type="submit" th:text="${selectedUser.locked} ? '정지 해제' : '계정 정지'">계정 정지</button>
@@ -1254,8 +1260,8 @@
                     <div class="panel-header">
                         <span class="panel-title">생성한 킬링파트</span>
                         <div class="filter-tabs" aria-label="선택 유저 킬링파트 필터">
-                            <a class="filter-tab" th:classappend="${selectedUserDiaryFilter == 'all'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, selectedUserId=${selectedUserId}, kpFilter='all', kpPage=0)}">전체</a>
-                            <a class="filter-tab" th:classappend="${selectedUserDiaryFilter == 'reported'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, selectedUserId=${selectedUserId}, kpFilter='reported', kpPage=0)}">신고받은 것</a>
+                            <a class="filter-tab" th:classappend="${selectedUserDiaryFilter == 'all'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, userFilter=${userFilter}, selectedUserId=${selectedUserId}, kpFilter='all', kpPage=0)}">전체</a>
+                            <a class="filter-tab" th:classappend="${selectedUserDiaryFilter == 'reported'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, userFilter=${userFilter}, selectedUserId=${selectedUserId}, kpFilter='reported', kpPage=0)}">신고받은 것</a>
                         </div>
                         <div class="user-panel-actions">
                             <span class="panel-count" th:text="'총 ' + ${selectedUserDiaryPage.totalElements} + '건'">총 0건</span>
@@ -1275,8 +1281,8 @@
                     <nav class="pagination" th:if="${selectedUserDiaryPage.totalPages > 0}" aria-label="선택 유저 킬링파트 페이지">
                         <span class="page-status" th:text="|${selectedUserDiaryPage.number + 1} / ${selectedUserDiaryPage.totalPages} 페이지|">1 / 1 페이지</span>
                         <div class="page-actions">
-                            <a class="page-link" th:classappend="${selectedUserDiaryPage.first} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, selectedUserId=${selectedUserId}, kpFilter=${selectedUserDiaryFilter}, kpPage=${selectedUserDiaryPage.number - 1})}">이전</a>
-                            <a class="page-link" th:classappend="${selectedUserDiaryPage.last} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, selectedUserId=${selectedUserId}, kpFilter=${selectedUserDiaryFilter}, kpPage=${selectedUserDiaryPage.number + 1})}">다음</a>
+                            <a class="page-link" th:classappend="${selectedUserDiaryPage.first} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, userFilter=${userFilter}, selectedUserId=${selectedUserId}, kpFilter=${selectedUserDiaryFilter}, kpPage=${selectedUserDiaryPage.number - 1})}">이전</a>
+                            <a class="page-link" th:classappend="${selectedUserDiaryPage.last} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, userFilter=${userFilter}, selectedUserId=${selectedUserId}, kpFilter=${selectedUserDiaryFilter}, kpPage=${selectedUserDiaryPage.number + 1})}">다음</a>
                         </div>
                     </nav>
                 </section>

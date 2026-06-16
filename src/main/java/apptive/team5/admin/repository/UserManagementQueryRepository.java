@@ -30,12 +30,13 @@ public class UserManagementQueryRepository {
         this.queryFactory = new JPAQueryFactory(entityManager);
     }
 
-    public Page<UserEntity> findUsers(UserSearchType searchType, String query, Pageable pageable) {
+    public Page<UserEntity> findUsers(UserSearchType searchType, String query, boolean lockedOnly, Pageable pageable) {
         BooleanExpression searchCondition = searchCondition(searchType, query);
+        BooleanExpression lockedCondition = lockedOnlyCondition(lockedOnly);
 
         List<UserEntity> content = queryFactory
                 .selectFrom(userEntity)
-                .where(searchCondition)
+                .where(searchCondition, lockedCondition)
                 .orderBy(userEntity.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -44,7 +45,7 @@ public class UserManagementQueryRepository {
         JPAQuery<Long> countQuery = queryFactory
                 .select(userEntity.count())
                 .from(userEntity)
-                .where(searchCondition);
+                .where(searchCondition, lockedCondition);
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
@@ -79,6 +80,14 @@ public class UserManagementQueryRepository {
                 .from(diaryReportEntity)
                 .where(diaryReportEntity.diary.eq(diaryEntity))
                 .exists();
+    }
+
+    private BooleanExpression lockedOnlyCondition(boolean lockedOnly) {
+        if (!lockedOnly) {
+            return null;
+        }
+
+        return userEntity.locked.isTrue();
     }
 
     private BooleanExpression searchCondition(UserSearchType searchType, String query) {
