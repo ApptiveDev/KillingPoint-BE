@@ -257,7 +257,7 @@ public class AdminController {
 
     private String pageTitle(String adminView) {
         return switch (adminView) {
-            case "cs" -> "CS";
+            case "cs" -> "메모 기록";
             case "users" -> "유저";
             default -> "UGC 검수";
         };
