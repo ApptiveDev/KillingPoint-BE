@@ -39,6 +39,11 @@ public class UserLowService {
     }
 
     @Transactional(readOnly = true)
+    public Page<UserEntity> findAll(Pageable pageable) {
+        return userRepository.findAll(pageable);
+    }
+
+    @Transactional(readOnly = true)
     public boolean existsByIdentifier(String identifier) {
         return userRepository.findByIdentifier(identifier).isPresent();
     }

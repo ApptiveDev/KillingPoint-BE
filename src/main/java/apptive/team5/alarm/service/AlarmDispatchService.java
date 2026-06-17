@@ -1,12 +1,12 @@
 package apptive.team5.alarm.service;
 
+import apptive.team5.alarm.dto.AdminAlarmSendRequest;
 import apptive.team5.alarm.dto.DiaryCreateAlarmSendRequest;
 import apptive.team5.alarm.dto.DiaryLikeAlarmSendRequest;
 import apptive.team5.alarm.dto.SubscribeAlarmSendRequest;
 import apptive.team5.alarm.entity.Alarm;
 import apptive.team5.alarm.entity.AlarmMessage;
 import apptive.team5.alarm.event.AlarmCreatedEvent;
-import apptive.team5.config.CacheConfig;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.service.DiaryLowService;
 import apptive.team5.subscribe.domain.Subscribe;
@@ -16,6 +16,8 @@ import apptive.team5.user.service.UserLowService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +33,7 @@ public class AlarmDispatchService {
 
     private static final String DIARY_DEEP_LINK_FORMAT = "/api/diaries/%d";
     private static final String SUBSCRIBE_DEEP_LINK_FORMAT = "/api/subscribes/%d/fans";
+    private static final int ADMIN_ALARM_BROADCAST_BATCH_SIZE = 100;
 
     private final AlarmLowService alarmLowService;
     private final DiaryLowService diaryLowService;
@@ -76,6 +79,33 @@ public class AlarmDispatchService {
 
         subscribers.forEach(subscriber ->
                 saveAndPublish(subscriber.getSubscriber(), AlarmMessage.DIARY_ALARM, content, deepLink));
+    }
+
+    @Async("sendAlarm")
+    public void saveAndDispatchForAdminAlarm(AdminAlarmSendRequest request) {
+
+        if (request.isBroadCast()) {
+            int pageNumber = 0;
+            boolean hasNext = true;
+
+            while (hasNext) {
+                Page<UserEntity> receivers = userLowService.findAll(
+                        PageRequest.of(pageNumber, ADMIN_ALARM_BROADCAST_BATCH_SIZE)
+                );
+
+                receivers.forEach(receiver ->
+                        saveAndPublish(receiver, AlarmMessage.ADMIN_ALARM, request.content(), request.deepLink()));
+
+                hasNext = receivers.hasNext();
+                pageNumber++;
+            }
+            return;
+        }
+
+        request.userIds().stream()
+                .map(userLowService::getReferenceById)
+                .forEach(receiver -> saveAndPublish(receiver, AlarmMessage.ADMIN_ALARM, request.content(), request.deepLink()));
+
     }
 
     private void saveAndPublish(UserEntity receiver, AlarmMessage alarmMessage, String content, String deepLink) {
