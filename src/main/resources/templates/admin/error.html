@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Error</title>
+</head>
+<body>
+<main>
+    <h1>Admin Error</h1>
+    <p th:text="${status}">500</p>
+    <p th:text="${message}">관리자 페이지 처리 중 문제가 발생했습니다.</p>
+    <a th:href="@{/admin/login}">로그인 페이지로 이동</a>
+</main>
+</body>
+</html>

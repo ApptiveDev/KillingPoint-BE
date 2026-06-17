@@ -31,6 +31,7 @@ public class DiaryService {
 
     private final UserLowService userLowService;
     private final DiaryLowService diaryLowService;
+    private final DiaryMemoLowService diaryMemoLowService;
     private final DiaryOrderLowService diaryOrderLowService;
     private final DiaryLikeLowService diaryLikeLowService;
     private final DiaryResponseMapper diaryResponseMapper;
@@ -145,6 +146,7 @@ public class DiaryService {
         diaryReportLowService.deleteByDiaryId(diaryId);
         diaryOrderLowService.deleteDiaryId(userId, diaryId);
         diaryLikeLowService.deleteByDiaryId(diaryId);
+        diaryMemoLowService.deleteByDiaryId(diaryId);
         diaryLowService.deleteDiary(foundDiary);
     }
 
@@ -158,6 +160,8 @@ public class DiaryService {
         diaryReportLowService.deleteByDiaryIds(diaryIds);
 
         diaryLikeLowService.deleteByDiaryIds(diaryIds);
+
+        diaryMemoLowService.deleteByDiaryIds(diaryIds);
 
         diaryLowService.deleteByUserId(userId);
     }

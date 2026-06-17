@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Transactional
 @Service
@@ -47,5 +49,16 @@ public class DiaryReportLowService {
     @Transactional(readOnly = true)
     public List<DiaryReportEntity> findRecentTop10DiaryReport() {
         return diaryReportRepository.findRecentDiaryReport(PageRequest.of(0,10));
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, Long> countByDiaryIds(List<Long> diaryIds) {
+        if (diaryIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return diaryReportRepository.countByDiaryIds(diaryIds)
+                .stream()
+                .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
     }
 }

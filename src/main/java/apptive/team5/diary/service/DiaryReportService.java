@@ -25,6 +25,7 @@ public class DiaryReportService {
     private final DiaryLowService diaryLowService;
     private final DiaryOrderLowService diaryOrderLowService;
     private final DiaryLikeLowService diaryLikeLowService;
+    private final DiaryMemoLowService diaryMemoLowService;
     private final UserLowService userLowService;
 
     public DiaryReportResponseDto createDiaryReport(DiaryReportRequestDto diaryReportRequestDto, Long diaryId, Long userId) {
@@ -56,6 +57,8 @@ public class DiaryReportService {
 
         diaryLikeLowService.deleteByDiaryIds(invalidDiaryIds);  // 부적절한 diary의 좋아요 삭제
 
+        diaryMemoLowService.deleteByDiaryIds(invalidDiaryIds);  // 부적절한 diary의 메모 삭제
+
         Set<Long> userIds = diaryLowService.findAllByIds(invalidDiaryIds)
                 .stream()
                 .map(diary -> diary.getUser().getId())
@@ -66,5 +69,4 @@ public class DiaryReportService {
         diaryLowService.deleteByDiaryIds(invalidDiaryIds);
     }
 }
-
 

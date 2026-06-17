@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 페이지</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            min-height: 100%;
+        }
+
+        body {
+            background: #f4f4f1;
+            color: #1a1a17;
+            font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        button,
+        input,
+        textarea {
+            font: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+            background: #f4f4f1;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            width: 240px;
+            min-height: 100vh;
+            padding: 24px 18px;
+            background: #121210;
+            color: #ededea;
+        }
+
+        .logo {
+            display: block;
+            width: 98px;
+            height: auto;
+            margin: 0 0 36px;
+        }
+
+        .nav-group {
+            margin: 10px 0 8px;
+            color: #6e6e68;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: .08em;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            width: 100%;
+            margin-bottom: 6px;
+            padding: 12px 10px;
+            border-left: 3px solid transparent;
+            background: transparent;
+            color: #9a9a92;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .nav-item.is-active {
+            border-left-color: #c7f23f;
+            background: #1c1c19;
+            color: #fff;
+        }
+
+        .nav-dot {
+            width: 7px;
+            height: 7px;
+            background: #4a4a44;
+        }
+
+        .nav-item.is-active .nav-dot {
+            background: #c7f23f;
+        }
+
+        .sidebar-footer {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: auto;
+            padding-top: 14px;
+            border-top: 1px solid #262624;
+        }
+
+        .sidebar-user {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .sidebar-user strong {
+            display: block;
+            color: #ededea;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .sidebar-user span {
+            display: block;
+            margin-top: 3px;
+            color: #6e6e68;
+            font-size: 11px;
+        }
+
+        .sidebar-logout {
+            padding: 7px 9px;
+            border: 1px solid #2e2e2c;
+            border-radius: 0;
+            background: transparent;
+            color: #9a9a92;
+            font-size: 12px;
+        }
+
+        .sidebar-logout:hover {
+            border-color: #444;
+            color: #ededea;
+        }
+
+        .content {
+            display: flex;
+            flex: 1;
+            min-width: 0;
+            flex-direction: column;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            min-height: 62px;
+            padding: 0 30px;
+            border-bottom: 1px solid #e7e7e2;
+            background: #fff;
+        }
+
+        .title {
+            margin: 0;
+            color: #16160f;
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .title-desc {
+            color: #8a8a82;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .workspace {
+            flex: 1;
+            overflow-y: auto;
+            padding: 26px 30px 60px;
+        }
+
+        .ugc-shell {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        .search-form {
+            display: flex;
+            flex: 1;
+            align-items: center;
+            gap: 8px;
+            min-width: 420px;
+            flex-wrap: wrap;
+        }
+
+        .search-type-tabs {
+            display: flex;
+            gap: 2px;
+            padding: 3px;
+            border: 1px solid #e2e2dc;
+            background: #fff;
+        }
+
+        .search-type-option {
+            position: relative;
+        }
+
+        .search-type-option input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .search-type-option span {
+            display: block;
+            padding: 7px 11px;
+            color: #7e7e76;
+            font-size: 12.5px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .search-type-option input:checked + span {
+            background: #16160f;
+            color: #fff;
+        }
+
+        .search-box {
+            display: flex;
+            flex: 1;
+            align-items: center;
+            gap: 9px;
+            min-width: 260px;
+            max-width: 420px;
+            padding: 10px 13px;
+            border: 1px solid #e2e2dc;
+            background: #fff;
+        }
+
+        .search-box:focus-within {
+            border-color: #16160f;
+        }
+
+        .search-box input {
+            width: 100%;
+            min-width: 0;
+            border: 0;
+            outline: 0;
+            background: transparent;
+            color: #16160f;
+            font-size: 14px;
+        }
+
+        .search-button {
+            padding: 10px 14px;
+            border: 0;
+            background: #c7f23f;
+            color: #16170b;
+            font-size: 13px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 2px;
+            padding: 3px;
+            border: 1px solid #e2e2dc;
+            background: #fff;
+        }
+
+        .filter-tab {
+            display: block;
+            padding: 7px 13px;
+            border: 0;
+            background: transparent;
+            color: #7e7e76;
+            font-size: 12.5px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .filter-tab.is-active {
+            background: #16160f;
+            color: #fff;
+            font-weight: 800;
+        }
+
+        .ugc-grid {
+            display: grid;
+            align-items: start;
+            grid-template-columns: 1.35fr 1fr;
+            gap: 18px;
+        }
+
+        .panel {
+            overflow: hidden;
+            border: 1px solid #e7e7e2;
+            background: #fff;
+        }
+
+        .memo-board {
+            max-width: 1040px;
+            margin: 0 auto;
+            border: 1px solid #e7e7e2;
+            background: #fff;
+        }
+
+        .memo-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .memo-card {
+            display: grid;
+            grid-template-columns: 62px minmax(0, 1fr);
+            gap: 14px;
+            padding: 16px;
+            border-bottom: 1px solid #f1f1ed;
+        }
+
+        .memo-card:last-child {
+            border-bottom: 0;
+        }
+
+        .memo-thumb {
+            width: 62px;
+            height: 62px;
+            border: 1px solid #e2e2dc;
+            background: #ecece6;
+            object-fit: cover;
+        }
+
+        .memo-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            color: #16160f;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .memo-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .memo-delete-form {
+            flex: 0 0 auto;
+        }
+
+        .memo-delete-button {
+            padding: 7px 11px;
+            border: 1px solid #ecc3bc;
+            background: #fdf6f5;
+            color: #bf4a3c;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .memo-meta {
+            margin-top: 3px;
+            color: #8a8a82;
+            font-size: 12px;
+        }
+
+        .memo-content {
+            margin: 12px 0 0;
+            padding: 11px 12px;
+            border: 1px solid #e7e7e2;
+            background: #fcfcfb;
+            color: #1a1a17;
+            font-size: 13px;
+            line-height: 1.55;
+            white-space: pre-wrap;
+        }
+
+        .memo-diary {
+            margin: 8px 0 0;
+            color: #8a8a82;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .memo-card .secondary-button {
+            margin-top: 10px;
+        }
+
+        .user-board {
+            max-width: 1040px;
+            margin: 0 auto;
+        }
+
+        .alarm-board {
+            max-width: 760px;
+            margin: 0 auto;
+            border: 1px solid #e7e7e2;
+            background: #fff;
+        }
+
+        .alarm-form {
+            padding: 18px;
+        }
+
+        .alarm-user-search {
+            padding: 0;
+            border-bottom: 0;
+        }
+
+        .alarm-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .alarm-input,
+        .alarm-textarea {
+            width: 100%;
+            margin-top: 6px;
+            padding: 10px 12px;
+            border: 1px solid #e2e2dc;
+            outline: 0;
+            background: #fcfcfb;
+            color: #1a1a17;
+            font-size: 13.5px;
+        }
+
+        .alarm-input:focus,
+        .alarm-textarea:focus {
+            border-color: #16160f;
+            background: #fff;
+        }
+
+        .alarm-textarea {
+            min-height: 112px;
+            resize: vertical;
+        }
+
+        .recipient-tabs {
+            display: flex;
+            gap: 2px;
+            width: fit-content;
+            padding: 3px;
+            border: 1px solid #e2e2dc;
+            background: #fff;
+        }
+
+        .recipient-option {
+            position: relative;
+        }
+
+        .recipient-option input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .recipient-option span {
+            display: block;
+            padding: 8px 13px;
+            color: #7e7e76;
+            font-size: 12.5px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .recipient-option input:checked + span {
+            background: #16160f;
+            color: #fff;
+        }
+
+        .alarm-target-field.is-disabled {
+            display: none;
+        }
+
+        .alarm-user-list {
+            margin-top: 6px;
+            border: 1px solid #e7e7e2;
+            background: #fff;
+        }
+
+        .alarm-user-row {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            gap: 12px;
+            align-items: center;
+            padding: 12px 14px;
+            border-bottom: 1px solid #f1f1ed;
+        }
+
+        .alarm-user-row:last-child {
+            border-bottom: 0;
+        }
+
+        .alarm-user-check {
+            width: 16px;
+            height: 16px;
+            accent-color: #16160f;
+        }
+
+        .alarm-selected-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .alarm-selected-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 10px;
+            align-items: center;
+            padding: 10px 12px;
+            border: 1px solid #e7e7e2;
+            background: #fcfcfb;
+        }
+
+        .alarm-selected-remove {
+            padding: 6px 9px;
+            border: 1px solid #e2e2dc;
+            background: #fff;
+            color: #5a5a54;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .alarm-selected-empty {
+            margin-top: 10px;
+            padding: 12px;
+            border: 1px dashed #d8d8d0;
+            color: #9a9a92;
+            font-size: 12.5px;
+        }
+
+        .admin-alert {
+            margin: 0 18px 14px;
+            padding: 11px 12px;
+            border: 1px solid #d2e6a6;
+            background: #f0f7e3;
+            color: #5a6b12;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .admin-alert.is-error {
+            border-color: #ecc3bc;
+            background: #fdf1ef;
+            color: #bf4a3c;
+        }
+
+        .user-list {
+            border: 1px solid #e7e7e2;
+            background: #fff;
+        }
+
+        .user-detail-panel {
+            margin-top: 18px;
+            border: 1px solid #e7e7e2;
+            background: #fff;
+        }
+
+        .user-summary-body {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 16px;
+            align-items: start;
+            padding: 16px;
+        }
+
+        .user-summary-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            color: #16160f;
+            font-size: 16px;
+            font-weight: 900;
+        }
+
+        .user-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px 16px;
+            margin-top: 14px;
+        }
+
+        .user-summary-field {
+            min-width: 0;
+        }
+
+        .user-summary-label {
+            display: block;
+            color: #9a9a92;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .user-summary-value {
+            display: block;
+            overflow: hidden;
+            margin-top: 3px;
+            color: #1a1a17;
+            font-size: 13px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .user-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr) auto;
+            gap: 16px;
+            align-items: center;
+            padding: 14px 16px;
+            border-bottom: 1px solid #f1f1ed;
+            border-left: 3px solid transparent;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .user-row:last-child {
+            border-bottom: 0;
+        }
+
+        .user-row.is-selected {
+            border-left-color: #c7f23f;
+            background: #fbfcf6;
+        }
+
+        .user-main {
+            min-width: 0;
+        }
+
+        .user-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+            color: #16160f;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .user-name strong,
+        .user-email {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .user-sub,
+        .user-email {
+            margin-top: 3px;
+            color: #8a8a82;
+            font-size: 12px;
+        }
+
+        .user-platforms {
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .user-kp-row {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f1f1ed;
+        }
+
+        .user-kp-row:last-child {
+            border-bottom: 0;
+        }
+
+        .user-kp-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            color: #16160f;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .user-kp-meta {
+            margin-top: 3px;
+            color: #8a8a82;
+            font-size: 12px;
+        }
+
+        .user-kp-content {
+            margin: 9px 0 0;
+            color: #5a5a54;
+            font-size: 12.5px;
+            line-height: 1.5;
+        }
+
+        .user-panel-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .user-lock-form .danger-button {
+            width: auto;
+            padding: 8px 11px;
+            font-size: 12px;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 13px 16px;
+            border-bottom: 1px solid #efefea;
+        }
+
+        .panel-title {
+            color: #16160f;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .panel-count {
+            color: #9a9a92;
+            font-size: 11px;
+        }
+
+        .ugc-list {
+            max-height: 620px;
+            overflow-y: auto;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 16px;
+            border-top: 1px solid #efefea;
+            background: #fcfcfb;
+        }
+
+        .page-status {
+            color: #8a8a82;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .page-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .page-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 34px;
+            padding: 7px 10px;
+            border: 1px solid #e2e2dc;
+            background: #fff;
+            color: #5a5a54;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .page-link:hover {
+            border-color: #16160f;
+            color: #16160f;
+        }
+
+        .page-link.is-disabled {
+            pointer-events: none;
+            color: #b6b6ae;
+            background: #f4f4f1;
+        }
+
+        .ugc-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px 15px;
+            border: 0;
+            border-bottom: 1px solid #f1f1ed;
+            border-left: 3px solid transparent;
+            background: #fff;
+            text-align: left;
+        }
+
+        .ugc-row.is-selected {
+            border-left-color: #c7f23f;
+            background: #fbfcf6;
+        }
+
+        .ugc-row.is-hidden {
+            display: none;
+        }
+
+        .thumb {
+            flex: 0 0 58px;
+            width: 58px;
+            height: 38px;
+            border: 1px solid #e2e2dc;
+            background: #ecece6;
+            object-fit: cover;
+        }
+
+        .row-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .row-line {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            min-width: 0;
+        }
+
+        .song {
+            overflow: hidden;
+            max-width: 210px;
+            color: #1a1a17;
+            font-size: 13.5px;
+            font-weight: 700;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .row-sub {
+            display: block;
+            overflow: hidden;
+            margin-top: 2px;
+            color: #8a8a82;
+            font-size: 12px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .row-meta {
+            display: flex;
+            flex: 0 0 auto;
+            align-items: flex-end;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .row-time {
+            color: #9a9a92;
+            font-size: 11px;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border: 1px solid #d2e6a6;
+            background: #f0f7e3;
+            color: #5a6b12;
+            font-size: 11px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .status.reported {
+            border-color: #ecc3bc;
+            background: #fdf1ef;
+            color: #bf4a3c;
+        }
+
+        .status.broken {
+            border-color: #ead9a8;
+            background: #fbf3e2;
+            color: #9a6512;
+        }
+
+        .detail-panel {
+            position: sticky;
+            top: 0;
+        }
+
+        .player {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            background: #16160f;
+        }
+
+        .player iframe {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        .segment-chip {
+            position: absolute;
+            top: 11px;
+            left: 11px;
+            padding: 3px 8px;
+            background: #c7f23f;
+            color: #16170b;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .detail-body {
+            padding: 18px;
+        }
+
+        .detail-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .detail-song {
+            color: #16160f;
+            font-size: 16px;
+            font-weight: 900;
+        }
+
+        .detail-artist {
+            margin-top: 2px;
+            color: #8a8a82;
+            font-size: 13px;
+        }
+
+        .secondary-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 7px 11px;
+            border: 1px solid #e2e2dc;
+            background: #fff;
+            color: #5a5a54;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .secondary-button:hover {
+            border-color: #16160f;
+            color: #16160f;
+        }
+
+        .field-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 13px;
+            margin-top: 16px;
+        }
+
+        .field-label {
+            display: block;
+            color: #8a8a82;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .memo-input {
+            width: 100%;
+            margin-top: 6px;
+            padding: 9px 11px;
+            border: 1px solid #e2e2dc;
+            outline: 0;
+            background: #fcfcfb;
+            color: #1a1a17;
+            font-size: 13.5px;
+        }
+
+        .memo-input:focus {
+            border-color: #16160f;
+            background: #fff;
+        }
+
+        .memo-input {
+            min-height: 68px;
+            resize: vertical;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        .action-row form,
+        .action-row > button {
+            flex: 1;
+        }
+
+        .save-button,
+        .danger-button {
+            width: 100%;
+            padding: 11px;
+            font-size: 13.5px;
+            font-weight: 900;
+        }
+
+        .save-button {
+            border: 0;
+            background: #c7f23f;
+            color: #16170b;
+        }
+
+        .save-button:hover {
+            background: #bce92f;
+        }
+
+        .danger-button {
+            border: 1px solid #ecc3bc;
+            background: #fdf6f5;
+            color: #bf4a3c;
+        }
+
+        .audit-note {
+            margin-top: 13px;
+            padding-top: 11px;
+            border-top: 1px solid #efefea;
+            color: #a6a69e;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        .empty-state {
+            padding: 40px;
+            color: #b6b6ae;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        @media (max-width: 1040px) {
+            .ugc-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-panel {
+                position: static;
+            }
+        }
+
+        @media (max-width: 780px) {
+            .layout {
+                display: block;
+            }
+
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+            }
+
+            .content {
+                min-height: auto;
+            }
+
+            .topbar {
+                align-items: flex-start;
+                flex-direction: column;
+                padding: 18px 20px;
+            }
+
+            .workspace {
+                padding: 22px 20px 42px;
+            }
+
+            .toolbar,
+            .filter-tabs,
+            .search-form,
+            .search-box,
+            .search-type-tabs {
+                width: 100%;
+                max-width: none;
+                min-width: 0;
+            }
+
+            .filter-tab,
+            .search-type-option {
+                flex: 1;
+            }
+
+            .search-type-option span,
+            .search-button {
+                text-align: center;
+                width: 100%;
+            }
+
+            .detail-head,
+            .action-row {
+                flex-direction: column;
+            }
+
+            .user-row {
+                grid-template-columns: 1fr;
+            }
+
+            .alarm-user-row {
+                grid-template-columns: auto minmax(0, 1fr);
+            }
+
+            .alarm-user-row .user-platforms {
+                grid-column: 2;
+            }
+
+            .recipient-tabs {
+                width: 100%;
+            }
+
+            .recipient-option {
+                flex: 1;
+            }
+
+            .recipient-option span {
+                text-align: center;
+            }
+
+            .user-summary-body,
+            .user-summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .user-platforms {
+                justify-content: flex-start;
+            }
+
+            .row-meta {
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+<main class="layout">
+    <aside class="sidebar">
+        <img class="logo" th:src="@{/admin/images/killing-part-logo.svg}" alt="Killing Part">
+        <div class="nav-group">운영</div>
+        <a class="nav-item" th:classappend="${adminView == 'ugc'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='ugc')}"><span class="nav-dot"></span>UGC 검수</a>
+        <a class="nav-item" th:classappend="${adminView == 'cs'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='cs')}"><span class="nav-dot"></span>메모 기록</a>
+        <a class="nav-item" th:classappend="${adminView == 'users'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='users')}"><span class="nav-dot"></span>유저</a>
+        <a class="nav-item" th:classappend="${adminView == 'alarms'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='alarms')}"><span class="nav-dot"></span>알림 발송</a>
+        <form class="sidebar-footer" th:action="@{/admin/logout}" method="post">
+            <div class="sidebar-user">
+                <strong>admin</strong>
+                <span>단일 관리자</span>
+            </div>
+            <button class="sidebar-logout" type="submit">나가기</button>
+        </form>
+    </aside>
+
+    <section class="content">
+        <header class="topbar">
+            <h1 class="title" th:text="${pageTitle}">UGC 검수</h1>
+        </header>
+
+        <section class="workspace">
+            <div class="ugc-shell" th:if="${adminView == 'ugc'}">
+                <div class="toolbar">
+                    <form class="search-form" th:action="@{/admin/dashboard}" method="get">
+                        <input type="hidden" name="filter" th:value="${ugcFilter}">
+                        <input type="hidden" name="view" value="ugc">
+                        <input type="hidden" name="size" th:value="${pageSize}">
+                        <div class="search-type-tabs" aria-label="검색 조건">
+                            <label class="search-type-option" th:each="type : ${ugcSearchTypes}">
+                                <input type="radio" name="searchType" th:value="${type.name()}" th:checked="${type == ugcSearchType}">
+                                <span th:text="${type.label}">검색 조건</span>
+                            </label>
+                        </div>
+                        <label class="search-box" aria-label="UGC 검색어">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9a9a92" stroke-width="2" aria-hidden="true">
+                                <circle cx="11" cy="11" r="7"></circle>
+                                <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
+                            </svg>
+                            <input id="ugcSearch" name="q" type="search" th:value="${ugcQuery}">
+                        </label>
+                        <button class="search-button" type="submit">검색</button>
+                    </form>
+
+                    <div class="filter-tabs" aria-label="UGC 필터">
+                        <a class="filter-tab" th:classappend="${ugcFilter == 'reported'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='ugc', filter='reported', page=0, size=${pageSize}, searchType=${ugcSearchType.name()}, q=${ugcQuery})}">신고</a>
+                        <a class="filter-tab" th:classappend="${ugcFilter == 'all'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='ugc', filter='all', page=0, size=${pageSize}, searchType=${ugcSearchType.name()}, q=${ugcQuery})}">전체</a>
+                    </div>
+                </div>
+
+                <div class="ugc-grid">
+                    <section class="panel">
+                        <div class="panel-header">
+                            <span class="panel-title">전체 공개 킬링파트</span>
+                            <span class="panel-count" id="ugcCount" th:text="'총 ' + ${ugcPage.totalElements} + '건'">총 0건</span>
+                        </div>
+                        <div class="ugc-list" id="ugcList">
+                            <button class="ugc-row" th:each="ugc, iter : ${ugcItems}" th:classappend="${iter.index == 0} ? ' is-selected' : ''" type="button"
+                                    th:data-filter-state="${ugc.filterState}"
+                                    th:data-diary-id="${ugc.id}"
+                                    th:data-id="${ugc.displayId}"
+                                    th:data-song="${ugc.musicTitle}"
+                                    th:data-artist="${ugc.artist}"
+                                    th:data-video-url="${ugc.videoUrl}"
+                                    th:data-user="${ugc.username}"
+                                    th:data-user-id="${ugc.userId}"
+                                    th:data-platform="${ugc.scopeLabel}"
+                                    th:data-segment="${ugc.segment}"
+                                    th:data-registered="${ugc.registeredLabel}"
+                                    th:data-memo-action="@{/admin/dashboard/{diaryId}/memo(diaryId=${ugc.id})}"
+                                    th:data-delete-action="@{/admin/dashboard/{diaryId}/delete(diaryId=${ugc.id})}"
+                                    data-memo="">
+                                <img class="thumb" th:src="${ugc.albumImageUrl}" th:alt="${ugc.musicTitle}">
+                                <span class="row-main">
+                                    <span class="row-line">
+                                        <span class="song" th:text="${ugc.musicTitle}">음악 제목</span>
+                                        <span class="status" th:text="${ugc.displayId}">KP-0</span>
+                                    </span>
+                                    <span class="row-sub" th:text="|${ugc.artist} · ${ugc.username}|">아티스트 · 작성자</span>
+                                </span>
+                                <span class="row-meta">
+                                    <span class="row-time" th:text="${ugc.registeredLabel}">방금 전</span>
+                                    <span class="status" th:if="${ugc.reportCount > 0}" th:classappend="${ugc.statusClass}" th:text="${ugc.statusLabel}">신고</span>
+                                </span>
+                            </button>
+
+                            <div class="empty-state" id="emptyState" th:hidden="${!#lists.isEmpty(ugcItems)}">조건에 맞는 킬링파트가 없습니다</div>
+                        </div>
+                        <nav class="pagination" th:if="${ugcPage.totalPages > 0}" aria-label="UGC 페이지">
+                            <span class="page-status" th:text="|${ugcPage.number + 1} / ${ugcPage.totalPages} 페이지|">1 / 1 페이지</span>
+                            <div class="page-actions">
+                                <a class="page-link" th:classappend="${ugcPage.first} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='ugc', filter=${ugcFilter}, page=${ugcPage.number - 1}, size=${pageSize}, searchType=${ugcSearchType.name()}, q=${ugcQuery})}">이전</a>
+                                <a class="page-link" th:classappend="${ugcPage.last} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='ugc', filter=${ugcFilter}, page=${ugcPage.number + 1}, size=${pageSize}, searchType=${ugcSearchType.name()}, q=${ugcQuery})}">다음</a>
+                            </div>
+                        </nav>
+                    </section>
+
+                    <section class="panel detail-panel" th:if="${selectedUgc != null}">
+                        <div class="player">
+                            <iframe id="detailVideo"
+                                    th:src="${selectedUgc.videoUrl}"
+                                    th:title="${selectedUgc.musicTitle}"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowfullscreen></iframe>
+                            <span class="segment-chip" id="detailSegment" th:text="|구간 ${selectedUgc.segment} 자동 재생|">구간 자동 재생</span>
+                        </div>
+
+                        <div class="detail-body">
+                            <div class="detail-head">
+                                <div>
+                                    <div class="detail-song">
+                                        <span id="detailSong" th:text="${selectedUgc.musicTitle}">음악 제목</span>
+                                        <span class="status" id="detailDisplayId" th:text="${selectedUgc.displayId}">KP-0</span>
+                                    </div>
+                                    <div class="detail-artist" id="detailArtist" th:text="${selectedUgc.artist}">아티스트</div>
+                                </div>
+                                <a class="secondary-button" id="detailUserButton"
+                                   th:href="@{/admin/dashboard(view='users', selectedUserId=${selectedUgc.userId})}"
+                                   th:text="|${selectedUgc.username} →|">유저 정보 →</a>
+                            </div>
+
+                            <form id="detailMemoForm" th:action="@{/admin/dashboard/{diaryId}/memo(diaryId=${selectedUgc.id})}" method="post">
+                                <input type="hidden" name="page" th:value="${ugcPage.number}">
+                                <input type="hidden" name="size" th:value="${pageSize}">
+                                <input type="hidden" name="filter" th:value="${ugcFilter}">
+                                <input type="hidden" name="searchType" th:value="${ugcSearchType.name()}">
+                                <input type="hidden" name="q" th:value="${ugcQuery}">
+                                <div class="field-stack">
+                                <label>
+                                    <span class="field-label">메모</span>
+                                    <textarea class="memo-input" id="detailMemo" name="memo" placeholder="내부 메모"></textarea>
+                                </label>
+                                </div>
+                            </form>
+                            <form id="detailDeleteForm" th:action="@{/admin/dashboard/{diaryId}/delete(diaryId=${selectedUgc.id})}" method="post">
+                                <input type="hidden" name="page" th:value="${ugcPage.number}">
+                                <input type="hidden" name="size" th:value="${pageSize}">
+                                <input type="hidden" name="filter" th:value="${ugcFilter}">
+                                <input type="hidden" name="searchType" th:value="${ugcSearchType.name()}">
+                                <input type="hidden" name="q" th:value="${ugcQuery}">
+                            </form>
+                            <div class="action-row">
+                                <button class="save-button" type="submit" form="detailMemoForm">메모 저장</button>
+                                <button class="danger-button" type="submit" form="detailDeleteForm">삭제</button>
+                            </div>
+
+                            <div class="audit-note" id="detailMeta">
+                                등록 <span th:text="${selectedUgc.registeredLabel}">방금 전</span> · 작성자 <span th:text="${selectedUgc.username}">작성자</span> (<span th:text="${selectedUgc.userId}">0</span>) · <span th:text="${selectedUgc.scopeLabel}">전체공개</span>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="panel detail-panel" th:if="${selectedUgc == null}">
+                        <div class="empty-state">검수할 킬링파트가 없습니다</div>
+                    </section>
+                </div>
+            </div>
+            <section class="memo-board" th:if="${adminView == 'cs'}">
+                <div class="panel-header">
+                    <span class="panel-title">메모 남긴 Diary</span>
+                    <span class="panel-count" th:text="'총 ' + ${memoPage.totalElements} + '건'">총 0건</span>
+                </div>
+                <div class="memo-list">
+                    <article class="memo-card" th:each="memo : ${memoItems}">
+                        <img class="memo-thumb" th:src="${memo.albumImageUrl}" th:alt="${memo.musicTitle}">
+                        <div>
+                            <div class="memo-head">
+                                <div>
+                                    <div class="memo-title">
+                                        <span th:text="${memo.musicTitle}">음악 제목</span>
+                                        <span class="status" th:text="${memo.displayId}">KP-0</span>
+                                    </div>
+                                    <div class="memo-meta" th:text="|${memo.artist} · ${memo.username} (${memo.userId})|">아티스트 · 작성자</div>
+                                </div>
+                                <form class="memo-delete-form" th:action="@{/admin/dashboard/memos/{memoId}/delete(memoId=${memo.memoId})}" method="post">
+                                    <input type="hidden" name="page" th:value="${memoPage.number}">
+                                    <button class="memo-delete-button" type="submit">메모 삭제</button>
+                                </form>
+                            </div>
+                            <p class="memo-content" th:text="${memo.memoContent}">메모 내용</p>
+                            <p class="memo-diary" th:text="${memo.diaryContent}">Diary 내용</p>
+                            <a class="secondary-button" th:href="@{/admin/dashboard(view='ugc', searchType='DIARY_ID', q=${memo.diaryId})}">UGC 검수로 이동</a>
+                        </div>
+                    </article>
+                    <div class="empty-state" th:if="${#lists.isEmpty(memoItems)}">아직 남긴 메모가 없습니다</div>
+                </div>
+                <nav class="pagination" th:if="${memoPage.totalPages > 0}" aria-label="CS 메모 페이지">
+                    <span class="page-status" th:text="|${memoPage.number + 1} / ${memoPage.totalPages} 페이지|">1 / 1 페이지</span>
+                    <div class="page-actions">
+                        <a class="page-link" th:classappend="${memoPage.first} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='cs', page=${memoPage.number - 1}, size=${pageSize})}">이전</a>
+                        <a class="page-link" th:classappend="${memoPage.last} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='cs', page=${memoPage.number + 1}, size=${pageSize})}">다음</a>
+                    </div>
+                </nav>
+            </section>
+            <section class="alarm-board" id="alarmBoard" th:if="${adminView == 'alarms'}" th:data-clear-selected="${alarmSuccess != null}">
+                <div class="panel-header">
+                    <span class="panel-title">앱 알림 발송</span>
+                </div>
+                <div class="admin-alert" th:if="${alarmSuccess != null}" th:text="${alarmSuccess}">발송 성공</div>
+                <div class="admin-alert is-error" th:if="${alarmError != null}" th:text="${alarmError}">발송 실패</div>
+                <form id="alarmSendForm" th:action="@{/admin/dashboard/alarms/send}" method="post"></form>
+                <div class="alarm-form">
+                    <input form="alarmSendForm" type="hidden" name="alarmUserSearchType" th:value="${alarmUserSearchType.name()}">
+                    <input form="alarmSendForm" type="hidden" name="alarmUserQ" th:value="${alarmUserQuery}">
+                    <input form="alarmSendForm" type="hidden" name="alarmUserPage" th:value="${alarmUserPage.number}">
+                    <span id="alarmSelectedInputs"></span>
+                    <div class="alarm-grid">
+                        <div>
+                            <span class="field-label">발송 범위</span>
+                            <span class="recipient-tabs" aria-label="발송 범위">
+                                <label class="recipient-option">
+                                    <input form="alarmSendForm" type="radio" name="recipientMode" value="broadcast" th:checked="${alarmRecipientMode == 'broadcast'}">
+                                    <span>전체 유저</span>
+                                </label>
+                                <label class="recipient-option">
+                                    <input form="alarmSendForm" type="radio" name="recipientMode" value="users" th:checked="${alarmRecipientMode == 'users'}">
+                                    <span>선택 유저</span>
+                                </label>
+                            </span>
+                        </div>
+                        <section class="alarm-target-field" id="alarmTargetField" th:classappend="${alarmRecipientMode != 'users'} ? ' is-disabled' : ''">
+                            <span class="field-label">유저 검색</span>
+                            <form class="search-form alarm-user-search" th:action="@{/admin/dashboard}" method="get">
+                                <input type="hidden" name="view" value="alarms">
+                                <input type="hidden" name="alarmRecipientMode" value="users">
+                                <input type="hidden" name="alarmUserPage" value="0">
+                                <div class="search-type-tabs" aria-label="알림 대상 검색 조건">
+                                    <label class="search-type-option" th:each="type : ${alarmUserSearchTypes}">
+                                        <input type="radio" name="alarmUserSearchType" th:value="${type.name()}" th:checked="${type == alarmUserSearchType}">
+                                        <span th:text="${type.label}">검색 조건</span>
+                                    </label>
+                                </div>
+                                <label class="search-box" aria-label="알림 대상 검색어">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9a9a92" stroke-width="2" aria-hidden="true">
+                                        <circle cx="11" cy="11" r="7"></circle>
+                                        <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
+                                    </svg>
+                                    <input name="alarmUserQ" type="search" th:value="${alarmUserQuery}">
+                                </label>
+                                <button class="search-button" type="submit">검색</button>
+                            </form>
+                            <div class="alarm-user-list">
+                                <label class="alarm-user-row" th:each="user : ${alarmUserItems}">
+                                    <input class="alarm-user-check" type="checkbox"
+                                           th:value="${user.userId}"
+                                           th:data-user-id="${user.userId}"
+                                           th:data-username="${user.username}"
+                                           th:data-tag="${user.tag}"
+                                           th:data-social-type="${user.socialType}"
+                                           th:data-locked-label="${user.lockedLabel}"
+                                           th:data-locked-status-class="${user.lockedStatusClass}">
+                                    <span class="user-main">
+                                        <span class="user-name">
+                                            <strong th:text="${user.username}">username</strong>
+                                            <span class="status" th:text="|USER-${user.userId}|">USER-0</span>
+                                        </span>
+                                        <span class="user-sub" th:text="${user.tag}">tag</span>
+                                    </span>
+                                    <span class="user-platforms">
+                                        <span class="status" th:text="${user.socialType}">SOCIAL</span>
+                                        <span class="status" th:classappend="${user.lockedStatusClass}" th:text="${user.lockedLabel}">정상</span>
+                                    </span>
+                                </label>
+                                <div class="empty-state" th:if="${#lists.isEmpty(alarmUserItems)}">조건에 맞는 유저가 없습니다</div>
+                            </div>
+                            <nav class="pagination" th:if="${alarmUserPage.totalPages > 0}" aria-label="알림 대상 유저 페이지">
+                                <span class="page-status" th:text="|${alarmUserPage.number + 1} / ${alarmUserPage.totalPages} 페이지|">1 / 1 페이지</span>
+                                <div class="page-actions">
+                                    <a class="page-link" th:classappend="${alarmUserPage.first} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='alarms', alarmRecipientMode='users', alarmUserSearchType=${alarmUserSearchType.name()}, alarmUserQ=${alarmUserQuery}, alarmUserPage=${alarmUserPage.number - 1})}">이전</a>
+                                    <a class="page-link" th:classappend="${alarmUserPage.last} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='alarms', alarmRecipientMode='users', alarmUserSearchType=${alarmUserSearchType.name()}, alarmUserQ=${alarmUserQuery}, alarmUserPage=${alarmUserPage.number + 1})}">다음</a>
+                                </div>
+                            </nav>
+                            <span class="field-label">선택한 유저</span>
+                            <div class="alarm-selected-list" id="alarmSelectedList"></div>
+                            <div class="alarm-selected-empty" id="alarmSelectedEmpty">선택된 유저가 없습니다</div>
+                        </section>
+                        <label>
+                            <span class="field-label">알림 내용</span>
+                            <textarea form="alarmSendForm" class="alarm-textarea" name="content" maxlength="1000" th:text="${alarmContent}"></textarea>
+                        </label>
+                        <label>
+                            <span class="field-label">딥링크</span>
+                            <input form="alarmSendForm" class="alarm-input" name="deepLink" type="text" maxlength="1000" th:value="${alarmDeepLink}">
+                        </label>
+                    </div>
+                    <div class="action-row">
+                        <button class="save-button" form="alarmSendForm" type="submit">발송</button>
+                    </div>
+                </div>
+            </section>
+            <section class="user-board" th:if="${adminView == 'users'}">
+                <div class="toolbar">
+                    <form class="search-form" th:action="@{/admin/dashboard}" method="get">
+                        <input type="hidden" name="view" value="users">
+                        <input type="hidden" name="size" th:value="${pageSize}">
+                        <input type="hidden" name="userFilter" th:value="${userFilter}">
+                        <div class="search-type-tabs" aria-label="유저 검색 조건">
+                            <label class="search-type-option" th:each="type : ${userSearchTypes}">
+                                <input type="radio" name="userSearchType" th:value="${type.name()}" th:checked="${type == userSearchType}">
+                                <span th:text="${type.label}">검색 조건</span>
+                            </label>
+                        </div>
+                        <label class="search-box" aria-label="유저 검색어">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9a9a92" stroke-width="2" aria-hidden="true">
+                                <circle cx="11" cy="11" r="7"></circle>
+                                <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
+                            </svg>
+                            <input name="userQ" type="search" th:value="${userQuery}">
+                        </label>
+                        <button class="search-button" type="submit">검색</button>
+                    </form>
+                    <div class="filter-tabs" aria-label="유저 필터">
+                        <a class="filter-tab" th:classappend="${userFilter == 'all'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='users', page=0, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, userFilter='all')}">전체</a>
+                        <a class="filter-tab" th:classappend="${userFilter == 'locked'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='users', page=0, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, userFilter='locked')}">정지</a>
+                    </div>
+                </div>
+
+                <section class="user-list">
+                    <div class="panel-header">
+                        <span class="panel-title">유저 리스트</span>
+                        <span class="panel-count" th:text="'총 ' + ${userPage.totalElements} + '명'">총 0명</span>
+                    </div>
+                    <a class="user-row" th:each="user : ${userItems}"
+                       th:classappend="${selectedUserId != null and selectedUserId == user.userId} ? ' is-selected' : ''"
+                       th:href="@{/admin/dashboard(view='users', page=${userPage.number}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, userFilter=${userFilter}, selectedUserId=${user.userId}, kpPage=0)}">
+                        <div class="user-main">
+                            <div class="user-name">
+                                <strong th:text="${user.username}">username</strong>
+                                <span class="status" th:text="|USER-${user.userId}|">USER-0</span>
+                            </div>
+                            <div class="user-sub" th:text="${user.tag}">tag</div>
+                        </div>
+                        <div class="user-email" th:text="${user.email}">email@example.com</div>
+                        <div class="user-platforms">
+                            <span class="status" th:text="${user.socialType}">SOCIAL</span>
+                            <span class="status" th:text="${user.roleType}">USER</span>
+                            <span class="status" th:classappend="${user.lockedStatusClass}" th:text="${user.lockedLabel}">정상</span>
+                        </div>
+                    </a>
+                    <div class="empty-state" th:if="${#lists.isEmpty(userItems)}">조건에 맞는 유저가 없습니다</div>
+                    <nav class="pagination" th:if="${userPage.totalPages > 0}" aria-label="유저 페이지">
+                        <span class="page-status" th:text="|${userPage.number + 1} / ${userPage.totalPages} 페이지|">1 / 1 페이지</span>
+                        <div class="page-actions">
+                            <a class="page-link" th:classappend="${userPage.first} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number - 1}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, userFilter=${userFilter}, selectedUserId=${selectedUserId})}">이전</a>
+                            <a class="page-link" th:classappend="${userPage.last} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number + 1}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, userFilter=${userFilter}, selectedUserId=${selectedUserId})}">다음</a>
+                        </div>
+                    </nav>
+                </section>
+                <section class="user-detail-panel" th:if="${selectedUserId != null}">
+                    <div class="panel-header">
+                        <span class="panel-title">선택 유저 상세</span>
+                        <span class="status" th:classappend="${selectedUser.lockedStatusClass}" th:text="${selectedUser.lockedLabel}">정상</span>
+                    </div>
+                    <div class="user-summary-body">
+                        <div>
+                            <div class="user-summary-title">
+                                <span th:text="${selectedUser.username}">username</span>
+                                <span class="status" th:text="|USER-${selectedUser.userId}|">USER-0</span>
+                            </div>
+                            <div class="user-summary-grid">
+                                <div class="user-summary-field">
+                                    <span class="user-summary-label">Email</span>
+                                    <span class="user-summary-value" th:text="${selectedUser.email}">email@example.com</span>
+                                </div>
+                                <div class="user-summary-field">
+                                    <span class="user-summary-label">Tag</span>
+                                    <span class="user-summary-value" th:text="${selectedUser.tag}">tag</span>
+                                </div>
+                                <div class="user-summary-field">
+                                    <span class="user-summary-label">Social</span>
+                                    <span class="user-summary-value" th:text="${selectedUser.socialType}">SOCIAL</span>
+                                </div>
+                                <div class="user-summary-field">
+                                    <span class="user-summary-label">Role</span>
+                                    <span class="user-summary-value" th:text="${selectedUser.roleType}">USER</span>
+                                </div>
+                            </div>
+                        </div>
+                        <form class="user-lock-form" th:action="@{/admin/dashboard/users/{userId}/lock(userId=${selectedUserId})}" method="post">
+                            <input type="hidden" name="locked" th:value="${!selectedUser.locked}">
+                            <input type="hidden" name="page" th:value="${userPage.number}">
+                            <input type="hidden" name="size" th:value="${pageSize}">
+                            <input type="hidden" name="userSearchType" th:value="${userSearchType.name()}">
+                            <input type="hidden" name="userQ" th:value="${userQuery}">
+                            <input type="hidden" name="userFilter" th:value="${userFilter}">
+                            <input type="hidden" name="kpFilter" th:value="${selectedUserDiaryFilter}">
+                            <input type="hidden" name="kpPage" th:value="${selectedUserDiaryPage.number}">
+                            <button class="danger-button" type="submit" th:text="${selectedUser.locked} ? '정지 해제' : '계정 정지'">계정 정지</button>
+                        </form>
+                    </div>
+                </section>
+
+                <section class="user-detail-panel" th:if="${selectedUserId != null}">
+                    <div class="panel-header">
+                        <span class="panel-title">생성한 킬링파트</span>
+                        <div class="filter-tabs" aria-label="선택 유저 킬링파트 필터">
+                            <a class="filter-tab" th:classappend="${selectedUserDiaryFilter == 'all'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, userFilter=${userFilter}, selectedUserId=${selectedUserId}, kpFilter='all', kpPage=0)}">전체</a>
+                            <a class="filter-tab" th:classappend="${selectedUserDiaryFilter == 'reported'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, userFilter=${userFilter}, selectedUserId=${selectedUserId}, kpFilter='reported', kpPage=0)}">신고받은 것</a>
+                        </div>
+                        <div class="user-panel-actions">
+                            <span class="panel-count" th:text="'총 ' + ${selectedUserDiaryPage.totalElements} + '건'">총 0건</span>
+                        </div>
+                    </div>
+                    <article class="user-kp-row" th:each="diary : ${selectedUserDiaryItems}">
+                        <div class="user-kp-title">
+                            <span th:text="${diary.musicTitle}">음악 제목</span>
+                            <span class="status" th:text="${diary.displayId}">KP-0</span>
+                            <span class="status" th:if="${diary.reportCount > 0}" th:classappend="${diary.reportStatusClass}" th:text="${diary.reportLabel}">신고-0</span>
+                            <span class="status" th:text="${diary.scopeLabel}">전체공개</span>
+                        </div>
+                        <div class="user-kp-meta" th:text="${diary.artist}">아티스트</div>
+                        <p class="user-kp-content" th:text="${diary.content}">Diary 내용</p>
+                    </article>
+                    <div class="empty-state" th:if="${#lists.isEmpty(selectedUserDiaryItems)}">생성한 킬링파트가 없습니다</div>
+                    <nav class="pagination" th:if="${selectedUserDiaryPage.totalPages > 0}" aria-label="선택 유저 킬링파트 페이지">
+                        <span class="page-status" th:text="|${selectedUserDiaryPage.number + 1} / ${selectedUserDiaryPage.totalPages} 페이지|">1 / 1 페이지</span>
+                        <div class="page-actions">
+                            <a class="page-link" th:classappend="${selectedUserDiaryPage.first} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, userFilter=${userFilter}, selectedUserId=${selectedUserId}, kpFilter=${selectedUserDiaryFilter}, kpPage=${selectedUserDiaryPage.number - 1})}">이전</a>
+                            <a class="page-link" th:classappend="${selectedUserDiaryPage.last} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='users', page=${userPage.number}, size=${pageSize}, userSearchType=${userSearchType.name()}, userQ=${userQuery}, userFilter=${userFilter}, selectedUserId=${selectedUserId}, kpFilter=${selectedUserDiaryFilter}, kpPage=${selectedUserDiaryPage.number + 1})}">다음</a>
+                        </div>
+                    </nav>
+                </section>
+            </section>
+        </section>
+    </section>
+</main>
+
+<script>
+    const rows = Array.from(document.querySelectorAll(".ugc-row"));
+
+    function selectRow(row) {
+        rows.forEach(item => item.classList.toggle("is-selected", item === row));
+        document.getElementById("detailVideo").src = row.dataset.videoUrl;
+        document.getElementById("detailVideo").title = row.dataset.song;
+        document.getElementById("detailSegment").textContent = "구간 " + row.dataset.segment + " 자동 재생";
+        document.getElementById("detailSong").textContent = row.dataset.song;
+        document.getElementById("detailDisplayId").textContent = row.dataset.id;
+        document.getElementById("detailArtist").textContent = row.dataset.artist;
+        document.getElementById("detailMemo").value = row.dataset.memo;
+        document.getElementById("detailMemoForm").action = row.dataset.memoAction;
+        document.getElementById("detailDeleteForm").action = row.dataset.deleteAction;
+        document.getElementById("detailUserButton").textContent = row.dataset.user + " →";
+        document.getElementById("detailUserButton").href = "/admin/dashboard?view=users&selectedUserId=" + encodeURIComponent(row.dataset.userId);
+        document.getElementById("detailMeta").replaceChildren(
+            document.createTextNode("등록 " + row.dataset.registered + " · 작성자 " + row.dataset.user + " (" + row.dataset.userId + ") · " + row.dataset.platform)
+        );
+    }
+
+    rows.forEach(row => {
+        row.addEventListener("click", () => selectRow(row));
+    });
+
+    document.getElementById("detailDeleteForm")?.addEventListener("submit", event => {
+        if (!confirm("이 킬링파트를 삭제하시겠습니까?")) {
+            event.preventDefault();
+        }
+    });
+
+    document.querySelectorAll(".memo-delete-form").forEach(form => {
+        form.addEventListener("submit", event => {
+            if (!confirm("이 메모를 삭제하시겠습니까?")) {
+                event.preventDefault();
+            }
+        });
+    });
+
+    document.querySelectorAll(".user-lock-form").forEach(form => {
+        form.addEventListener("submit", event => {
+            const lockInput = form.querySelector("input[name='locked']");
+            const message = lockInput?.value === "true" ? "이 유저의 계정을 정지하시겠습니까?" : "이 유저의 정지를 해제하시겠습니까?";
+            if (!confirm(message)) {
+                event.preventDefault();
+            }
+        });
+    });
+
+    const alarmBoard = document.getElementById("alarmBoard");
+    const alarmTargetField = document.getElementById("alarmTargetField");
+    const alarmSelectedInputs = document.getElementById("alarmSelectedInputs");
+    const alarmSelectedList = document.getElementById("alarmSelectedList");
+    const alarmSelectedEmpty = document.getElementById("alarmSelectedEmpty");
+    const alarmUserChecks = Array.from(document.querySelectorAll(".alarm-user-check"));
+    const recipientModeInputs = Array.from(document.querySelectorAll("input[name='recipientMode']"));
+    const alarmStorageKey = "admin-alarm-selected-users";
+    let selectedAlarmUsers = new Map();
+
+    function loadSelectedAlarmUsers() {
+        if (!alarmBoard) {
+            return;
+        }
+        if (alarmBoard.dataset.clearSelected === "true") {
+            sessionStorage.removeItem(alarmStorageKey);
+        }
+
+        try {
+            const savedUsers = JSON.parse(sessionStorage.getItem(alarmStorageKey) || "[]");
+            selectedAlarmUsers = new Map(savedUsers.map(user => [String(user.id), user]));
+        } catch (error) {
+            selectedAlarmUsers = new Map();
+        }
+    }
+
+    function saveSelectedAlarmUsers() {
+        sessionStorage.setItem(alarmStorageKey, JSON.stringify(Array.from(selectedAlarmUsers.values())));
+    }
+
+    function renderSelectedAlarmUsers() {
+        if (!alarmSelectedInputs || !alarmSelectedList || !alarmSelectedEmpty) {
+            return;
+        }
+
+        alarmSelectedInputs.replaceChildren();
+        alarmSelectedList.replaceChildren();
+
+        selectedAlarmUsers.forEach(user => {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "userIds";
+            input.value = user.id;
+            input.setAttribute("form", "alarmSendForm");
+            alarmSelectedInputs.append(input);
+
+            const row = document.createElement("div");
+            row.className = "alarm-selected-row";
+
+            const main = document.createElement("span");
+            main.className = "user-main";
+
+            const name = document.createElement("span");
+            name.className = "user-name";
+
+            const strong = document.createElement("strong");
+            strong.textContent = user.username;
+            const idBadge = document.createElement("span");
+            idBadge.className = "status";
+            idBadge.textContent = "USER-" + user.id;
+            name.append(strong, idBadge);
+
+            const sub = document.createElement("span");
+            sub.className = "user-sub";
+            sub.textContent = user.tag;
+            main.append(name, sub);
+
+            const removeButton = document.createElement("button");
+            removeButton.className = "alarm-selected-remove";
+            removeButton.type = "button";
+            removeButton.textContent = "제거";
+            removeButton.addEventListener("click", () => {
+                selectedAlarmUsers.delete(String(user.id));
+                saveSelectedAlarmUsers();
+                syncAlarmUserChecks();
+                renderSelectedAlarmUsers();
+            });
+
+            row.append(main, removeButton);
+            alarmSelectedList.append(row);
+        });
+
+        alarmSelectedEmpty.hidden = selectedAlarmUsers.size > 0;
+    }
+
+    function syncAlarmUserChecks() {
+        alarmUserChecks.forEach(check => {
+            check.checked = selectedAlarmUsers.has(String(check.dataset.userId));
+        });
+    }
+
+    function updateAlarmTargetField() {
+        const selectedMode = recipientModeInputs.find(input => input.checked)?.value;
+        alarmTargetField?.classList.toggle("is-disabled", selectedMode !== "users");
+    }
+
+    loadSelectedAlarmUsers();
+    syncAlarmUserChecks();
+    renderSelectedAlarmUsers();
+
+    alarmUserChecks.forEach(check => {
+        check.addEventListener("change", () => {
+            const userId = String(check.dataset.userId);
+            if (check.checked) {
+                selectedAlarmUsers.set(userId, {
+                    id: userId,
+                    username: check.dataset.username,
+                    tag: check.dataset.tag,
+                    socialType: check.dataset.socialType,
+                    lockedLabel: check.dataset.lockedLabel,
+                    lockedStatusClass: check.dataset.lockedStatusClass
+                });
+            } else {
+                selectedAlarmUsers.delete(userId);
+            }
+            saveSelectedAlarmUsers();
+            renderSelectedAlarmUsers();
+        });
+    });
+
+    recipientModeInputs.forEach(input => {
+        input.addEventListener("change", updateAlarmTargetField);
+    });
+    updateAlarmTargetField();
+
+</script>
+</body>
+</html>

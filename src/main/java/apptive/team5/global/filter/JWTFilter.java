@@ -62,6 +62,14 @@ public class JWTFilter extends OncePerRequestFilter {
 
         try {
             UserEntity findUser = userLowService.findById(userId);
+            if (findUser.isLocked()) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.setContentType("application/json;charset=UTF-8");
+                Map<String, String> message = Map.of("message", "Locked User");
+                String invalidTokenMessage = objectMapper.writeValueAsString(message);
+                response.getWriter().write(invalidTokenMessage);
+                return;
+            }
             List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_"+findUser.getRoleType().name()));
             Authentication auth = new UsernamePasswordAuthenticationToken(userId, null, authorities);
             SecurityContextHolder.getContext().setAuthentication(auth);
