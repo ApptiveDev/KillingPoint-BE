@@ -8,6 +8,8 @@ import apptive.team5.admin.exception.AdminException;
 import apptive.team5.admin.service.AdminService;
 import apptive.team5.admin.service.AdminUgcService;
 import apptive.team5.admin.service.UserManagementService;
+import apptive.team5.alarm.dto.AdminAlarmSendRequest;
+import apptive.team5.alarm.service.AlarmDispatchService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -25,6 +27,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+
 import static apptive.team5.admin.util.SessionConst.ADMIN_SESSION_KEY;
 
 @Controller
@@ -35,6 +39,7 @@ public class AdminController {
     private final AdminService adminService;
     private final AdminUgcService adminUgcService;
     private final UserManagementService userManagementService;
+    private final AlarmDispatchService alarmDispatchService;
 
     @GetMapping
     public String adminHome(HttpServletRequest request) {
@@ -89,6 +94,10 @@ public class AdminController {
                             @RequestParam(defaultValue = "") String selectedUserId,
                             @RequestParam(defaultValue = "0") int kpPage,
                             @RequestParam(defaultValue = "all") String kpFilter,
+                            @RequestParam(defaultValue = "broadcast") String alarmRecipientMode,
+                            @RequestParam(defaultValue = "USER_ID") String alarmUserSearchType,
+                            @RequestParam(defaultValue = "") String alarmUserQ,
+                            @RequestParam(defaultValue = "0") int alarmUserPage,
                             Model model) {
         int pageNumber = Math.max(page, 0);
         int pageSize = Math.min(Math.max(size, 10), 50);
@@ -106,6 +115,33 @@ public class AdminController {
             model.addAttribute("memoItems", memoPage.getContent());
             model.addAttribute("memoPage", memoPage);
             model.addAttribute("pageSize", csPageSize);
+            return "admin/dashboard";
+        }
+
+        if ("alarms".equals(adminView)) {
+            UserSearchType searchTypeForAlarmUser = UserSearchType.from(alarmUserSearchType);
+            String alarmUserQuery = alarmUserQ == null ? "" : alarmUserQ.trim();
+            var alarmUsers = userManagementService.getUsers(
+                    searchTypeForAlarmUser,
+                    alarmUserQuery,
+                    false,
+                    PageRequest.of(Math.max(alarmUserPage, 0), 10, Sort.by(Sort.Direction.DESC, "id"))
+            );
+
+            if (!model.containsAttribute("alarmContent")) {
+                model.addAttribute("alarmContent", "");
+            }
+            if (!model.containsAttribute("alarmDeepLink")) {
+                model.addAttribute("alarmDeepLink", "/");
+            }
+            if (!model.containsAttribute("alarmRecipientMode")) {
+                model.addAttribute("alarmRecipientMode", "users".equals(alarmRecipientMode) ? "users" : "broadcast");
+            }
+            model.addAttribute("alarmUserItems", alarmUsers.getContent());
+            model.addAttribute("alarmUserPage", alarmUsers);
+            model.addAttribute("alarmUserSearchTypes", UserSearchType.values());
+            model.addAttribute("alarmUserSearchType", searchTypeForAlarmUser);
+            model.addAttribute("alarmUserQuery", alarmUserQuery);
             return "admin/dashboard";
         }
 
@@ -244,6 +280,46 @@ public class AdminController {
         return "redirect:/admin/dashboard";
     }
 
+    @PostMapping("/dashboard/alarms/send")
+    public String sendAlarm(@RequestParam(defaultValue = "") String content,
+                            @RequestParam(defaultValue = "/") String deepLink,
+                            @RequestParam(defaultValue = "broadcast") String recipientMode,
+                            @RequestParam(defaultValue = "USER_ID") String alarmUserSearchType,
+                            @RequestParam(defaultValue = "") String alarmUserQ,
+                            @RequestParam(defaultValue = "0") int alarmUserPage,
+                            @RequestParam(required = false) List<Long> userIds,
+                            RedirectAttributes redirectAttributes) {
+        String normalizedContent = content == null ? "" : content.trim();
+        String normalizedDeepLink = normalizeDeepLink(deepLink);
+        boolean broadcast = "broadcast".equals(recipientMode);
+        List<Long> receiverIds;
+
+        if (normalizedContent.isBlank()) {
+            addAlarmRedirectAttributes(redirectAttributes, normalizedContent, normalizedDeepLink, recipientMode, alarmUserSearchType, alarmUserQ, alarmUserPage);
+            redirectAttributes.addFlashAttribute("alarmError", "알림 내용을 입력해주세요.");
+            return "redirect:/admin/dashboard";
+        }
+
+        try {
+            receiverIds = broadcast ? List.of() : parseUserIds(userIds);
+        } catch (IllegalArgumentException e) {
+            addAlarmRedirectAttributes(redirectAttributes, normalizedContent, normalizedDeepLink, recipientMode, alarmUserSearchType, alarmUserQ, alarmUserPage);
+            redirectAttributes.addFlashAttribute("alarmError", e.getMessage());
+            return "redirect:/admin/dashboard";
+        }
+
+        alarmDispatchService.saveAndDispatchForAdminAlarm(new AdminAlarmSendRequest(
+                normalizedContent,
+                normalizedDeepLink,
+                receiverIds,
+                broadcast
+        ));
+
+        redirectAttributes.addAttribute("view", "alarms");
+        redirectAttributes.addFlashAttribute("alarmSuccess", broadcast ? "전체 유저에게 알림 발송을 시작했습니다." : "선택 유저에게 알림 발송을 시작했습니다.");
+        return "redirect:/admin/dashboard";
+    }
+
     @PostMapping("/logout")
     public String logout(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
@@ -257,6 +333,7 @@ public class AdminController {
         return switch (view) {
             case "cs" -> "cs";
             case "users" -> "users";
+            case "alarms" -> "alarms";
             default -> "ugc";
         };
     }
@@ -265,8 +342,42 @@ public class AdminController {
         return switch (adminView) {
             case "cs" -> "메모 기록";
             case "users" -> "유저";
+            case "alarms" -> "알림 발송";
             default -> "UGC 검수";
         };
+    }
+
+    private List<Long> parseUserIds(List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            throw new IllegalArgumentException("알림을 받을 유저를 선택해주세요.");
+        }
+
+        return userIds.stream()
+                .distinct()
+                .toList();
+    }
+
+    private String normalizeDeepLink(String deepLink) {
+        if (deepLink == null || deepLink.isBlank()) {
+            return "/";
+        }
+        return deepLink.trim();
+    }
+
+    private void addAlarmRedirectAttributes(RedirectAttributes redirectAttributes,
+                                            String content,
+                                            String deepLink,
+                                            String recipientMode,
+                                            String alarmUserSearchType,
+                                            String alarmUserQ,
+                                            int alarmUserPage) {
+        redirectAttributes.addAttribute("view", "alarms");
+        redirectAttributes.addAttribute("alarmUserSearchType", UserSearchType.from(alarmUserSearchType).name());
+        redirectAttributes.addAttribute("alarmUserQ", alarmUserQ == null ? "" : alarmUserQ.trim());
+        redirectAttributes.addAttribute("alarmUserPage", Math.max(alarmUserPage, 0));
+        redirectAttributes.addFlashAttribute("alarmContent", content);
+        redirectAttributes.addFlashAttribute("alarmDeepLink", deepLink);
+        redirectAttributes.addFlashAttribute("alarmRecipientMode", "users".equals(recipientMode) ? "users" : "broadcast");
     }
 
     private Long parseLongOrNull(String value) {

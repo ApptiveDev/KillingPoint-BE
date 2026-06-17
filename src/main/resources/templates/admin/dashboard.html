@@ -395,6 +395,162 @@
             margin: 0 auto;
         }
 
+        .alarm-board {
+            max-width: 760px;
+            margin: 0 auto;
+            border: 1px solid #e7e7e2;
+            background: #fff;
+        }
+
+        .alarm-form {
+            padding: 18px;
+        }
+
+        .alarm-user-search {
+            padding: 0;
+            border-bottom: 0;
+        }
+
+        .alarm-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .alarm-input,
+        .alarm-textarea {
+            width: 100%;
+            margin-top: 6px;
+            padding: 10px 12px;
+            border: 1px solid #e2e2dc;
+            outline: 0;
+            background: #fcfcfb;
+            color: #1a1a17;
+            font-size: 13.5px;
+        }
+
+        .alarm-input:focus,
+        .alarm-textarea:focus {
+            border-color: #16160f;
+            background: #fff;
+        }
+
+        .alarm-textarea {
+            min-height: 112px;
+            resize: vertical;
+        }
+
+        .recipient-tabs {
+            display: flex;
+            gap: 2px;
+            width: fit-content;
+            padding: 3px;
+            border: 1px solid #e2e2dc;
+            background: #fff;
+        }
+
+        .recipient-option {
+            position: relative;
+        }
+
+        .recipient-option input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .recipient-option span {
+            display: block;
+            padding: 8px 13px;
+            color: #7e7e76;
+            font-size: 12.5px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .recipient-option input:checked + span {
+            background: #16160f;
+            color: #fff;
+        }
+
+        .alarm-target-field.is-disabled {
+            display: none;
+        }
+
+        .alarm-user-list {
+            margin-top: 6px;
+            border: 1px solid #e7e7e2;
+            background: #fff;
+        }
+
+        .alarm-user-row {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            gap: 12px;
+            align-items: center;
+            padding: 12px 14px;
+            border-bottom: 1px solid #f1f1ed;
+        }
+
+        .alarm-user-row:last-child {
+            border-bottom: 0;
+        }
+
+        .alarm-user-check {
+            width: 16px;
+            height: 16px;
+            accent-color: #16160f;
+        }
+
+        .alarm-selected-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .alarm-selected-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 10px;
+            align-items: center;
+            padding: 10px 12px;
+            border: 1px solid #e7e7e2;
+            background: #fcfcfb;
+        }
+
+        .alarm-selected-remove {
+            padding: 6px 9px;
+            border: 1px solid #e2e2dc;
+            background: #fff;
+            color: #5a5a54;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .alarm-selected-empty {
+            margin-top: 10px;
+            padding: 12px;
+            border: 1px dashed #d8d8d0;
+            color: #9a9a92;
+            font-size: 12.5px;
+        }
+
+        .admin-alert {
+            margin: 0 18px 14px;
+            padding: 11px 12px;
+            border: 1px solid #d2e6a6;
+            background: #f0f7e3;
+            color: #5a6b12;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .admin-alert.is-error {
+            border-color: #ecc3bc;
+            background: #fdf1ef;
+            color: #bf4a3c;
+        }
+
         .user-list {
             border: 1px solid #e7e7e2;
             background: #fff;
@@ -949,6 +1105,26 @@
                 grid-template-columns: 1fr;
             }
 
+            .alarm-user-row {
+                grid-template-columns: auto minmax(0, 1fr);
+            }
+
+            .alarm-user-row .user-platforms {
+                grid-column: 2;
+            }
+
+            .recipient-tabs {
+                width: 100%;
+            }
+
+            .recipient-option {
+                flex: 1;
+            }
+
+            .recipient-option span {
+                text-align: center;
+            }
+
             .user-summary-body,
             .user-summary-grid {
                 grid-template-columns: 1fr;
@@ -972,6 +1148,7 @@
         <a class="nav-item" th:classappend="${adminView == 'ugc'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='ugc')}"><span class="nav-dot"></span>UGC 검수</a>
         <a class="nav-item" th:classappend="${adminView == 'cs'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='cs')}"><span class="nav-dot"></span>메모 기록</a>
         <a class="nav-item" th:classappend="${adminView == 'users'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='users')}"><span class="nav-dot"></span>유저</a>
+        <a class="nav-item" th:classappend="${adminView == 'alarms'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='alarms')}"><span class="nav-dot"></span>알림 발송</a>
         <form class="sidebar-footer" th:action="@{/admin/logout}" method="post">
             <div class="sidebar-user">
                 <strong>admin</strong>
@@ -1158,6 +1335,102 @@
                     </div>
                 </nav>
             </section>
+            <section class="alarm-board" id="alarmBoard" th:if="${adminView == 'alarms'}" th:data-clear-selected="${alarmSuccess != null}">
+                <div class="panel-header">
+                    <span class="panel-title">앱 알림 발송</span>
+                </div>
+                <div class="admin-alert" th:if="${alarmSuccess != null}" th:text="${alarmSuccess}">발송 성공</div>
+                <div class="admin-alert is-error" th:if="${alarmError != null}" th:text="${alarmError}">발송 실패</div>
+                <form id="alarmSendForm" th:action="@{/admin/dashboard/alarms/send}" method="post"></form>
+                <div class="alarm-form">
+                    <input form="alarmSendForm" type="hidden" name="alarmUserSearchType" th:value="${alarmUserSearchType.name()}">
+                    <input form="alarmSendForm" type="hidden" name="alarmUserQ" th:value="${alarmUserQuery}">
+                    <input form="alarmSendForm" type="hidden" name="alarmUserPage" th:value="${alarmUserPage.number}">
+                    <span id="alarmSelectedInputs"></span>
+                    <div class="alarm-grid">
+                        <div>
+                            <span class="field-label">발송 범위</span>
+                            <span class="recipient-tabs" aria-label="발송 범위">
+                                <label class="recipient-option">
+                                    <input form="alarmSendForm" type="radio" name="recipientMode" value="broadcast" th:checked="${alarmRecipientMode == 'broadcast'}">
+                                    <span>전체 유저</span>
+                                </label>
+                                <label class="recipient-option">
+                                    <input form="alarmSendForm" type="radio" name="recipientMode" value="users" th:checked="${alarmRecipientMode == 'users'}">
+                                    <span>선택 유저</span>
+                                </label>
+                            </span>
+                        </div>
+                        <section class="alarm-target-field" id="alarmTargetField" th:classappend="${alarmRecipientMode != 'users'} ? ' is-disabled' : ''">
+                            <span class="field-label">유저 검색</span>
+                            <form class="search-form alarm-user-search" th:action="@{/admin/dashboard}" method="get">
+                                <input type="hidden" name="view" value="alarms">
+                                <input type="hidden" name="alarmRecipientMode" value="users">
+                                <input type="hidden" name="alarmUserPage" value="0">
+                                <div class="search-type-tabs" aria-label="알림 대상 검색 조건">
+                                    <label class="search-type-option" th:each="type : ${alarmUserSearchTypes}">
+                                        <input type="radio" name="alarmUserSearchType" th:value="${type.name()}" th:checked="${type == alarmUserSearchType}">
+                                        <span th:text="${type.label}">검색 조건</span>
+                                    </label>
+                                </div>
+                                <label class="search-box" aria-label="알림 대상 검색어">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9a9a92" stroke-width="2" aria-hidden="true">
+                                        <circle cx="11" cy="11" r="7"></circle>
+                                        <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
+                                    </svg>
+                                    <input name="alarmUserQ" type="search" th:value="${alarmUserQuery}">
+                                </label>
+                                <button class="search-button" type="submit">검색</button>
+                            </form>
+                            <div class="alarm-user-list">
+                                <label class="alarm-user-row" th:each="user : ${alarmUserItems}">
+                                    <input class="alarm-user-check" type="checkbox"
+                                           th:value="${user.userId}"
+                                           th:data-user-id="${user.userId}"
+                                           th:data-username="${user.username}"
+                                           th:data-tag="${user.tag}"
+                                           th:data-social-type="${user.socialType}"
+                                           th:data-locked-label="${user.lockedLabel}"
+                                           th:data-locked-status-class="${user.lockedStatusClass}">
+                                    <span class="user-main">
+                                        <span class="user-name">
+                                            <strong th:text="${user.username}">username</strong>
+                                            <span class="status" th:text="|USER-${user.userId}|">USER-0</span>
+                                        </span>
+                                        <span class="user-sub" th:text="${user.tag}">tag</span>
+                                    </span>
+                                    <span class="user-platforms">
+                                        <span class="status" th:text="${user.socialType}">SOCIAL</span>
+                                        <span class="status" th:classappend="${user.lockedStatusClass}" th:text="${user.lockedLabel}">정상</span>
+                                    </span>
+                                </label>
+                                <div class="empty-state" th:if="${#lists.isEmpty(alarmUserItems)}">조건에 맞는 유저가 없습니다</div>
+                            </div>
+                            <nav class="pagination" th:if="${alarmUserPage.totalPages > 0}" aria-label="알림 대상 유저 페이지">
+                                <span class="page-status" th:text="|${alarmUserPage.number + 1} / ${alarmUserPage.totalPages} 페이지|">1 / 1 페이지</span>
+                                <div class="page-actions">
+                                    <a class="page-link" th:classappend="${alarmUserPage.first} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='alarms', alarmRecipientMode='users', alarmUserSearchType=${alarmUserSearchType.name()}, alarmUserQ=${alarmUserQuery}, alarmUserPage=${alarmUserPage.number - 1})}">이전</a>
+                                    <a class="page-link" th:classappend="${alarmUserPage.last} ? ' is-disabled' : ''" th:href="@{/admin/dashboard(view='alarms', alarmRecipientMode='users', alarmUserSearchType=${alarmUserSearchType.name()}, alarmUserQ=${alarmUserQuery}, alarmUserPage=${alarmUserPage.number + 1})}">다음</a>
+                                </div>
+                            </nav>
+                            <span class="field-label">선택한 유저</span>
+                            <div class="alarm-selected-list" id="alarmSelectedList"></div>
+                            <div class="alarm-selected-empty" id="alarmSelectedEmpty">선택된 유저가 없습니다</div>
+                        </section>
+                        <label>
+                            <span class="field-label">알림 내용</span>
+                            <textarea form="alarmSendForm" class="alarm-textarea" name="content" maxlength="1000" th:text="${alarmContent}"></textarea>
+                        </label>
+                        <label>
+                            <span class="field-label">딥링크</span>
+                            <input form="alarmSendForm" class="alarm-input" name="deepLink" type="text" maxlength="1000" th:value="${alarmDeepLink}">
+                        </label>
+                    </div>
+                    <div class="action-row">
+                        <button class="save-button" form="alarmSendForm" type="submit">발송</button>
+                    </div>
+                </div>
+            </section>
             <section class="user-board" th:if="${adminView == 'users'}">
                 <div class="toolbar">
                     <form class="search-form" th:action="@{/admin/dashboard}" method="get">
@@ -1343,6 +1616,131 @@
             }
         });
     });
+
+    const alarmBoard = document.getElementById("alarmBoard");
+    const alarmTargetField = document.getElementById("alarmTargetField");
+    const alarmSelectedInputs = document.getElementById("alarmSelectedInputs");
+    const alarmSelectedList = document.getElementById("alarmSelectedList");
+    const alarmSelectedEmpty = document.getElementById("alarmSelectedEmpty");
+    const alarmUserChecks = Array.from(document.querySelectorAll(".alarm-user-check"));
+    const recipientModeInputs = Array.from(document.querySelectorAll("input[name='recipientMode']"));
+    const alarmStorageKey = "admin-alarm-selected-users";
+    let selectedAlarmUsers = new Map();
+
+    function loadSelectedAlarmUsers() {
+        if (!alarmBoard) {
+            return;
+        }
+        if (alarmBoard.dataset.clearSelected === "true") {
+            sessionStorage.removeItem(alarmStorageKey);
+        }
+
+        try {
+            const savedUsers = JSON.parse(sessionStorage.getItem(alarmStorageKey) || "[]");
+            selectedAlarmUsers = new Map(savedUsers.map(user => [String(user.id), user]));
+        } catch (error) {
+            selectedAlarmUsers = new Map();
+        }
+    }
+
+    function saveSelectedAlarmUsers() {
+        sessionStorage.setItem(alarmStorageKey, JSON.stringify(Array.from(selectedAlarmUsers.values())));
+    }
+
+    function renderSelectedAlarmUsers() {
+        if (!alarmSelectedInputs || !alarmSelectedList || !alarmSelectedEmpty) {
+            return;
+        }
+
+        alarmSelectedInputs.replaceChildren();
+        alarmSelectedList.replaceChildren();
+
+        selectedAlarmUsers.forEach(user => {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "userIds";
+            input.value = user.id;
+            input.setAttribute("form", "alarmSendForm");
+            alarmSelectedInputs.append(input);
+
+            const row = document.createElement("div");
+            row.className = "alarm-selected-row";
+
+            const main = document.createElement("span");
+            main.className = "user-main";
+
+            const name = document.createElement("span");
+            name.className = "user-name";
+
+            const strong = document.createElement("strong");
+            strong.textContent = user.username;
+            const idBadge = document.createElement("span");
+            idBadge.className = "status";
+            idBadge.textContent = "USER-" + user.id;
+            name.append(strong, idBadge);
+
+            const sub = document.createElement("span");
+            sub.className = "user-sub";
+            sub.textContent = user.tag;
+            main.append(name, sub);
+
+            const removeButton = document.createElement("button");
+            removeButton.className = "alarm-selected-remove";
+            removeButton.type = "button";
+            removeButton.textContent = "제거";
+            removeButton.addEventListener("click", () => {
+                selectedAlarmUsers.delete(String(user.id));
+                saveSelectedAlarmUsers();
+                syncAlarmUserChecks();
+                renderSelectedAlarmUsers();
+            });
+
+            row.append(main, removeButton);
+            alarmSelectedList.append(row);
+        });
+
+        alarmSelectedEmpty.hidden = selectedAlarmUsers.size > 0;
+    }
+
+    function syncAlarmUserChecks() {
+        alarmUserChecks.forEach(check => {
+            check.checked = selectedAlarmUsers.has(String(check.dataset.userId));
+        });
+    }
+
+    function updateAlarmTargetField() {
+        const selectedMode = recipientModeInputs.find(input => input.checked)?.value;
+        alarmTargetField?.classList.toggle("is-disabled", selectedMode !== "users");
+    }
+
+    loadSelectedAlarmUsers();
+    syncAlarmUserChecks();
+    renderSelectedAlarmUsers();
+
+    alarmUserChecks.forEach(check => {
+        check.addEventListener("change", () => {
+            const userId = String(check.dataset.userId);
+            if (check.checked) {
+                selectedAlarmUsers.set(userId, {
+                    id: userId,
+                    username: check.dataset.username,
+                    tag: check.dataset.tag,
+                    socialType: check.dataset.socialType,
+                    lockedLabel: check.dataset.lockedLabel,
+                    lockedStatusClass: check.dataset.lockedStatusClass
+                });
+            } else {
+                selectedAlarmUsers.delete(userId);
+            }
+            saveSelectedAlarmUsers();
+            renderSelectedAlarmUsers();
+        });
+    });
+
+    recipientModeInputs.forEach(input => {
+        input.addEventListener("change", updateAlarmTargetField);
+    });
+    updateAlarmTargetField();
 
 </script>
 </body>
