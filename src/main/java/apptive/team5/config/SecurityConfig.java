@@ -7,6 +7,7 @@ import apptive.team5.jwt.service.JwtService;
 import apptive.team5.user.service.UserLowService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -33,6 +34,9 @@ public class SecurityConfig {
     private final JwtService jwtService;
     private final UserLowService userLowService;
     private final ObjectMapper objectMapper;
+
+    @Value("${spring.backend.domain}")
+    private String backendDomain;
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -66,6 +70,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(List.of(backendDomain));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "X-Refresh-Token"));
         configuration.setAllowCredentials(true);
