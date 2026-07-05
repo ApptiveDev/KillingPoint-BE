@@ -2,7 +2,6 @@ package apptive.team5.recommendation.service;
 
 import apptive.team5.recommendation.domain.MusicMetadataEntity;
 import apptive.team5.recommendation.domain.MusicMetadataSourceType;
-import apptive.team5.recommendation.repository.MusicMetadataRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class MusicMetadataService {
 
-    private final MusicMetadataRepository musicMetadataRepository;
+    private final MusicMetadataLowService musicMetadataLowService;
 
     public MusicMetadataEntity findOrCreate(
             MusicMetadataSourceType sourceType,
@@ -24,8 +23,8 @@ public class MusicMetadataService {
             return null;
         }
 
-        return musicMetadataRepository.findBySourceTypeAndSourceTrackId(sourceType, sourceTrackId)
-                .orElseGet(() -> musicMetadataRepository.save(
+        return musicMetadataLowService.findBySourceTypeAndSourceTrackId(sourceType, sourceTrackId)
+                .orElseGet(() -> musicMetadataLowService.save(
                         new MusicMetadataEntity(
                                 sourceType,
                                 sourceTrackId,

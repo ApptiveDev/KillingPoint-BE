@@ -53,4 +53,8 @@ public class UserArtistPreferenceEntity extends BaseTimeEntity {
         this.sourceArtistId = sourceArtistId;
         this.score = score;
     }
+
+    public void adjustScore(int scoreChange) {
+        this.score += scoreChange;
+    }
 }

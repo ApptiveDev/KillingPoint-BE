@@ -7,6 +7,7 @@ import apptive.team5.diary.dto.*;
 import apptive.team5.diary.mapper.DiaryResponseMapper;
 import apptive.team5.recommendation.domain.MusicMetadataEntity;
 import apptive.team5.recommendation.service.MusicMetadataService;
+import apptive.team5.recommendation.service.PreferenceService;
 import apptive.team5.subscribe.service.SubscribeLowService;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.service.UserBlockLowService;
@@ -42,6 +43,7 @@ public class DiaryService {
     private final DiaryStoreLowService diaryStoreLowService;
     private final UserBlockLowService userBlockLowService;
     private final MusicMetadataService musicMetadataService;
+    private final PreferenceService preferenceService;
 
     @Transactional(readOnly = true)
     public Page<MyDiaryResponseDto> getMyDiaries(Long userId, Pageable pageable) {
@@ -138,6 +140,7 @@ public class DiaryService {
         DiaryEntity savedDiary = diaryLowService.saveDiary(diary);
 
         diaryOrderLowService.addDiaryId(userId, savedDiary.getId());
+        preferenceService.reflectDiaryCreated(foundUser, savedDiary);
 
         return savedDiary;
     }
@@ -163,6 +166,7 @@ public class DiaryService {
         diaryOrderLowService.deleteDiaryId(userId, diaryId);
         diaryLikeLowService.deleteByDiaryId(diaryId);
         diaryMemoLowService.deleteByDiaryId(diaryId);
+        preferenceService.reflectDiaryDeleted(foundUser, foundDiary);
         diaryLowService.deleteDiary(foundDiary);
     }
 

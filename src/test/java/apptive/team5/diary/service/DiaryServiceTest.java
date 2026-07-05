@@ -8,6 +8,7 @@ import apptive.team5.diary.domain.model.DiaryStoreInfo;
 import apptive.team5.diary.dto.*;
 import apptive.team5.diary.mapper.DiaryResponseMapper;
 import apptive.team5.recommendation.service.MusicMetadataService;
+import apptive.team5.recommendation.service.PreferenceService;
 import apptive.team5.subscribe.service.SubscribeLowService;
 import apptive.team5.user.domain.SocialType;
 import apptive.team5.user.domain.UserEntity;
@@ -59,6 +60,8 @@ public class DiaryServiceTest {
     private UserBlockLowService userBlockLowService;
     @Mock
     private MusicMetadataService musicMetadataService;
+    @Mock
+    private PreferenceService preferenceService;
 
     @Mock
     private DiaryLowService diaryLowService;
@@ -284,6 +287,7 @@ public class DiaryServiceTest {
         verify(userLowService).getReferenceById(any(Long.class));
         verify(diaryLowService).saveDiary(any(DiaryEntity.class));
         verify(diaryOrderLowService).addDiaryId(user.getId(), savedDiary.getId());
+        verify(preferenceService).reflectDiaryCreated(user, savedDiary);
 
         verifyNoMoreInteractions(userLowService, diaryLowService);
     }
@@ -333,6 +337,7 @@ public class DiaryServiceTest {
         verify(diaryLowService).deleteDiary(any(DiaryEntity.class));
         verify(diaryStoreLowService, never()).deleteByDiaryId(any(Long.class));
         verify(diaryMemoLowService).deleteByDiaryId(any(Long.class));
+        verify(preferenceService).reflectDiaryDeleted(user, diary);
 
         verifyNoMoreInteractions(userLowService, diaryLowService);
     }
@@ -361,6 +366,7 @@ public class DiaryServiceTest {
 
         verify(diaryStoreLowService, never()).deleteByDiaryId(diaryId);
         verify(diaryMemoLowService).deleteByDiaryId(diaryId);
+        verify(preferenceService).reflectDiaryDeleted(user, diary);
     }
 
     @Test
@@ -417,6 +423,7 @@ public class DiaryServiceTest {
 
         // then
         verify(diaryOrderLowService).addDiaryId(userId, 100L);
+        verify(preferenceService).reflectDiaryCreated(user, newDiary);
     }
 
     @Test
@@ -438,5 +445,6 @@ public class DiaryServiceTest {
         verify(diaryReportLowService).deleteByDiaryId(any(Long.class));
         verify(diaryOrderLowService).deleteDiaryId(userId, diaryId);
         verify(diaryMemoLowService).deleteByDiaryId(diaryId);
+        verify(preferenceService).reflectDiaryDeleted(user, diary);
     }
 }

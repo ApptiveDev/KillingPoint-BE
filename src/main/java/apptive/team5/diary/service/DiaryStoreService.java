@@ -6,6 +6,7 @@ import apptive.team5.diary.domain.model.DiaryStoreInfo;
 import apptive.team5.diary.dto.DiaryStoreResponseDto;
 import apptive.team5.diary.dto.FeedDiaryResponseDto;
 import apptive.team5.diary.dto.StoredDiaryResponseDto;
+import apptive.team5.recommendation.service.PreferenceService;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.service.UserLowService;
 import lombok.RequiredArgsConstructor;
@@ -22,19 +23,23 @@ public class DiaryStoreService {
     private final UserLowService userLowService;
     private final DiaryStoreLowService diaryStoreLowService;
     private final DiaryLowService diaryLowService;
+    private final PreferenceService preferenceService;
 
     public DiaryStoreResponseDto toggleDiaryStore(Long userId, Long diaryId) {
         UserEntity user = userLowService.getReferenceById(userId);
 
         if (diaryStoreLowService.existsByUserAndDiaryId(user, diaryId)) {
             DiaryStoreEntity diaryStoreEntity = diaryStoreLowService.findByUserAndDiaryId(user, diaryId);
+            DiaryEntity diary = diaryLowService.findDiaryById(diaryStoreEntity.getDiaryId());
             diaryStoreLowService.deleteById(diaryStoreEntity.getId());
+            preferenceService.reflectDiaryStoreRemoved(user, diary);
             return new DiaryStoreResponseDto(false);
         }
         else {
             DiaryEntity diary = diaryLowService.findDiaryById(diaryId);
             DiaryStoreInfo storeInfo = DiaryStoreInfo.from(diary, user);
             diaryStoreLowService.save(new DiaryStoreEntity(user, storeInfo));
+            preferenceService.reflectDiaryStored(user, diary);
             return new DiaryStoreResponseDto(true);
         }
     }

@@ -53,4 +53,8 @@ public class UserGenrePreferenceEntity extends BaseTimeEntity {
         this.genreNameRaw = genreNameRaw;
         this.score = score;
     }
+
+    public void adjustScore(int scoreChange) {
+        this.score += scoreChange;
+    }
 }

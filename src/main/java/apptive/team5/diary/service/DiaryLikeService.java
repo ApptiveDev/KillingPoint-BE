@@ -3,6 +3,7 @@ package apptive.team5.diary.service;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryLikeEntity;
 import apptive.team5.diary.dto.DiaryLikeResponseDto;
+import apptive.team5.recommendation.service.PreferenceService;
 import apptive.team5.subscribe.service.SubscribeLowService;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.dto.UserSearchResponse;
@@ -28,6 +29,7 @@ public class DiaryLikeService {
     private final DiaryLowService diaryLowService;
     private final SubscribeLowService subscribeLowService;
     private final UserBlockLowService userBlockLowService;
+    private final PreferenceService preferenceService;
 
     public DiaryLikeResponseDto toggleDiaryLike(Long userId, Long diaryId) {
         UserEntity user = userLowService.getReferenceById(userId);
@@ -36,10 +38,12 @@ public class DiaryLikeService {
         if (diaryLikeLowService.existsByUserAndDiary(user, diary)) {
             DiaryLikeEntity diaryLike = diaryLikeLowService.findByUserAndDiary(user, diary);
             diaryLikeLowService.deleteDiaryLike(diaryLike);
+            preferenceService.reflectDiaryLikeRemoved(user, diary);
             return new DiaryLikeResponseDto(false);
         }
         else {
             diaryLikeLowService.saveDiaryLike(new DiaryLikeEntity(user, diary));
+            preferenceService.reflectDiaryLiked(user, diary);
             return new DiaryLikeResponseDto(true);
         }
     }

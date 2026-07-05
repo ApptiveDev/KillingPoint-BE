@@ -5,9 +5,12 @@ import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryLikeEntity;
 import apptive.team5.diary.domain.DiaryScope;
 import apptive.team5.diary.dto.DiaryLikeResponseDto;
+import apptive.team5.recommendation.service.PreferenceService;
 import apptive.team5.global.exception.DuplicateException;
 import apptive.team5.global.exception.NotFoundEntityException;
+import apptive.team5.subscribe.service.SubscribeLowService;
 import apptive.team5.user.domain.UserEntity;
+import apptive.team5.user.service.UserBlockLowService;
 import apptive.team5.user.service.UserLowService;
 import apptive.team5.util.TestUtil;
 import org.junit.jupiter.api.DisplayName;
@@ -42,6 +45,12 @@ class DiaryLikeServiceTest {
 
     @Mock
     private AlarmDispatchService alarmDispatchService;
+    @Mock
+    private SubscribeLowService subscribeLowService;
+    @Mock
+    private UserBlockLowService userBlockLowService;
+    @Mock
+    private PreferenceService preferenceService;
 
     @Test
     @DisplayName("좋아요 토글 - 좋아요 없을 때")
@@ -69,6 +78,7 @@ class DiaryLikeServiceTest {
         verify(diaryLowService).findDiaryById(diaryId);
         verify(diaryLikeLowService).existsByUserAndDiary(user, diary);
         verify(diaryLikeLowService).saveDiaryLike(any(DiaryLikeEntity.class));
+        verify(preferenceService).reflectDiaryLiked(user, diary);
         verifyNoMoreInteractions(userLowService, diaryLowService, diaryLikeLowService, alarmDispatchService);
     }
 
@@ -101,6 +111,7 @@ class DiaryLikeServiceTest {
         verify(diaryLikeLowService).existsByUserAndDiary(user, diary);
         verify(diaryLikeLowService).findByUserAndDiary(user, diary);
         verify(diaryLikeLowService).deleteDiaryLike(diaryLike);
+        verify(preferenceService).reflectDiaryLikeRemoved(user, diary);
         verifyNoInteractions(alarmDispatchService);
         verifyNoMoreInteractions(userLowService, diaryLowService, diaryLikeLowService);
     }
