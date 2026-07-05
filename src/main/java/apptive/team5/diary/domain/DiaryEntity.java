@@ -6,8 +6,9 @@ import apptive.team5.diary.domain.model.MusicPlayInfo;
 import apptive.team5.global.entity.BaseTimeEntity;
 import apptive.team5.global.exception.BadRequestException;
 import apptive.team5.global.exception.ExceptionCode;
-import apptive.team5.user.domain.UserEntity;
 import apptive.team5.diary.domain.model.MusicBasicInfo;
+import apptive.team5.recommendation.domain.MusicMetadataEntity;
+import apptive.team5.user.domain.UserEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -73,6 +74,10 @@ public class DiaryEntity extends BaseTimeEntity {
             nullable = false
     )
     private UserEntity user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "music_metadata_id")
+    private MusicMetadataEntity musicMetadata;
 
     private static final String HIDDEN_CONTENT_DEFAULT_MESSAGE = "비공개 일기입니다.";
 

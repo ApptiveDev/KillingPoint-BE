@@ -106,7 +106,8 @@ public final class TestUtil {
                 "PT2M58S",
                 "PT1M1S",
                 "PT1M31S",
-                user
+                user,
+                null
         );
     }
 
