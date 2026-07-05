@@ -7,6 +7,8 @@ import apptive.team5.diary.domain.DiaryStoreEntity;
 import apptive.team5.diary.domain.model.DiaryStoreInfo;
 import apptive.team5.diary.dto.*;
 import apptive.team5.diary.mapper.DiaryResponseMapper;
+import apptive.team5.recommendation.domain.MusicMetadataEntity;
+import apptive.team5.recommendation.domain.MusicMetadataSourceType;
 import apptive.team5.recommendation.service.MusicMetadataService;
 import apptive.team5.recommendation.service.PreferenceService;
 import apptive.team5.subscribe.service.SubscribeLowService;
@@ -290,6 +292,79 @@ public class DiaryServiceTest {
         verify(preferenceService).reflectDiaryCreated(user, savedDiary);
 
         verifyNoMoreInteractions(userLowService, diaryLowService);
+    }
+
+    @Test
+    @DisplayName("다이어리 생성 시 음악 메타가 있으면 저장 후 연결한다")
+    void createDiary_withMusicMetadata_assignsMetadata() {
+        UserEntity user = TestUtil.makeUserEntityWithId();
+        DiaryCreateRequest diaryRequest = new DiaryCreateRequest(
+                "Test Artist",
+                "Test Music",
+                "image.url",
+                "url",
+                "Test Content",
+                DiaryScope.PUBLIC,
+                "30S",
+                "PT2M58S",
+                "PT1M1S",
+                "PT1M31S",
+                new DiaryMusicMetadataRequest(
+                        MusicMetadataSourceType.ITUNES,
+                        "track-1",
+                        "artist-1",
+                        "K-Pop"
+                )
+        );
+
+        MusicMetadataEntity musicMetadata = new MusicMetadataEntity(
+                MusicMetadataSourceType.ITUNES,
+                "track-1",
+                "artist-1",
+                "K-Pop"
+        );
+
+        given(userLowService.getReferenceById(user.getId())).willReturn(user);
+        given(musicMetadataService.findOrCreate(MusicMetadataSourceType.ITUNES, "track-1", "artist-1", "K-Pop"))
+                .willReturn(musicMetadata);
+        given(diaryLowService.saveDiary(any(DiaryEntity.class))).willAnswer(invocation -> invocation.getArgument(0));
+
+        DiaryEntity result = diaryService.createDiary(user.getId(), diaryRequest);
+
+        assertThat(result.getMusicMetadata()).isEqualTo(musicMetadata);
+        verify(musicMetadataService).findOrCreate(MusicMetadataSourceType.ITUNES, "track-1", "artist-1", "K-Pop");
+    }
+
+    @Test
+    @DisplayName("다이어리 생성 시 트랙 아이디가 없으면 메타를 조회하지 않는다")
+    void createDiary_withoutTrackId_doesNotLookupMetadata() {
+        UserEntity user = TestUtil.makeUserEntityWithId();
+        DiaryCreateRequest diaryRequest = new DiaryCreateRequest(
+                "Test Artist",
+                "Test Music",
+                "image.url",
+                "url",
+                "Test Content",
+                DiaryScope.PUBLIC,
+                "30S",
+                "PT2M58S",
+                "PT1M1S",
+                "PT1M31S",
+                new DiaryMusicMetadataRequest(
+                        MusicMetadataSourceType.ITUNES,
+                        " ",
+                        "artist-1",
+                        "K-Pop"
+                )
+        );
+
+        given(userLowService.getReferenceById(user.getId())).willReturn(user);
+        given(diaryLowService.saveDiary(any(DiaryEntity.class))).willAnswer(invocation -> invocation.getArgument(0));
+
+        DiaryEntity result = diaryService.createDiary(user.getId(), diaryRequest);
+
+        assertThat(result.getMusicMetadata()).isNull();
+        verify(musicMetadataService, never()).findOrCreate(any(), any(), any(), any());
     }
 
     @Test

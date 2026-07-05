@@ -78,6 +78,48 @@ class PreferenceServiceTest {
     }
 
     @Test
+    @DisplayName("기존 선호도가 있으면 점수를 누적하고 삭제하지 않는다")
+    void reflectDiaryStored_updatesExistingPreferences() {
+        UserEntity user = TestUtil.makeUserEntityWithId();
+        DiaryEntity diary = createDiaryWithMetadata(user);
+        UserGenrePreferenceEntity genrePreference = new UserGenrePreferenceEntity(user, "K-Pop", 3);
+        UserArtistPreferenceEntity artistPreference = new UserArtistPreferenceEntity(user, "artist-1", 3);
+
+        given(userGenrePreferenceLowService.findByUserIdAndGenreNameRaw(user.getId(), "K-Pop"))
+                .willReturn(Optional.of(genrePreference));
+        given(userArtistPreferenceLowService.findByUserIdAndSourceArtistId(user.getId(), "artist-1"))
+                .willReturn(Optional.of(artistPreference));
+
+        preferenceService.reflectDiaryStored(user, diary);
+
+        assertThat(genrePreference.getScore()).isEqualTo(7);
+        assertThat(artistPreference.getScore()).isEqualTo(7);
+        verify(userGenrePreferenceLowService, never()).delete(genrePreference);
+        verify(userArtistPreferenceLowService, never()).delete(artistPreference);
+    }
+
+    @Test
+    @DisplayName("장르만 있으면 장르 선호도만 반영한다")
+    void reflectDiaryCreated_withGenreOnly_updatesGenreOnly() {
+        UserEntity user = TestUtil.makeUserEntityWithId();
+        DiaryEntity diary = TestUtil.makeDiaryEntity(user);
+        diary.assignMusicMetadata(new MusicMetadataEntity(
+                MusicMetadataSourceType.ITUNES,
+                "track-1",
+                null,
+                "K-Pop"
+        ));
+
+        given(userGenrePreferenceLowService.findByUserIdAndGenreNameRaw(user.getId(), "K-Pop"))
+                .willReturn(Optional.empty());
+
+        preferenceService.reflectDiaryCreated(user, diary);
+
+        verify(userGenrePreferenceLowService).save(org.mockito.ArgumentMatchers.any(UserGenrePreferenceEntity.class));
+        verify(userArtistPreferenceLowService, never()).save(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
     @DisplayName("메타데이터가 없으면 선호도는 반영되지 않는다")
     void reflectDiaryLiked_withoutMetadata_doesNothing() {
         UserEntity user = TestUtil.makeUserEntityWithId();
