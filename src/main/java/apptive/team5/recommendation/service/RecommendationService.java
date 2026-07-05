@@ -1,0 +1,219 @@
+package apptive.team5.recommendation.service;
+
+import apptive.team5.diary.domain.DiaryEntity;
+import apptive.team5.diary.domain.DiaryScope;
+import apptive.team5.diary.service.DiaryLikeLowService;
+import apptive.team5.diary.service.DiaryLowService;
+import apptive.team5.diary.service.DiaryStoreLowService;
+import apptive.team5.recommendation.domain.UserArtistPreferenceEntity;
+import apptive.team5.recommendation.domain.UserGenrePreferenceEntity;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class RecommendationService {
+
+    private static final int DEFAULT_LIMIT = 5;
+    private static final int CANDIDATE_LIMIT = 300;
+    private static final int RECENT_DAYS = 30;
+    private static final List<DiaryScope> EXPLORE_SCOPES = List.of(DiaryScope.PUBLIC, DiaryScope.KILLING_PART);
+
+    private final DiaryLowService diaryLowService;
+    private final DiaryLikeLowService diaryLikeLowService;
+    private final DiaryStoreLowService diaryStoreLowService;
+    private final UserGenrePreferenceLowService userGenrePreferenceLowService;
+    private final UserArtistPreferenceLowService userArtistPreferenceLowService;
+
+    public List<RecommendedDiaryResult> getExploreRecommendations(Long userId, Set<Long> excludedUserIds) {
+        List<DiaryEntity> candidates = diaryLowService.findRecentExploreCandidates(
+                excludedUserIds,
+                EXPLORE_SCOPES,
+                LocalDateTime.now().minusDays(RECENT_DAYS),
+                PageRequest.of(0, CANDIDATE_LIMIT)
+        );
+
+        if (candidates.isEmpty()) {
+            return List.of();
+        }
+
+        List<UserGenrePreferenceEntity> topGenres = userGenrePreferenceLowService.findTop3ByUserId(userId);
+        List<UserArtistPreferenceEntity> topArtists = userArtistPreferenceLowService.findTop5ByUserId(userId);
+
+        List<Long> candidateIds = candidates.stream().map(DiaryEntity::getId).toList();
+        Set<Long> likedDiaryIds = diaryLikeLowService.findLikedDiaryIdsByUser(userId, candidateIds);
+        Set<Long> storedDiaryIds = diaryStoreLowService.findStoredDiaryIdsByUser(userId, candidateIds);
+        Map<Long, Long> likeCounts = diaryLikeLowService.findLikeCountsByDiaryIds(candidateIds);
+
+        Map<String, Integer> genreScores = topGenres.stream()
+                .collect(Collectors.toMap(UserGenrePreferenceEntity::getGenreNameRaw, UserGenrePreferenceEntity::getScore));
+        Map<String, Integer> artistScores = topArtists.stream()
+                .collect(Collectors.toMap(UserArtistPreferenceEntity::getSourceArtistId, UserArtistPreferenceEntity::getScore));
+
+        List<RecommendedDiaryResult> selected = new ArrayList<>();
+        Set<Long> selectedDiaryIds = new LinkedHashSet<>();
+
+        if (!genreScores.isEmpty() || !artistScores.isEmpty()) {
+            List<RecommendedDiaryResult> personalized = candidates.stream()
+                    .filter(diary -> diary.getMusicMetadata() != null)
+                    .filter(diary -> !likedDiaryIds.contains(diary.getId()))
+                    .filter(diary -> !storedDiaryIds.contains(diary.getId()))
+                    .map(diary -> toPersonalizedResult(diary, likeCounts.getOrDefault(diary.getId(), 0L), genreScores, artistScores))
+                    .filter(Objects::nonNull)
+                    .sorted(RECOMMENDATION_ORDER)
+                    .toList();
+
+            for (RecommendedDiaryResult result : personalized) {
+                if (selected.size() >= DEFAULT_LIMIT) {
+                    break;
+                }
+                if (selectedDiaryIds.add(result.diary().getId())) {
+                    selected.add(result);
+                }
+            }
+        }
+
+        List<RecommendedDiaryResult> fallback = (genreScores.isEmpty() && artistScores.isEmpty())
+                ? buildColdStartResults(candidates, likedDiaryIds, storedDiaryIds, likeCounts, selectedDiaryIds)
+                : buildRandomFallbackResults(candidates, likedDiaryIds, storedDiaryIds, likeCounts, selectedDiaryIds);
+
+        for (RecommendedDiaryResult result : fallback) {
+            if (selected.size() >= DEFAULT_LIMIT) {
+                break;
+            }
+            if (selectedDiaryIds.add(result.diary().getId())) {
+                selected.add(result);
+            }
+        }
+
+        return selected;
+    }
+
+    private RecommendedDiaryResult toPersonalizedResult(
+            DiaryEntity diary,
+            Long likeCount,
+            Map<String, Integer> genreScores,
+            Map<String, Integer> artistScores
+    ) {
+        String genreName = diary.getMusicMetadata().getPrimaryGenreNameRaw();
+        String artistId = diary.getMusicMetadata().getSourceArtistId();
+
+        Integer genreScore = genreName == null ? null : genreScores.get(genreName);
+        Integer artistScore = artistId == null ? null : artistScores.get(artistId);
+
+        if (genreScore == null && artistScore == null) {
+            return null;
+        }
+
+        double score = scoreGenre(genreScore) + scoreArtist(artistScore) + scorePopularity(likeCount) + scoreFreshness(diary.getCreateDateTime());
+        return new RecommendedDiaryResult(diary, true, determineReason(genreScore, artistScore), score, likeCount);
+    }
+
+    private List<RecommendedDiaryResult> buildColdStartResults(
+            List<DiaryEntity> candidates,
+            Set<Long> likedDiaryIds,
+            Set<Long> storedDiaryIds,
+            Map<Long, Long> likeCounts,
+            Set<Long> selectedDiaryIds
+    ) {
+        return candidates.stream()
+                .filter(diary -> !selectedDiaryIds.contains(diary.getId()))
+                .filter(diary -> !likedDiaryIds.contains(diary.getId()))
+                .filter(diary -> !storedDiaryIds.contains(diary.getId()))
+                .map(diary -> new RecommendedDiaryResult(
+                        diary,
+                        true,
+                        "COLD_START_POPULAR",
+                        scorePopularity(likeCounts.getOrDefault(diary.getId(), 0L)) + scoreFreshness(diary.getCreateDateTime()),
+                        likeCounts.getOrDefault(diary.getId(), 0L)
+                ))
+                .sorted(RECOMMENDATION_ORDER)
+                .limit(DEFAULT_LIMIT)
+                .toList();
+    }
+
+    private List<RecommendedDiaryResult> buildRandomFallbackResults(
+            List<DiaryEntity> candidates,
+            Set<Long> likedDiaryIds,
+            Set<Long> storedDiaryIds,
+            Map<Long, Long> likeCounts,
+            Set<Long> selectedDiaryIds
+    ) {
+        List<DiaryEntity> fallbackPool = candidates.stream()
+                .filter(diary -> !selectedDiaryIds.contains(diary.getId()))
+                .filter(diary -> !likedDiaryIds.contains(diary.getId()))
+                .filter(diary -> !storedDiaryIds.contains(diary.getId()))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        Collections.shuffle(fallbackPool);
+
+        return fallbackPool.stream()
+                .limit(DEFAULT_LIMIT)
+                .map(diary -> new RecommendedDiaryResult(
+                        diary,
+                        false,
+                        "FALLBACK_RANDOM",
+                        0.0,
+                        likeCounts.getOrDefault(diary.getId(), 0L)
+                ))
+                .toList();
+    }
+
+    private double scoreGenre(Integer genreScore) {
+        if (genreScore == null) {
+            return 0.0;
+        }
+        return Math.min(10.0, Math.sqrt(genreScore) * 2.0);
+    }
+
+    private double scoreArtist(Integer artistScore) {
+        if (artistScore == null) {
+            return 0.0;
+        }
+        return Math.min(8.0, Math.sqrt(artistScore) * 1.5);
+    }
+
+    private double scorePopularity(Long likeCount) {
+        return Math.min(5.0, Math.log1p(likeCount) * 1.2);
+    }
+
+    private double scoreFreshness(LocalDateTime createdAt) {
+        long days = ChronoUnit.DAYS.between(createdAt, LocalDateTime.now());
+
+        if (days <= 1) return 4.0;
+        if (days <= 3) return 3.0;
+        if (days <= 7) return 2.0;
+        if (days <= 14) return 1.0;
+        if (days <= 30) return 0.5;
+        return 0.0;
+    }
+
+    private String determineReason(Integer genreScore, Integer artistScore) {
+        if (genreScore != null && artistScore != null) return "GENRE_AND_ARTIST_MATCH";
+        if (genreScore != null) return "GENRE_MATCH";
+        return "ARTIST_MATCH";
+    }
+
+    private static final Comparator<RecommendedDiaryResult> RECOMMENDATION_ORDER =
+            Comparator.comparingDouble(RecommendedDiaryResult::score)
+                    .reversed()
+                    .thenComparing(RecommendedDiaryResult::likeCount, Comparator.reverseOrder())
+                    .thenComparing(result -> result.diary().getCreateDateTime(), Comparator.reverseOrder())
+                    .thenComparing(result -> result.diary().getId(), Comparator.reverseOrder());
+
+    public record RecommendedDiaryResult(
+            DiaryEntity diary,
+            boolean recommended,
+            String reason,
+            double score,
+            Long likeCount
+    ) {}
+}

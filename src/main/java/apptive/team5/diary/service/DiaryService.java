@@ -8,6 +8,7 @@ import apptive.team5.diary.mapper.DiaryResponseMapper;
 import apptive.team5.recommendation.domain.MusicMetadataEntity;
 import apptive.team5.recommendation.service.MusicMetadataService;
 import apptive.team5.recommendation.service.PreferenceService;
+import apptive.team5.recommendation.service.RecommendationService;
 import apptive.team5.subscribe.service.SubscribeLowService;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.service.UserBlockLowService;
@@ -44,6 +45,7 @@ public class DiaryService {
     private final UserBlockLowService userBlockLowService;
     private final MusicMetadataService musicMetadataService;
     private final PreferenceService preferenceService;
+    private final RecommendationService recommendationService;
 
     @Transactional(readOnly = true)
     public Page<MyDiaryResponseDto> getMyDiaries(Long userId, Pageable pageable) {
@@ -111,11 +113,10 @@ public class DiaryService {
                 Stream.of(userId) // 랜덤에서는 본인 id도 제외
         ).collect(Collectors.toSet());
 
-        List<DiaryEntity> randomDiary = diaryLowService.findRandomDiary(blockedUserIds);
+        List<RecommendationService.RecommendedDiaryResult> recommendedDiaries =
+                recommendationService.getExploreRecommendations(userId, blockedUserIds);
 
-        Collections.shuffle(randomDiary);
-
-        List<FeedDiaryResponseDto> diaryResponseDtoList = getDiaryResponseDtoList(userId, randomDiary, FeedDiaryResponseDto::from);
+        List<FeedDiaryResponseDto> diaryResponseDtoList = getRecommendationResponseDtoList(userId, recommendedDiaries);
         return new RandomDiaryResponseDto(diaryResponseDtoList);
     }
 
@@ -222,6 +223,44 @@ public class DiaryService {
                 userId,
                 mapper
         );
+    }
+
+    private List<FeedDiaryResponseDto> getRecommendationResponseDtoList(
+            Long userId,
+            List<RecommendationService.RecommendedDiaryResult> recommendedDiaries
+    ) {
+        if (recommendedDiaries.isEmpty()) {
+            return List.of();
+        }
+
+        List<DiaryEntity> diaries = recommendedDiaries.stream()
+                .map(RecommendationService.RecommendedDiaryResult::diary)
+                .toList();
+
+        List<Long> diaryIds = diaries.stream()
+                .map(DiaryEntity::getId)
+                .toList();
+
+        Set<Long> likedDiaryIds = diaryLikeLowService.findLikedDiaryIdsByUser(userId, diaryIds);
+        Map<Long, Long> likeCountsMap = diaryLikeLowService.findLikeCountsByDiaryIds(diaryIds);
+        Set<Long> storedDiaryIds = diaryStoreLowService.findStoredDiaryIdsByUser(userId, diaryIds);
+        Map<Long, RecommendationService.RecommendedDiaryResult> resultMap = recommendedDiaries.stream()
+                .collect(Collectors.toMap(result -> result.diary().getId(), Function.identity()));
+
+        return diaries.stream()
+                .map(diary -> {
+                    RecommendationService.RecommendedDiaryResult result = resultMap.get(diary.getId());
+                    return FeedDiaryResponseDto.from(
+                            diary,
+                            likedDiaryIds.contains(diary.getId()),
+                            storedDiaryIds.contains(diary.getId()),
+                            likeCountsMap.getOrDefault(diary.getId(), 0L),
+                            userId,
+                            result.recommended(),
+                            result.reason()
+                    );
+                })
+                .toList();
     }
 
     private <T extends DiaryResponseDto> T getDiaryResponseDto(Long userId, DiaryEntity diary, DiaryResponseMapper.DiaryResponseDtoMapper<T> mapper) {

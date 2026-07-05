@@ -425,6 +425,8 @@ public class DiaryControllerTest {
         assertSoftly(softly -> {
             softly.assertThat(randomDiaryResponseDto.pageSize()).isEqualTo(1);
             softly.assertThat(randomDiaryResponseDto.content().get(0).diaryId()).isEqualTo(diary.getId());
+            softly.assertThat(randomDiaryResponseDto.content().get(0).isRecommended()).isTrue();
+            softly.assertThat(randomDiaryResponseDto.content().get(0).recommendationReason()).isEqualTo("COLD_START_POPULAR");
         });
     }
 
@@ -463,6 +465,7 @@ public class DiaryControllerTest {
             softly.assertThat(randomDiaryResponseDto.content()).extracting(FeedDiaryResponseDto::userId)
                     .contains(visibleUser.getId())
                     .doesNotContain(testUser.getId(), blockedUser.getId());
+            softly.assertThat(randomDiaryResponseDto.content()).allMatch(FeedDiaryResponseDto::isRecommended);
         });
     }
 }

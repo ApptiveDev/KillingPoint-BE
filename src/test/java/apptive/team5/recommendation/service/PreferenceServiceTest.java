@@ -34,7 +34,7 @@ class PreferenceServiceTest {
     private UserArtistPreferenceLowService userArtistPreferenceLowService;
 
     @Test
-    @DisplayName("작성 반영 시 장르와 아티스트 선호도가 생성된다")
+    @DisplayName("작성 반영 시 장르와 아티스트 선호도 생성")
     void reflectDiaryCreated_createsGenreAndArtistPreferences() {
         UserEntity user = TestUtil.makeUserEntityWithId();
         DiaryEntity diary = createDiaryWithMetadata(user);
@@ -59,7 +59,7 @@ class PreferenceServiceTest {
     }
 
     @Test
-    @DisplayName("삭제 반영 시 점수가 0 이하가 되면 선호도가 삭제된다")
+    @DisplayName("삭제 반영 시 점수 0 이하면 선호도 삭제")
     void reflectDiaryDeleted_deletesPreferencesWhenScoreBecomesZero() {
         UserEntity user = TestUtil.makeUserEntityWithId();
         DiaryEntity diary = createDiaryWithMetadata(user);
@@ -78,7 +78,7 @@ class PreferenceServiceTest {
     }
 
     @Test
-    @DisplayName("기존 선호도가 있으면 점수를 누적하고 삭제하지 않는다")
+    @DisplayName("기존 선호도 점수 누적")
     void reflectDiaryStored_updatesExistingPreferences() {
         UserEntity user = TestUtil.makeUserEntityWithId();
         DiaryEntity diary = createDiaryWithMetadata(user);
@@ -99,7 +99,7 @@ class PreferenceServiceTest {
     }
 
     @Test
-    @DisplayName("장르만 있으면 장르 선호도만 반영한다")
+    @DisplayName("장르만 있으면 장르 선호도만 반영")
     void reflectDiaryCreated_withGenreOnly_updatesGenreOnly() {
         UserEntity user = TestUtil.makeUserEntityWithId();
         DiaryEntity diary = TestUtil.makeDiaryEntity(user);
@@ -120,7 +120,7 @@ class PreferenceServiceTest {
     }
 
     @Test
-    @DisplayName("메타데이터가 없으면 선호도는 반영되지 않는다")
+    @DisplayName("메타데이터 없으면 선호도 미반영")
     void reflectDiaryLiked_withoutMetadata_doesNothing() {
         UserEntity user = TestUtil.makeUserEntityWithId();
         DiaryEntity diary = TestUtil.makeDiaryEntity(user);

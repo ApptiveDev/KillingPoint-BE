@@ -27,7 +27,7 @@ class MusicMetadataServiceTest {
     private MusicMetadataLowService musicMetadataLowService;
 
     @Test
-    @DisplayName("이미 존재하는 메타데이터가 있으면 재사용한다")
+    @DisplayName("기존 메타데이터 재사용")
     void findOrCreate_returnsExistingMetadata() {
         MusicMetadataEntity existing = new MusicMetadataEntity(
                 MusicMetadataSourceType.ITUNES,
@@ -51,7 +51,7 @@ class MusicMetadataServiceTest {
     }
 
     @Test
-    @DisplayName("메타데이터가 없으면 새로 생성해서 저장한다")
+    @DisplayName("메타데이터 신규 저장")
     void findOrCreate_savesNewMetadata() {
         given(musicMetadataLowService.findBySourceTypeAndSourceTrackId(MusicMetadataSourceType.ITUNES, "track-1"))
                 .willReturn(Optional.empty());
@@ -71,7 +71,7 @@ class MusicMetadataServiceTest {
     }
 
     @Test
-    @DisplayName("소스 타입이나 트랙 아이디가 없으면 메타데이터를 만들지 않는다")
+    @DisplayName("메타데이터 키 없으면 저장 안 함")
     void findOrCreate_withoutRequiredKey_returnsNull() {
         MusicMetadataEntity result = musicMetadataService.findOrCreate(
                 MusicMetadataSourceType.ITUNES,
