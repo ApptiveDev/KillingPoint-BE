@@ -7,9 +7,12 @@ import apptive.team5.diary.domain.DiaryStoreEntity;
 import apptive.team5.diary.domain.model.DiaryStoreInfo;
 import apptive.team5.diary.dto.*;
 import apptive.team5.diary.mapper.DiaryResponseMapper;
+import apptive.team5.recommendation.service.MusicMetadataService;
+import apptive.team5.subscribe.service.SubscribeLowService;
 import apptive.team5.user.domain.SocialType;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.domain.UserRoleType;
+import apptive.team5.user.service.UserBlockLowService;
 import apptive.team5.user.service.UserLowService;
 import apptive.team5.util.TestUtil;
 import org.junit.jupiter.api.DisplayName;
@@ -50,6 +53,12 @@ public class DiaryServiceTest {
 
     @Mock
     private UserLowService userLowService;
+    @Mock
+    private SubscribeLowService subscribeLowService;
+    @Mock
+    private UserBlockLowService userBlockLowService;
+    @Mock
+    private MusicMetadataService musicMetadataService;
 
     @Mock
     private DiaryLowService diaryLowService;

@@ -122,7 +122,8 @@ public final class TestUtil {
                 "30S",
                 "PT2M58S",
                 "PT1M1S",
-                "PT1M31S"
+                "PT1M31S",
+                null
         );
     }
 
@@ -137,7 +138,8 @@ public final class TestUtil {
                 "30S",
                 "PT2M58S",
                 "PT1M1S",
-                "PT1M31S"
+                "PT1M31S",
+                null
         );
     }
 }

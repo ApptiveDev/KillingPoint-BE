@@ -5,6 +5,8 @@ import apptive.team5.diary.domain.DiaryOrderEntity;
 import apptive.team5.diary.domain.DiaryScope;
 import apptive.team5.diary.dto.*;
 import apptive.team5.diary.mapper.DiaryResponseMapper;
+import apptive.team5.recommendation.domain.MusicMetadataEntity;
+import apptive.team5.recommendation.service.MusicMetadataService;
 import apptive.team5.subscribe.service.SubscribeLowService;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.service.UserBlockLowService;
@@ -39,6 +41,7 @@ public class DiaryService {
     private final DiaryReportLowService diaryReportLowService;
     private final DiaryStoreLowService diaryStoreLowService;
     private final UserBlockLowService userBlockLowService;
+    private final MusicMetadataService musicMetadataService;
 
     @Transactional(readOnly = true)
     public Page<MyDiaryResponseDto> getMyDiaries(Long userId, Pageable pageable) {
@@ -118,6 +121,19 @@ public class DiaryService {
         UserEntity foundUser = userLowService.getReferenceById(userId);
 
         DiaryEntity diary = diaryRequest.toEntity(foundUser);
+        DiaryMusicMetadataRequest musicMetadataRequest = diaryRequest.musicMetadata();
+        MusicMetadataEntity musicMetadata = null;
+        if (musicMetadataRequest != null && musicMetadataRequest.hasTrackId()) {
+            musicMetadata = musicMetadataService.findOrCreate(
+                    musicMetadataRequest.sourceType(),
+                    musicMetadataRequest.trackId(),
+                    musicMetadataRequest.artistId(),
+                    musicMetadataRequest.primaryGenreName()
+            );
+        }
+        if (musicMetadata != null) {
+            diary.assignMusicMetadata(musicMetadata);
+        }
 
         DiaryEntity savedDiary = diaryLowService.saveDiary(diary);
 

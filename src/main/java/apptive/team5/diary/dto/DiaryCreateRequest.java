@@ -30,31 +30,32 @@ public record DiaryCreateRequest(
         @NotBlank(message = "킬링파트 시작 시간은 필수 입력입니다.")
         String start,
         @NotBlank(message = "킬링파트 종료 시간은 필수 입력입니다.")
-        String end
+        String end,
+        DiaryMusicMetadataRequest musicMetadata
 ) {
-        public DiaryEntity toEntity(UserEntity user) {
-                DiaryInfo diaryInfo = new DiaryInfo(
-                        new MusicBasicInfo(
-                                musicTitle,
-                                artist,
-                                albumImageUrl,
-                                videoUrl
-                        ),
-                        new DiaryBasicInfo(
-                                content,
-                                scope
-                        ),
-                        new MusicPlayInfo(
-                                duration,
-                                totalDuration,
-                                start,
-                                end
-                        )
-                );
+    public DiaryEntity toEntity(UserEntity user) {
+        DiaryInfo diaryInfo = new DiaryInfo(
+                new MusicBasicInfo(
+                        musicTitle,
+                        artist,
+                        albumImageUrl,
+                        videoUrl
+                ),
+                new DiaryBasicInfo(
+                        content,
+                        scope
+                ),
+                new MusicPlayInfo(
+                        duration,
+                        totalDuration,
+                        start,
+                        end
+                )
+        );
 
-                return new DiaryEntity(
-                        diaryInfo,
-                        user
-                );
-        }
+        return new DiaryEntity(
+                diaryInfo,
+                user
+        );
+    }
 }

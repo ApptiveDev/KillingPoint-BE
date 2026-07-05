@@ -125,6 +125,10 @@ public class DiaryEntity extends BaseTimeEntity {
         updateMusicPlayInfo(info.musicPlayInfo());
     }
 
+    public void assignMusicMetadata(MusicMetadataEntity musicMetadata) {
+        this.musicMetadata = musicMetadata;
+    }
+
     public void updateMusicBaseInfo(MusicBasicInfo musicBasicInfo) {
         updateMusicTitle(musicBasicInfo.musicTitle());
         updateArtist(musicBasicInfo.artist());
