@@ -32,6 +32,7 @@ public class RecommendationService {
     private final DiaryStoreLowService diaryStoreLowService;
     private final UserGenrePreferenceLowService userGenrePreferenceLowService;
     private final UserArtistPreferenceLowService userArtistPreferenceLowService;
+    private final ExploreExposureService exploreExposureService;
 
     public List<RecommendedDiaryResult> getExploreRecommendations(Long userId, Set<Long> excludedUserIds) {
         List<DiaryEntity> candidates = diaryLowService.findRecentExploreCandidates(
@@ -52,6 +53,7 @@ public class RecommendationService {
         Set<Long> likedDiaryIds = diaryLikeLowService.findLikedDiaryIdsByUser(userId, candidateIds);
         Set<Long> storedDiaryIds = diaryStoreLowService.findStoredDiaryIdsByUser(userId, candidateIds);
         Map<Long, Long> likeCounts = diaryLikeLowService.findLikeCountsByDiaryIds(candidateIds);
+        Set<Long> recentlyExposedDiaryIds = exploreExposureService.findRecentlyExposedDiaryIds(userId);
 
         Map<String, Integer> genreScores = topGenres.stream()
                 .collect(Collectors.toMap(UserGenrePreferenceEntity::getGenreNameRaw, UserGenrePreferenceEntity::getScore));
@@ -66,32 +68,32 @@ public class RecommendationService {
                     .filter(diary -> diary.getMusicMetadata() != null)
                     .filter(diary -> !likedDiaryIds.contains(diary.getId()))
                     .filter(diary -> !storedDiaryIds.contains(diary.getId()))
+                    .filter(diary -> !recentlyExposedDiaryIds.contains(diary.getId()))
                     .map(diary -> toPersonalizedResult(diary, likeCounts.getOrDefault(diary.getId(), 0L), genreScores, artistScores))
                     .filter(Objects::nonNull)
                     .sorted(RECOMMENDATION_ORDER)
                     .toList();
 
-            for (RecommendedDiaryResult result : personalized) {
-                if (selected.size() >= DEFAULT_LIMIT) {
-                    break;
-                }
-                if (selectedDiaryIds.add(result.diary().getId())) {
-                    selected.add(result);
-                }
-            }
+            addUntilLimit(selected, selectedDiaryIds, personalized);
         }
 
         List<RecommendedDiaryResult> fallback = (genreScores.isEmpty() && artistScores.isEmpty())
-                ? buildColdStartResults(candidates, likedDiaryIds, storedDiaryIds, likeCounts, selectedDiaryIds)
-                : buildRandomFallbackResults(candidates, likedDiaryIds, storedDiaryIds, likeCounts, selectedDiaryIds);
+                ? buildColdStartResults(candidates, likedDiaryIds, storedDiaryIds, likeCounts, selectedDiaryIds, recentlyExposedDiaryIds)
+                : buildRandomFallbackResults(candidates, likedDiaryIds, storedDiaryIds, likeCounts, selectedDiaryIds, recentlyExposedDiaryIds, true);
 
-        for (RecommendedDiaryResult result : fallback) {
-            if (selected.size() >= DEFAULT_LIMIT) {
-                break;
-            }
-            if (selectedDiaryIds.add(result.diary().getId())) {
-                selected.add(result);
-            }
+        addUntilLimit(selected, selectedDiaryIds, fallback);
+
+        if (selected.size() < DEFAULT_LIMIT) {
+            List<RecommendedDiaryResult> relaxedFallback = buildRandomFallbackResults(
+                    candidates,
+                    likedDiaryIds,
+                    storedDiaryIds,
+                    likeCounts,
+                    selectedDiaryIds,
+                    recentlyExposedDiaryIds,
+                    false
+            );
+            addUntilLimit(selected, selectedDiaryIds, relaxedFallback);
         }
 
         return selected;
@@ -122,12 +124,14 @@ public class RecommendationService {
             Set<Long> likedDiaryIds,
             Set<Long> storedDiaryIds,
             Map<Long, Long> likeCounts,
-            Set<Long> selectedDiaryIds
+            Set<Long> selectedDiaryIds,
+            Set<Long> recentlyExposedDiaryIds
     ) {
         return candidates.stream()
                 .filter(diary -> !selectedDiaryIds.contains(diary.getId()))
                 .filter(diary -> !likedDiaryIds.contains(diary.getId()))
                 .filter(diary -> !storedDiaryIds.contains(diary.getId()))
+                .filter(diary -> !recentlyExposedDiaryIds.contains(diary.getId()))
                 .map(diary -> new RecommendedDiaryResult(
                         diary,
                         true,
@@ -145,12 +149,15 @@ public class RecommendationService {
             Set<Long> likedDiaryIds,
             Set<Long> storedDiaryIds,
             Map<Long, Long> likeCounts,
-            Set<Long> selectedDiaryIds
+            Set<Long> selectedDiaryIds,
+            Set<Long> recentlyExposedDiaryIds,
+            boolean excludeRecentExposure
     ) {
         List<DiaryEntity> fallbackPool = candidates.stream()
                 .filter(diary -> !selectedDiaryIds.contains(diary.getId()))
                 .filter(diary -> !likedDiaryIds.contains(diary.getId()))
                 .filter(diary -> !storedDiaryIds.contains(diary.getId()))
+                .filter(diary -> !excludeRecentExposure || !recentlyExposedDiaryIds.contains(diary.getId()))
                 .collect(Collectors.toCollection(ArrayList::new));
 
         Collections.shuffle(fallbackPool);
@@ -165,6 +172,21 @@ public class RecommendationService {
                         likeCounts.getOrDefault(diary.getId(), 0L)
                 ))
                 .toList();
+    }
+
+    private void addUntilLimit(
+            List<RecommendedDiaryResult> selected,
+            Set<Long> selectedDiaryIds,
+            List<RecommendedDiaryResult> candidates
+    ) {
+        for (RecommendedDiaryResult result : candidates) {
+            if (selected.size() >= DEFAULT_LIMIT) {
+                break;
+            }
+            if (selectedDiaryIds.add(result.diary().getId())) {
+                selected.add(result);
+            }
+        }
     }
 
     private double scoreGenre(Integer genreScore) {
