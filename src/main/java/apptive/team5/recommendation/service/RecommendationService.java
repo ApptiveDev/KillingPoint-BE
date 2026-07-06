@@ -35,21 +35,17 @@ public class RecommendationService {
     private final ExploreExposureService exploreExposureService;
 
     public List<RecommendedDiaryResult> getExploreRecommendations(Long userId, Set<Long> excludedUserIds) {
-        List<DiaryEntity> candidates = diaryLowService.findRecentExploreCandidates(
+        List<DiaryEntity> recentCandidates = diaryLowService.findRecentExploreCandidates(
                 excludedUserIds,
                 EXPLORE_SCOPES,
                 LocalDateTime.now().minusDays(RECENT_DAYS),
                 PageRequest.of(0, CANDIDATE_LIMIT)
         );
 
-        if (candidates.isEmpty()) {
-            return List.of();
-        }
-
         List<UserGenrePreferenceEntity> topGenres = userGenrePreferenceLowService.findTop3ByUserId(userId);
         List<UserArtistPreferenceEntity> topArtists = userArtistPreferenceLowService.findTop5ByUserId(userId);
 
-        List<Long> candidateIds = candidates.stream().map(DiaryEntity::getId).toList();
+        List<Long> candidateIds = recentCandidates.stream().map(DiaryEntity::getId).toList();
         Set<Long> likedDiaryIds = diaryLikeLowService.findLikedDiaryIdsByUser(userId, candidateIds);
         Set<Long> storedDiaryIds = diaryStoreLowService.findStoredDiaryIdsByUser(userId, candidateIds);
         Map<Long, Long> likeCounts = diaryLikeLowService.findLikeCountsByDiaryIds(candidateIds);
@@ -64,7 +60,7 @@ public class RecommendationService {
         Set<Long> selectedDiaryIds = new LinkedHashSet<>();
 
         if (!genreScores.isEmpty() || !artistScores.isEmpty()) {
-            List<RecommendedDiaryResult> personalized = candidates.stream()
+            List<RecommendedDiaryResult> personalized = recentCandidates.stream()
                     .filter(diary -> diary.getMusicMetadata() != null)
                     .filter(diary -> !likedDiaryIds.contains(diary.getId()))
                     .filter(diary -> !storedDiaryIds.contains(diary.getId()))
@@ -78,22 +74,61 @@ public class RecommendationService {
         }
 
         List<RecommendedDiaryResult> fallback = (genreScores.isEmpty() && artistScores.isEmpty())
-                ? buildColdStartResults(candidates, likedDiaryIds, storedDiaryIds, likeCounts, selectedDiaryIds, recentlyExposedDiaryIds)
-                : buildRandomFallbackResults(candidates, likedDiaryIds, storedDiaryIds, likeCounts, selectedDiaryIds, recentlyExposedDiaryIds, true);
+                ? buildColdStartResults(recentCandidates, likedDiaryIds, storedDiaryIds, likeCounts, selectedDiaryIds, recentlyExposedDiaryIds)
+                : buildRandomFallbackResults(recentCandidates, likedDiaryIds, storedDiaryIds, likeCounts, selectedDiaryIds, recentlyExposedDiaryIds, true, true);
 
         addUntilLimit(selected, selectedDiaryIds, fallback);
 
         if (selected.size() < DEFAULT_LIMIT) {
             List<RecommendedDiaryResult> relaxedFallback = buildRandomFallbackResults(
-                    candidates,
+                    recentCandidates,
                     likedDiaryIds,
                     storedDiaryIds,
                     likeCounts,
                     selectedDiaryIds,
                     recentlyExposedDiaryIds,
-                    false
+                    false,
+                    true
             );
             addUntilLimit(selected, selectedDiaryIds, relaxedFallback);
+        }
+
+        if (selected.size() < DEFAULT_LIMIT) {
+            List<DiaryEntity> allCandidates = diaryLowService.findExploreCandidates(
+                    excludedUserIds,
+                    EXPLORE_SCOPES,
+                    PageRequest.of(0, CANDIDATE_LIMIT)
+            );
+            List<Long> allCandidateIds = allCandidates.stream().map(DiaryEntity::getId).toList();
+            Set<Long> allLikedDiaryIds = diaryLikeLowService.findLikedDiaryIdsByUser(userId, allCandidateIds);
+            Set<Long> allStoredDiaryIds = diaryStoreLowService.findStoredDiaryIdsByUser(userId, allCandidateIds);
+            Map<Long, Long> allLikeCounts = diaryLikeLowService.findLikeCountsByDiaryIds(allCandidateIds);
+
+            List<RecommendedDiaryResult> olderFallback = buildRandomFallbackResults(
+                    allCandidates,
+                    allLikedDiaryIds,
+                    allStoredDiaryIds,
+                    allLikeCounts,
+                    selectedDiaryIds,
+                    recentlyExposedDiaryIds,
+                    false,
+                    true
+            );
+            addUntilLimit(selected, selectedDiaryIds, olderFallback);
+
+            if (selected.size() < DEFAULT_LIMIT) {
+                List<RecommendedDiaryResult> relaxedInteractionFallback = buildRandomFallbackResults(
+                        allCandidates,
+                        allLikedDiaryIds,
+                        allStoredDiaryIds,
+                        allLikeCounts,
+                        selectedDiaryIds,
+                        recentlyExposedDiaryIds,
+                        false,
+                        false
+                );
+                addUntilLimit(selected, selectedDiaryIds, relaxedInteractionFallback);
+            }
         }
 
         return selected;
@@ -151,12 +186,13 @@ public class RecommendationService {
             Map<Long, Long> likeCounts,
             Set<Long> selectedDiaryIds,
             Set<Long> recentlyExposedDiaryIds,
-            boolean excludeRecentExposure
+            boolean excludeRecentExposure,
+            boolean excludeInteractions
     ) {
         List<DiaryEntity> fallbackPool = candidates.stream()
                 .filter(diary -> !selectedDiaryIds.contains(diary.getId()))
-                .filter(diary -> !likedDiaryIds.contains(diary.getId()))
-                .filter(diary -> !storedDiaryIds.contains(diary.getId()))
+                .filter(diary -> !excludeInteractions || !likedDiaryIds.contains(diary.getId()))
+                .filter(diary -> !excludeInteractions || !storedDiaryIds.contains(diary.getId()))
                 .filter(diary -> !excludeRecentExposure || !recentlyExposedDiaryIds.contains(diary.getId()))
                 .collect(Collectors.toCollection(ArrayList::new));
 

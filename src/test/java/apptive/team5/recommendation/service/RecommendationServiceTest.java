@@ -186,6 +186,66 @@ class RecommendationServiceTest {
         assertThat(result).extracting(r -> r.diary().getId()).containsExactlyInAnyOrder(501L, 502L);
     }
 
+    @Test
+    @DisplayName("expands to older public diaries when recent candidates are short")
+    void getExploreRecommendations_expandsToOlderCandidatesWhenRecentPoolIsShort() {
+        Long userId = 1L;
+        DiaryEntity recent = createDiary(601L, "Rock", "artist-2", 1);
+        DiaryEntity older = createDiary(602L, "Jazz", "artist-3", 40);
+
+        given(diaryLowService.findRecentExploreCandidates(any(), any(), any(), any(Pageable.class)))
+                .willReturn(List.of(recent));
+        given(diaryLowService.findExploreCandidates(any(), any(), any(Pageable.class)))
+                .willReturn(List.of(recent, older));
+        given(userGenrePreferenceLowService.findTop3ByUserId(userId))
+                .willReturn(List.of(new UserGenrePreferenceEntity(TestUtil.makeUserEntityWithId(), "K-Pop", 9)));
+        given(userArtistPreferenceLowService.findTop5ByUserId(userId))
+                .willReturn(List.of(new UserArtistPreferenceEntity(TestUtil.makeUserEntityWithId(), "artist-1", 4)));
+        given(diaryLikeLowService.findLikedDiaryIdsByUser(userId, List.of(601L))).willReturn(Set.of());
+        given(diaryStoreLowService.findStoredDiaryIdsByUser(userId, List.of(601L))).willReturn(Set.of());
+        given(diaryLikeLowService.findLikeCountsByDiaryIds(List.of(601L))).willReturn(java.util.Map.of(601L, 1L));
+        given(diaryLikeLowService.findLikedDiaryIdsByUser(userId, List.of(601L, 602L))).willReturn(Set.of());
+        given(diaryStoreLowService.findStoredDiaryIdsByUser(userId, List.of(601L, 602L))).willReturn(Set.of());
+        given(diaryLikeLowService.findLikeCountsByDiaryIds(List.of(601L, 602L)))
+                .willReturn(java.util.Map.of(601L, 1L, 602L, 2L));
+        given(exploreExposureService.findRecentlyExposedDiaryIds(userId)).willReturn(Set.of());
+
+        List<RecommendationService.RecommendedDiaryResult> result =
+                recommendationService.getExploreRecommendations(userId, Set.of(userId));
+
+        assertThat(result).extracting(r -> r.diary().getId()).contains(602L);
+        assertThat(result).allMatch(recommendedDiaryResult -> "FALLBACK_RANDOM".equals(recommendedDiaryResult.reason()));
+    }
+
+    @Test
+    @DisplayName("relaxes like and store exclusion last")
+    void getExploreRecommendations_relaxesInteractionExclusionLast() {
+        Long userId = 1L;
+        DiaryEntity likedOlder = createDiary(701L, "Rock", "artist-2", 40);
+
+        given(diaryLowService.findRecentExploreCandidates(any(), any(), any(), any(Pageable.class)))
+                .willReturn(List.of());
+        given(diaryLowService.findExploreCandidates(any(), any(), any(Pageable.class)))
+                .willReturn(List.of(likedOlder));
+        given(userGenrePreferenceLowService.findTop3ByUserId(userId))
+                .willReturn(List.of(new UserGenrePreferenceEntity(TestUtil.makeUserEntityWithId(), "K-Pop", 9)));
+        given(userArtistPreferenceLowService.findTop5ByUserId(userId))
+                .willReturn(List.of(new UserArtistPreferenceEntity(TestUtil.makeUserEntityWithId(), "artist-1", 4)));
+        given(diaryLikeLowService.findLikedDiaryIdsByUser(userId, List.of())).willReturn(Set.of());
+        given(diaryStoreLowService.findStoredDiaryIdsByUser(userId, List.of())).willReturn(Set.of());
+        given(diaryLikeLowService.findLikeCountsByDiaryIds(List.of())).willReturn(java.util.Map.of());
+        given(diaryLikeLowService.findLikedDiaryIdsByUser(userId, List.of(701L))).willReturn(Set.of(701L));
+        given(diaryStoreLowService.findStoredDiaryIdsByUser(userId, List.of(701L))).willReturn(Set.of());
+        given(diaryLikeLowService.findLikeCountsByDiaryIds(List.of(701L))).willReturn(java.util.Map.of(701L, 3L));
+        given(exploreExposureService.findRecentlyExposedDiaryIds(userId)).willReturn(Set.of());
+
+        List<RecommendationService.RecommendedDiaryResult> result =
+                recommendationService.getExploreRecommendations(userId, Set.of(userId));
+
+        assertThat(result).extracting(r -> r.diary().getId()).contains(701L);
+        assertThat(result).allMatch(recommendedDiaryResult -> "FALLBACK_RANDOM".equals(recommendedDiaryResult.reason()));
+    }
+
     private DiaryEntity createDiary(Long diaryId, String genre, String artistId, int daysAgo) {
         UserEntity owner = TestUtil.makeUserEntityWithId();
         ReflectionTestUtils.setField(owner, "id", diaryId + 1000);
