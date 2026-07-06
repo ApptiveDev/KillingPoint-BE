@@ -16,7 +16,8 @@ public record DiaryUpdateRequestDto(
         String duration,
         String totalDuration,
         String start,
-        String end
+        String end,
+        DiaryMusicMetadataRequest musicMetadata
 ) {
     public DiaryInfo toDomainInfo() {
         return new DiaryInfo(

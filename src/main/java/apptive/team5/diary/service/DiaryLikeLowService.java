@@ -48,6 +48,9 @@ public class DiaryLikeLowService {
 
     @Transactional(readOnly = true)
     public Set<Long> findLikedDiaryIdsByUser(Long currentUserId, List<Long> diaryIds) {
+        if (diaryIds == null || diaryIds.isEmpty()) {
+            return Set.of();
+        }
         return diaryLikeRepository.findLikedDiaryIdsByUser(currentUserId, diaryIds);
     }
 

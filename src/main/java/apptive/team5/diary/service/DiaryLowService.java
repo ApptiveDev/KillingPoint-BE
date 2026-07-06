@@ -63,6 +63,25 @@ public class DiaryLowService {
     }
 
     @Transactional(readOnly = true)
+    public List<DiaryEntity> findRecentExploreCandidates(
+            Set<Long> excludedUserIds,
+            List<DiaryScope> scopes,
+            LocalDateTime startDateTime,
+            Pageable pageable
+    ) {
+        return diaryRepository.findRecentExploreCandidates(excludedUserIds, scopes, startDateTime, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public List<DiaryEntity> findExploreCandidates(
+            Set<Long> excludedUserIds,
+            List<DiaryScope> scopes,
+            Pageable pageable
+    ) {
+        return diaryRepository.findExploreCandidates(excludedUserIds, scopes, pageable);
+    }
+
+    @Transactional(readOnly = true)
     public List<DiaryEntity> findByUserIdAndPeriod(Long userId, LocalDateTime start, LocalDateTime end) {
         return diaryRepository.findByUserIdAndCreateDateTimeBetween(userId, start, end);
     }

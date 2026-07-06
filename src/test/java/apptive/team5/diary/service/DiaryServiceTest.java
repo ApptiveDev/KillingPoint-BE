@@ -7,9 +7,17 @@ import apptive.team5.diary.domain.DiaryStoreEntity;
 import apptive.team5.diary.domain.model.DiaryStoreInfo;
 import apptive.team5.diary.dto.*;
 import apptive.team5.diary.mapper.DiaryResponseMapper;
+import apptive.team5.recommendation.domain.MusicMetadataEntity;
+import apptive.team5.recommendation.domain.MusicMetadataSourceType;
+import apptive.team5.recommendation.service.ExploreExposureService;
+import apptive.team5.recommendation.service.MusicMetadataService;
+import apptive.team5.recommendation.service.PreferenceService;
+import apptive.team5.recommendation.service.RecommendationService;
+import apptive.team5.subscribe.service.SubscribeLowService;
 import apptive.team5.user.domain.SocialType;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.domain.UserRoleType;
+import apptive.team5.user.service.UserBlockLowService;
 import apptive.team5.user.service.UserLowService;
 import apptive.team5.util.TestUtil;
 import org.junit.jupiter.api.DisplayName;
@@ -50,6 +58,18 @@ public class DiaryServiceTest {
 
     @Mock
     private UserLowService userLowService;
+    @Mock
+    private SubscribeLowService subscribeLowService;
+    @Mock
+    private UserBlockLowService userBlockLowService;
+    @Mock
+    private MusicMetadataService musicMetadataService;
+    @Mock
+    private PreferenceService preferenceService;
+    @Mock
+    private RecommendationService recommendationService;
+    @Mock
+    private ExploreExposureService exploreExposureService;
 
     @Mock
     private DiaryLowService diaryLowService;
@@ -275,8 +295,82 @@ public class DiaryServiceTest {
         verify(userLowService).getReferenceById(any(Long.class));
         verify(diaryLowService).saveDiary(any(DiaryEntity.class));
         verify(diaryOrderLowService).addDiaryId(user.getId(), savedDiary.getId());
+        verify(preferenceService).reflectDiaryCreated(user, savedDiary);
 
         verifyNoMoreInteractions(userLowService, diaryLowService);
+    }
+
+    @Test
+    @DisplayName("다이어리 생성 시 음악 메타가 있으면 저장 후 연결한다")
+    void createDiary_withMusicMetadata_assignsMetadata() {
+        UserEntity user = TestUtil.makeUserEntityWithId();
+        DiaryCreateRequest diaryRequest = new DiaryCreateRequest(
+                "Test Artist",
+                "Test Music",
+                "image.url",
+                "url",
+                "Test Content",
+                DiaryScope.PUBLIC,
+                "30S",
+                "PT2M58S",
+                "PT1M1S",
+                "PT1M31S",
+                new DiaryMusicMetadataRequest(
+                        MusicMetadataSourceType.ITUNES,
+                        "track-1",
+                        "artist-1",
+                        "K-Pop"
+                )
+        );
+
+        MusicMetadataEntity musicMetadata = new MusicMetadataEntity(
+                MusicMetadataSourceType.ITUNES,
+                "track-1",
+                "artist-1",
+                "K-Pop"
+        );
+
+        given(userLowService.getReferenceById(user.getId())).willReturn(user);
+        given(musicMetadataService.findOrCreate(MusicMetadataSourceType.ITUNES, "track-1", "artist-1", "K-Pop"))
+                .willReturn(musicMetadata);
+        given(diaryLowService.saveDiary(any(DiaryEntity.class))).willAnswer(invocation -> invocation.getArgument(0));
+
+        DiaryEntity result = diaryService.createDiary(user.getId(), diaryRequest);
+
+        assertThat(result.getMusicMetadata()).isEqualTo(musicMetadata);
+        verify(musicMetadataService).findOrCreate(MusicMetadataSourceType.ITUNES, "track-1", "artist-1", "K-Pop");
+    }
+
+    @Test
+    @DisplayName("다이어리 생성 시 트랙 아이디가 없으면 메타를 조회하지 않는다")
+    void createDiary_withoutTrackId_doesNotLookupMetadata() {
+        UserEntity user = TestUtil.makeUserEntityWithId();
+        DiaryCreateRequest diaryRequest = new DiaryCreateRequest(
+                "Test Artist",
+                "Test Music",
+                "image.url",
+                "url",
+                "Test Content",
+                DiaryScope.PUBLIC,
+                "30S",
+                "PT2M58S",
+                "PT1M1S",
+                "PT1M31S",
+                new DiaryMusicMetadataRequest(
+                        MusicMetadataSourceType.ITUNES,
+                        " ",
+                        "artist-1",
+                        "K-Pop"
+                )
+        );
+
+        given(userLowService.getReferenceById(user.getId())).willReturn(user);
+        given(diaryLowService.saveDiary(any(DiaryEntity.class))).willAnswer(invocation -> invocation.getArgument(0));
+
+        DiaryEntity result = diaryService.createDiary(user.getId(), diaryRequest);
+
+        assertThat(result.getMusicMetadata()).isNull();
+        verify(musicMetadataService, never()).findOrCreate(any(), any(), any(), any());
     }
 
     @Test
@@ -304,6 +398,50 @@ public class DiaryServiceTest {
     }
 
     @Test
+    @DisplayName("다이어리 수정 시 음악 메타가 있으면 저장 후 연결한다")
+    void updateDiary_withMusicMetadata_assignsMetadata() {
+        UserEntity user = TestUtil.makeUserEntityWithId();
+        Long diaryId = 1L;
+        DiaryEntity diary = TestUtil.makeDiaryEntity(user);
+        DiaryUpdateRequestDto updateRequest = new DiaryUpdateRequestDto(
+                "Updated Artist",
+                "Updated Music",
+                "updated.image.url",
+                "updated.url",
+                "Updated Content",
+                DiaryScope.PUBLIC,
+                "45S",
+                "PT3M10S",
+                "PT1M10S",
+                "PT1M55S",
+                new DiaryMusicMetadataRequest(
+                        MusicMetadataSourceType.ITUNES,
+                        "track-2",
+                        "artist-2",
+                        "Pop"
+                )
+        );
+
+        MusicMetadataEntity musicMetadata = new MusicMetadataEntity(
+                MusicMetadataSourceType.ITUNES,
+                "track-2",
+                "artist-2",
+                "Pop"
+        );
+
+        given(userLowService.getReferenceById(user.getId())).willReturn(user);
+        given(diaryLowService.findDiaryById(diaryId)).willReturn(diary);
+        given(musicMetadataService.findOrCreate(MusicMetadataSourceType.ITUNES, "track-2", "artist-2", "Pop"))
+                .willReturn(musicMetadata);
+
+        diaryService.updateDiary(user.getId(), diaryId, updateRequest);
+
+        assertThat(diary.getMusicMetadata()).isEqualTo(musicMetadata);
+        verify(musicMetadataService).findOrCreate(MusicMetadataSourceType.ITUNES, "track-2", "artist-2", "Pop");
+        verify(diaryLowService).updateDiary(any(DiaryEntity.class), any());
+    }
+
+    @Test
     @DisplayName("다이어리 삭제")
     void deleteDiary() {
         // given
@@ -324,6 +462,7 @@ public class DiaryServiceTest {
         verify(diaryLowService).deleteDiary(any(DiaryEntity.class));
         verify(diaryStoreLowService, never()).deleteByDiaryId(any(Long.class));
         verify(diaryMemoLowService).deleteByDiaryId(any(Long.class));
+        verify(preferenceService).reflectDiaryDeleted(user, diary);
 
         verifyNoMoreInteractions(userLowService, diaryLowService);
     }
@@ -352,6 +491,7 @@ public class DiaryServiceTest {
 
         verify(diaryStoreLowService, never()).deleteByDiaryId(diaryId);
         verify(diaryMemoLowService).deleteByDiaryId(diaryId);
+        verify(preferenceService).reflectDiaryDeleted(user, diary);
     }
 
     @Test
@@ -408,6 +548,7 @@ public class DiaryServiceTest {
 
         // then
         verify(diaryOrderLowService).addDiaryId(userId, 100L);
+        verify(preferenceService).reflectDiaryCreated(user, newDiary);
     }
 
     @Test
@@ -429,5 +570,29 @@ public class DiaryServiceTest {
         verify(diaryReportLowService).deleteByDiaryId(any(Long.class));
         verify(diaryOrderLowService).deleteDiaryId(userId, diaryId);
         verify(diaryMemoLowService).deleteByDiaryId(diaryId);
+        verify(preferenceService).reflectDiaryDeleted(user, diary);
+    }
+
+    @Test
+    @DisplayName("탐색 다이어리 응답 후 노출 이력 저장")
+    void getRandomDiaries_persistsExploreExposures() {
+        Long userId = 1L;
+        UserEntity user = TestUtil.makeUserEntityWithId();
+        ReflectionTestUtils.setField(user, "id", userId);
+
+        DiaryEntity diary = TestUtil.makeDiaryEntityWithScope(user, DiaryScope.PUBLIC);
+        ReflectionTestUtils.setField(diary, "id", 100L);
+
+        given(userBlockLowService.getBlockedUserIds(userId)).willReturn(Set.of());
+        given(recommendationService.getExploreRecommendations(userId, Set.of(userId)))
+                .willReturn(List.of(new RecommendationService.RecommendedDiaryResult(diary, true, "COLD_START_POPULAR", 3.0, 2L)));
+        given(diaryLikeLowService.findLikedDiaryIdsByUser(userId, List.of(100L))).willReturn(Set.of());
+        given(diaryLikeLowService.findLikeCountsByDiaryIds(List.of(100L))).willReturn(java.util.Map.of(100L, 2L));
+        given(diaryStoreLowService.findStoredDiaryIdsByUser(userId, List.of(100L))).willReturn(Set.of());
+
+        RandomDiaryResponseDto result = diaryService.getRandomDiaries(userId);
+
+        assertThat(result.content()).hasSize(1);
+        verify(exploreExposureService).saveExposures(userId, List.of(100L));
     }
 }

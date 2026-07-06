@@ -5,6 +5,11 @@ import apptive.team5.diary.domain.DiaryOrderEntity;
 import apptive.team5.diary.domain.DiaryScope;
 import apptive.team5.diary.dto.*;
 import apptive.team5.diary.mapper.DiaryResponseMapper;
+import apptive.team5.recommendation.domain.MusicMetadataEntity;
+import apptive.team5.recommendation.service.ExploreExposureService;
+import apptive.team5.recommendation.service.MusicMetadataService;
+import apptive.team5.recommendation.service.PreferenceService;
+import apptive.team5.recommendation.service.RecommendationService;
 import apptive.team5.subscribe.service.SubscribeLowService;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.service.UserBlockLowService;
@@ -39,6 +44,10 @@ public class DiaryService {
     private final DiaryReportLowService diaryReportLowService;
     private final DiaryStoreLowService diaryStoreLowService;
     private final UserBlockLowService userBlockLowService;
+    private final MusicMetadataService musicMetadataService;
+    private final PreferenceService preferenceService;
+    private final RecommendationService recommendationService;
+    private final ExploreExposureService exploreExposureService;
 
     @Transactional(readOnly = true)
     public Page<MyDiaryResponseDto> getMyDiaries(Long userId, Pageable pageable) {
@@ -98,7 +107,6 @@ public class DiaryService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     public RandomDiaryResponseDto getRandomDiaries(Long userId) {
 
         Set<Long> blockedUserIds = Stream.concat(
@@ -106,11 +114,14 @@ public class DiaryService {
                 Stream.of(userId) // 랜덤에서는 본인 id도 제외
         ).collect(Collectors.toSet());
 
-        List<DiaryEntity> randomDiary = diaryLowService.findRandomDiary(blockedUserIds);
+        List<RecommendationService.RecommendedDiaryResult> recommendedDiaries =
+                recommendationService.getExploreRecommendations(userId, blockedUserIds);
 
-        Collections.shuffle(randomDiary);
-
-        List<FeedDiaryResponseDto> diaryResponseDtoList = getDiaryResponseDtoList(userId, randomDiary, FeedDiaryResponseDto::from);
+        List<FeedDiaryResponseDto> diaryResponseDtoList = getRecommendationResponseDtoList(userId, recommendedDiaries);
+        exploreExposureService.saveExposures(
+                userId,
+                diaryResponseDtoList.stream().map(FeedDiaryResponseDto::diaryId).toList()
+        );
         return new RandomDiaryResponseDto(diaryResponseDtoList);
     }
 
@@ -118,10 +129,24 @@ public class DiaryService {
         UserEntity foundUser = userLowService.getReferenceById(userId);
 
         DiaryEntity diary = diaryRequest.toEntity(foundUser);
+        DiaryMusicMetadataRequest musicMetadataRequest = diaryRequest.musicMetadata();
+        MusicMetadataEntity musicMetadata = null;
+        if (musicMetadataRequest != null && musicMetadataRequest.hasTrackId()) {
+            musicMetadata = musicMetadataService.findOrCreate(
+                    musicMetadataRequest.sourceType(),
+                    musicMetadataRequest.trackId(),
+                    musicMetadataRequest.artistId(),
+                    musicMetadataRequest.primaryGenreName()
+            );
+        }
+        if (musicMetadata != null) {
+            diary.assignMusicMetadata(musicMetadata);
+        }
 
         DiaryEntity savedDiary = diaryLowService.saveDiary(diary);
 
         diaryOrderLowService.addDiaryId(userId, savedDiary.getId());
+        preferenceService.reflectDiaryCreated(foundUser, savedDiary);
 
         return savedDiary;
     }
@@ -132,6 +157,19 @@ public class DiaryService {
         DiaryEntity foundDiary = diaryLowService.findDiaryById(diaryId);
 
         foundDiary.validateOwner(foundUser);
+
+        DiaryMusicMetadataRequest musicMetadataRequest = updateRequest.musicMetadata();
+        if (musicMetadataRequest != null && musicMetadataRequest.hasTrackId()) {
+            MusicMetadataEntity musicMetadata = musicMetadataService.findOrCreate(
+                    musicMetadataRequest.sourceType(),
+                    musicMetadataRequest.trackId(),
+                    musicMetadataRequest.artistId(),
+                    musicMetadataRequest.primaryGenreName()
+            );
+            if (musicMetadata != null) {
+                foundDiary.assignMusicMetadata(musicMetadata);
+            }
+        }
 
         diaryLowService.updateDiary(foundDiary, updateRequest.toDomainInfo());
     }
@@ -147,6 +185,7 @@ public class DiaryService {
         diaryOrderLowService.deleteDiaryId(userId, diaryId);
         diaryLikeLowService.deleteByDiaryId(diaryId);
         diaryMemoLowService.deleteByDiaryId(diaryId);
+        preferenceService.reflectDiaryDeleted(foundUser, foundDiary);
         diaryLowService.deleteDiary(foundDiary);
     }
 
@@ -202,6 +241,44 @@ public class DiaryService {
                 userId,
                 mapper
         );
+    }
+
+    private List<FeedDiaryResponseDto> getRecommendationResponseDtoList(
+            Long userId,
+            List<RecommendationService.RecommendedDiaryResult> recommendedDiaries
+    ) {
+        if (recommendedDiaries.isEmpty()) {
+            return List.of();
+        }
+
+        List<DiaryEntity> diaries = recommendedDiaries.stream()
+                .map(RecommendationService.RecommendedDiaryResult::diary)
+                .toList();
+
+        List<Long> diaryIds = diaries.stream()
+                .map(DiaryEntity::getId)
+                .toList();
+
+        Set<Long> likedDiaryIds = diaryLikeLowService.findLikedDiaryIdsByUser(userId, diaryIds);
+        Map<Long, Long> likeCountsMap = diaryLikeLowService.findLikeCountsByDiaryIds(diaryIds);
+        Set<Long> storedDiaryIds = diaryStoreLowService.findStoredDiaryIdsByUser(userId, diaryIds);
+        Map<Long, RecommendationService.RecommendedDiaryResult> resultMap = recommendedDiaries.stream()
+                .collect(Collectors.toMap(result -> result.diary().getId(), Function.identity()));
+
+        return diaries.stream()
+                .map(diary -> {
+                    RecommendationService.RecommendedDiaryResult result = resultMap.get(diary.getId());
+                    return FeedDiaryResponseDto.from(
+                            diary,
+                            likedDiaryIds.contains(diary.getId()),
+                            storedDiaryIds.contains(diary.getId()),
+                            likeCountsMap.getOrDefault(diary.getId(), 0L),
+                            userId,
+                            result.recommended(),
+                            result.reason()
+                    );
+                })
+                .toList();
     }
 
     private <T extends DiaryResponseDto> T getDiaryResponseDto(Long userId, DiaryEntity diary, DiaryResponseMapper.DiaryResponseDtoMapper<T> mapper) {

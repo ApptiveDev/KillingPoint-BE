@@ -49,6 +49,36 @@ public interface DiaryRepository extends JpaRepository<DiaryEntity, Long> {
     @Query("select d from DiaryEntity d join fetch d.user where d.user.id in :userIds and d.scope in :scopes order by d.id desc")
     Page<DiaryEntity> findByUserIdsAndScopseWithUserPage(Set<Long> userIds, List<DiaryScope> scopes, Pageable pageable);
 
+    @Query("""
+            select d from DiaryEntity d
+            join fetch d.user
+            left join fetch d.musicMetadata
+            where d.user.id not in :excludedUserIds
+              and d.scope in :scopes
+              and d.createDateTime >= :startDateTime
+            order by d.createDateTime desc, d.id desc
+            """)
+    List<DiaryEntity> findRecentExploreCandidates(
+            Set<Long> excludedUserIds,
+            List<DiaryScope> scopes,
+            LocalDateTime startDateTime,
+            Pageable pageable
+    );
+
+    @Query("""
+            select d from DiaryEntity d
+            join fetch d.user
+            left join fetch d.musicMetadata
+            where d.user.id not in :excludedUserIds
+              and d.scope in :scopes
+            order by d.createDateTime desc, d.id desc
+            """)
+    List<DiaryEntity> findExploreCandidates(
+            Set<Long> excludedUserIds,
+            List<DiaryScope> scopes,
+            Pageable pageable
+    );
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("delete from DiaryEntity d where d.id in :diaryIds")
     void deleteByIds(List<Long> diaryIds);

@@ -30,9 +30,23 @@ public record FeedDiaryResponseDto (
         Long userId,
         String username,
         String tag,
-        String profileImageUrl
+        String profileImageUrl,
+        boolean isRecommended,
+        String recommendationReason
 ) implements DiaryResponseDto {
     public static FeedDiaryResponseDto from(DiaryEntity diary, boolean isLiked, boolean isStored, Long likeCount, Long currentUserId) {
+        return from(diary, isLiked, isStored, likeCount, currentUserId, false, null);
+    }
+
+    public static FeedDiaryResponseDto from(
+            DiaryEntity diary,
+            boolean isLiked,
+            boolean isStored,
+            Long likeCount,
+            Long currentUserId,
+            boolean isRecommended,
+            String recommendationReason
+    ) {
         String contentResponse = diary.getContentForViewer(currentUserId);
         UserEntity user = diary.getUser();
 
@@ -56,7 +70,9 @@ public record FeedDiaryResponseDto (
                 user.getId(),
                 user.getUsername(),
                 user.getTag(),
-                S3Util.s3Url + user.getProfileImage()
+                S3Util.s3Url + user.getProfileImage(),
+                isRecommended,
+                recommendationReason
         );
     }
 }
