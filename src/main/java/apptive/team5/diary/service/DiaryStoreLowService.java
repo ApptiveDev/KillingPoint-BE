@@ -40,6 +40,9 @@ public class DiaryStoreLowService {
 
     @Transactional(readOnly = true)
     public Set<Long> findStoredDiaryIdsByUser(Long userId, List<Long> diaryIds) {
+        if (diaryIds == null || diaryIds.isEmpty()) {
+            return Set.of();
+        }
         return diaryStoreRepository.findStoredDiaryIdsByUser(userId, diaryIds);
     }
 
