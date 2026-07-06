@@ -48,7 +48,7 @@ class RecommendationServiceTest {
     private ExploreExposureService exploreExposureService;
 
     @Test
-    @DisplayName("returns personalized results first")
+    @DisplayName("선호도 일치 다이어리 우선 조회")
     void getExploreRecommendations_returnsPersonalizedResultsFirst() {
         Long userId = 1L;
         DiaryEntity matched = createDiary(101L, "K-Pop", "artist-1", 1);
@@ -80,7 +80,7 @@ class RecommendationServiceTest {
     }
 
     @Test
-    @DisplayName("returns cold start results")
+    @DisplayName("선호도 없으면 인기순 탐색 결과 반환")
     void getExploreRecommendations_returnsColdStartResults() {
         Long userId = 1L;
         DiaryEntity popular = createDiary(201L, null, null, 1);
@@ -106,7 +106,7 @@ class RecommendationServiceTest {
     }
 
     @Test
-    @DisplayName("returns fallback random when there is no match")
+    @DisplayName("매칭 다이어리 없으면 랜덤 탐색 결과 반환")
     void getExploreRecommendations_returnsFallbackRandomWhenNoMatch() {
         Long userId = 1L;
         DiaryEntity first = createDiary(301L, "Rock", "artist-2", 1);
@@ -133,7 +133,7 @@ class RecommendationServiceTest {
     }
 
     @Test
-    @DisplayName("excludes recent exposures first")
+    @DisplayName("최근 탐색 노출 다이어리 우선 제외")
     void getExploreRecommendations_excludesRecentlyExposedDiariesFirst() {
         Long userId = 1L;
         DiaryEntity recentExposed = createDiary(401L, "K-Pop", "artist-1", 1);
@@ -160,7 +160,7 @@ class RecommendationServiceTest {
     }
 
     @Test
-    @DisplayName("relaxes recent exposure filtering when candidates are short")
+    @DisplayName("후보 부족하면 최근 탐색 노출 제외 완화")
     void getExploreRecommendations_relaxesRecentExposureForFallback() {
         Long userId = 1L;
         DiaryEntity first = createDiary(501L, "Rock", "artist-2", 1);
@@ -187,7 +187,7 @@ class RecommendationServiceTest {
     }
 
     @Test
-    @DisplayName("expands to older public diaries when recent candidates are short")
+    @DisplayName("후보 부족하면 오래된 공개 다이어리까지 확장")
     void getExploreRecommendations_expandsToOlderCandidatesWhenRecentPoolIsShort() {
         Long userId = 1L;
         DiaryEntity recent = createDiary(601L, "Rock", "artist-2", 1);
@@ -218,7 +218,7 @@ class RecommendationServiceTest {
     }
 
     @Test
-    @DisplayName("relaxes like and store exclusion last")
+    @DisplayName("마지막에 좋아요와 보관 제외 완화")
     void getExploreRecommendations_relaxesInteractionExclusionLast() {
         Long userId = 1L;
         DiaryEntity likedOlder = createDiary(701L, "Rock", "artist-2", 40);

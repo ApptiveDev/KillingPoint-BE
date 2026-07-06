@@ -17,6 +17,7 @@ import java.util.Set;
 @Transactional
 public class ExploreExposureService {
 
+    private static final int RECENT_EXPOSURE_LIMIT = 50;
     private static final int RETENTION_DAYS = 7;
 
     private final UserLowService userLowService;
@@ -24,7 +25,7 @@ public class ExploreExposureService {
 
     @Transactional(readOnly = true)
     public Set<Long> findRecentlyExposedDiaryIds(Long userId) {
-        return userExploreExposureLowService.findTop50ByUserId(userId).stream()
+        return userExploreExposureLowService.findRecentByUserId(userId, RECENT_EXPOSURE_LIMIT).stream()
                 .map(UserExploreExposureEntity::getDiaryId)
                 .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
     }

@@ -6,6 +6,7 @@ import apptive.team5.diary.domain.DiaryScope;
 import apptive.team5.diary.dto.*;
 import apptive.team5.diary.mapper.DiaryResponseMapper;
 import apptive.team5.recommendation.domain.MusicMetadataEntity;
+import apptive.team5.recommendation.service.ExploreExposureService;
 import apptive.team5.recommendation.service.MusicMetadataService;
 import apptive.team5.recommendation.service.PreferenceService;
 import apptive.team5.recommendation.service.RecommendationService;
@@ -46,6 +47,7 @@ public class DiaryService {
     private final MusicMetadataService musicMetadataService;
     private final PreferenceService preferenceService;
     private final RecommendationService recommendationService;
+    private final ExploreExposureService exploreExposureService;
 
     @Transactional(readOnly = true)
     public Page<MyDiaryResponseDto> getMyDiaries(Long userId, Pageable pageable) {
@@ -117,6 +119,10 @@ public class DiaryService {
                 recommendationService.getExploreRecommendations(userId, blockedUserIds);
 
         List<FeedDiaryResponseDto> diaryResponseDtoList = getRecommendationResponseDtoList(userId, recommendedDiaries);
+        exploreExposureService.saveExposures(
+                userId,
+                diaryResponseDtoList.stream().map(FeedDiaryResponseDto::diaryId).toList()
+        );
         return new RandomDiaryResponseDto(diaryResponseDtoList);
     }
 

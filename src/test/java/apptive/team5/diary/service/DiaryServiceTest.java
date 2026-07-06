@@ -9,8 +9,10 @@ import apptive.team5.diary.dto.*;
 import apptive.team5.diary.mapper.DiaryResponseMapper;
 import apptive.team5.recommendation.domain.MusicMetadataEntity;
 import apptive.team5.recommendation.domain.MusicMetadataSourceType;
+import apptive.team5.recommendation.service.ExploreExposureService;
 import apptive.team5.recommendation.service.MusicMetadataService;
 import apptive.team5.recommendation.service.PreferenceService;
+import apptive.team5.recommendation.service.RecommendationService;
 import apptive.team5.subscribe.service.SubscribeLowService;
 import apptive.team5.user.domain.SocialType;
 import apptive.team5.user.domain.UserEntity;
@@ -64,6 +66,10 @@ public class DiaryServiceTest {
     private MusicMetadataService musicMetadataService;
     @Mock
     private PreferenceService preferenceService;
+    @Mock
+    private RecommendationService recommendationService;
+    @Mock
+    private ExploreExposureService exploreExposureService;
 
     @Mock
     private DiaryLowService diaryLowService;
@@ -521,5 +527,28 @@ public class DiaryServiceTest {
         verify(diaryOrderLowService).deleteDiaryId(userId, diaryId);
         verify(diaryMemoLowService).deleteByDiaryId(diaryId);
         verify(preferenceService).reflectDiaryDeleted(user, diary);
+    }
+
+    @Test
+    @DisplayName("탐색 다이어리 응답 후 노출 이력 저장")
+    void getRandomDiaries_persistsExploreExposures() {
+        Long userId = 1L;
+        UserEntity user = TestUtil.makeUserEntityWithId();
+        ReflectionTestUtils.setField(user, "id", userId);
+
+        DiaryEntity diary = TestUtil.makeDiaryEntityWithScope(user, DiaryScope.PUBLIC);
+        ReflectionTestUtils.setField(diary, "id", 100L);
+
+        given(userBlockLowService.getBlockedUserIds(userId)).willReturn(Set.of());
+        given(recommendationService.getExploreRecommendations(userId, Set.of(userId)))
+                .willReturn(List.of(new RecommendationService.RecommendedDiaryResult(diary, true, "COLD_START_POPULAR", 3.0, 2L)));
+        given(diaryLikeLowService.findLikedDiaryIdsByUser(userId, List.of(100L))).willReturn(Set.of());
+        given(diaryLikeLowService.findLikeCountsByDiaryIds(List.of(100L))).willReturn(java.util.Map.of(100L, 2L));
+        given(diaryStoreLowService.findStoredDiaryIdsByUser(userId, List.of(100L))).willReturn(Set.of());
+
+        RandomDiaryResponseDto result = diaryService.getRandomDiaries(userId);
+
+        assertThat(result.content()).hasSize(1);
+        verify(exploreExposureService).saveExposures(userId, List.of(100L));
     }
 }
