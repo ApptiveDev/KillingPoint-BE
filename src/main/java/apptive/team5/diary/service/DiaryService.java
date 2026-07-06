@@ -107,7 +107,6 @@ public class DiaryService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     public RandomDiaryResponseDto getRandomDiaries(Long userId) {
 
         Set<Long> blockedUserIds = Stream.concat(
@@ -158,6 +157,19 @@ public class DiaryService {
         DiaryEntity foundDiary = diaryLowService.findDiaryById(diaryId);
 
         foundDiary.validateOwner(foundUser);
+
+        DiaryMusicMetadataRequest musicMetadataRequest = updateRequest.musicMetadata();
+        if (musicMetadataRequest != null && musicMetadataRequest.hasTrackId()) {
+            MusicMetadataEntity musicMetadata = musicMetadataService.findOrCreate(
+                    musicMetadataRequest.sourceType(),
+                    musicMetadataRequest.trackId(),
+                    musicMetadataRequest.artistId(),
+                    musicMetadataRequest.primaryGenreName()
+            );
+            if (musicMetadata != null) {
+                foundDiary.assignMusicMetadata(musicMetadata);
+            }
+        }
 
         diaryLowService.updateDiary(foundDiary, updateRequest.toDomainInfo());
     }

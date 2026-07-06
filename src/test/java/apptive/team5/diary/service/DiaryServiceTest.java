@@ -398,6 +398,50 @@ public class DiaryServiceTest {
     }
 
     @Test
+    @DisplayName("다이어리 수정 시 음악 메타가 있으면 저장 후 연결한다")
+    void updateDiary_withMusicMetadata_assignsMetadata() {
+        UserEntity user = TestUtil.makeUserEntityWithId();
+        Long diaryId = 1L;
+        DiaryEntity diary = TestUtil.makeDiaryEntity(user);
+        DiaryUpdateRequestDto updateRequest = new DiaryUpdateRequestDto(
+                "Updated Artist",
+                "Updated Music",
+                "updated.image.url",
+                "updated.url",
+                "Updated Content",
+                DiaryScope.PUBLIC,
+                "45S",
+                "PT3M10S",
+                "PT1M10S",
+                "PT1M55S",
+                new DiaryMusicMetadataRequest(
+                        MusicMetadataSourceType.ITUNES,
+                        "track-2",
+                        "artist-2",
+                        "Pop"
+                )
+        );
+
+        MusicMetadataEntity musicMetadata = new MusicMetadataEntity(
+                MusicMetadataSourceType.ITUNES,
+                "track-2",
+                "artist-2",
+                "Pop"
+        );
+
+        given(userLowService.getReferenceById(user.getId())).willReturn(user);
+        given(diaryLowService.findDiaryById(diaryId)).willReturn(diary);
+        given(musicMetadataService.findOrCreate(MusicMetadataSourceType.ITUNES, "track-2", "artist-2", "Pop"))
+                .willReturn(musicMetadata);
+
+        diaryService.updateDiary(user.getId(), diaryId, updateRequest);
+
+        assertThat(diary.getMusicMetadata()).isEqualTo(musicMetadata);
+        verify(musicMetadataService).findOrCreate(MusicMetadataSourceType.ITUNES, "track-2", "artist-2", "Pop");
+        verify(diaryLowService).updateDiary(any(DiaryEntity.class), any());
+    }
+
+    @Test
     @DisplayName("다이어리 삭제")
     void deleteDiary() {
         // given
