@@ -351,6 +351,47 @@ public class DiaryControllerTest {
     }
 
     @Test
+    @DisplayName("알 수 없는 sourceType 이면 메타 저장 없이 다이어리 생성")
+    void createDiary_withUnknownSourceType() throws Exception {
+        TestSecurityContextHolderInjection.inject(testUser.getId(), testUser.getRoleType());
+
+        String requestBody = """
+                {
+                  "artist": "Test Artist",
+                  "musicTitle": "Test Music",
+                  "albumImageUrl": "image.url",
+                  "videoUrl": "url",
+                  "content": "Test Content",
+                  "scope": "PUBLIC",
+                  "duration": "30S",
+                  "totalDuration": "PT2M58S",
+                  "start": "PT1M1S",
+                  "end": "PT1M31S",
+                  "musicMetadata": {
+                    "sourceType": "SPOTIFY",
+                    "trackId": "track-1",
+                    "artistId": "artist-1",
+                    "primaryGenreName": "K-Pop"
+                  }
+                }
+                """;
+
+        String header = mockMvc.perform(post("/api/diaries")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody)
+                        .with(securityContext(SecurityContextHolder.getContext())))
+                .andExpect(MockMvcResultMatchers.header().exists("location"))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getHeader("location");
+
+        Long id = Long.parseLong(header.substring(header.lastIndexOf("/") + 1));
+        DiaryEntity diaryEntity = diaryRepository.findById(id).orElseThrow();
+
+        assertThat(diaryEntity.getMusicMetadata()).isNull();
+        assertThat(diaryEntity.getMusicTitle()).isEqualTo("Test Music");
+    }
+
+    @Test
     @DisplayName("다이어리 수정 API")
     void updateDiary() throws Exception {
         // given
