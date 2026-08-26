@@ -181,11 +181,12 @@ public class DiaryService {
 
         foundDiary.validateOwner(foundUser);
 
+        preferenceService.reflectDiaryDeleted(foundUser, foundDiary);
+
         diaryReportLowService.deleteByDiaryId(diaryId);
         diaryOrderLowService.deleteDiaryId(userId, diaryId);
         diaryLikeLowService.deleteByDiaryId(diaryId);
         diaryMemoLowService.deleteByDiaryId(diaryId);
-        preferenceService.reflectDiaryDeleted(foundUser, foundDiary);
         diaryLowService.deleteDiary(foundDiary);
     }
 
