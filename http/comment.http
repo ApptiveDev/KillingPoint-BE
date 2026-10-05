@@ -15,6 +15,12 @@ GET {{host}}/api/oauth2/test?name=commentB
 
 > {% client.global.set("tokenB", response.body.accessToken); %}
 
+### B 의 userId 확보 (멘션 대상용)
+GET {{host}}/api/users/my
+Authorization: Bearer {{tokenB}}
+
+> {% client.global.set("userB", response.body.userId); %}
+
 ### C 로그인
 GET {{host}}/api/oauth2/test?name=commentC
 
@@ -141,6 +147,72 @@ Content-Type: application/json
 {
   "text": "   ",
   "parentCommentId": null
+}
+
+### A 가 B 를 픽 (멘션 후보는 내가 픽한 사람만)
+POST {{host}}/api/subscribes/{{userB}}
+Authorization: Bearer {{tokenA}}
+
+### 멘션 후보 조회 (@ 만 입력) → B 가 나옴, C 는 픽 안 해서 없음
+GET {{host}}/api/comments/mention-candidates?size=10
+Authorization: Bearer {{tokenA}}
+
+### 멘션 후보 조회 (키워드) → 이름/태그 contains 매칭
+GET {{host}}/api/comments/mention-candidates?keyword=comment&size=10
+Authorization: Bearer {{tokenA}}
+
+### A 가 B 를 멘션하는 댓글 작성 → attachment.references[0] = { targetId: B, atOrders: [1], len: 8, display }
+# 본문 "@commentB 좋은 댓글이네요" 에서 @ 뒤 닉네임 "commentB" 는 8글자
+POST {{host}}/api/diaries/{{diaryId}}/comments
+Authorization: Bearer {{tokenA}}
+Content-Type: application/json
+
+{
+  "text": "@commentB 좋은 댓글이네요",
+  "parentCommentId": null,
+  "references": [
+    { "targetType": "USER", "targetId": {{userB}}, "atOrders": [1], "len": 8 }
+  ]
+}
+
+> {% client.global.set("commentA1", response.body.commentId); %}
+
+### 멘션 수정 → 멘션 두 번, atOrders [1, 2]
+PUT {{host}}/api/comments/{{commentA1}}
+Authorization: Bearer {{tokenA}}
+Content-Type: application/json
+
+{
+  "text": "@commentB @commentB 두 번 불러봄",
+  "references": [
+    { "targetType": "USER", "targetId": {{userB}}, "atOrders": [1, 2], "len": 8 }
+  ]
+}
+
+### 멘션 검증 실패 - atOrder 가 @ 개수 초과 → 400
+POST {{host}}/api/diaries/{{diaryId}}/comments
+Authorization: Bearer {{tokenA}}
+Content-Type: application/json
+
+{
+  "text": "@commentB 하나뿐",
+  "parentCommentId": null,
+  "references": [
+    { "targetType": "USER", "targetId": {{userB}}, "atOrders": [2], "len": 8 }
+  ]
+}
+
+### 멘션 검증 실패 - DIARY 대상은 아직 미지원 → 400
+POST {{host}}/api/diaries/{{diaryId}}/comments
+Authorization: Bearer {{tokenA}}
+Content-Type: application/json
+
+{
+  "text": "@(노래) 추천",
+  "parentCommentId": null,
+  "references": [
+    { "targetType": "DIARY", "targetId": {{diaryId}}, "atOrders": [1], "len": 4 }
+  ]
 }
 
 ### A 가 B 첫 댓글 좋아요 → isLiked true, likeCount 1
