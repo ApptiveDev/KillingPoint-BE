@@ -11,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -36,6 +38,14 @@ public class UserLowService {
     @Transactional(readOnly = true)
     public UserEntity getReferenceById(Long id) {
         return userRepository.getReferenceById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserEntity> findAllByIds(Collection<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return userRepository.findAllById(ids);
     }
 
     @Transactional(readOnly = true)

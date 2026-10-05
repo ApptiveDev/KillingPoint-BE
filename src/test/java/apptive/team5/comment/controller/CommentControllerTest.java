@@ -80,7 +80,7 @@ class CommentControllerTest {
     @Test
     @DisplayName("댓글 작성")
     void createComment() throws Exception {
-        CommentCreateRequest request = new CommentCreateRequest("첫 댓글", null);
+        CommentCreateRequest request = new CommentCreateRequest("첫 댓글", null, null);
 
         String body = mockMvc.perform(post("/api/diaries/{diaryId}/comments", diary.getId())
                         .with(securityContext(SecurityContextHolder.getContext()))
@@ -107,7 +107,7 @@ class CommentControllerTest {
     @DisplayName("답글 작성 시 원댓글의 replyCount 가 증가한다")
     void createReply() throws Exception {
         CommentEntity parent = commentRepository.save(TestUtil.makeCommentEntity(diary, owner, "원댓글"));
-        CommentCreateRequest request = new CommentCreateRequest("답글", parent.getId());
+        CommentCreateRequest request = new CommentCreateRequest("답글", parent.getId(), null);
 
         String body = mockMvc.perform(post("/api/diaries/{diaryId}/comments", diary.getId())
                         .with(securityContext(SecurityContextHolder.getContext()))
@@ -131,7 +131,7 @@ class CommentControllerTest {
     void createReplyToReplyFails() throws Exception {
         CommentEntity parent = commentRepository.save(TestUtil.makeCommentEntity(diary, owner, "원댓글"));
         CommentEntity reply = commentRepository.save(TestUtil.makeReplyEntity(diary, owner, parent, "답글"));
-        CommentCreateRequest request = new CommentCreateRequest("답글의 답글", reply.getId());
+        CommentCreateRequest request = new CommentCreateRequest("답글의 답글", reply.getId(), null);
 
         String body = mockMvc.perform(post("/api/diaries/{diaryId}/comments", diary.getId())
                         .with(securityContext(SecurityContextHolder.getContext()))
@@ -148,7 +148,7 @@ class CommentControllerTest {
     void createReplyToDeletedParentFails() throws Exception {
         CommentEntity parent = commentRepository.save(TestUtil.makeCommentEntity(diary, owner, "원댓글"));
         parent.delete();
-        CommentCreateRequest request = new CommentCreateRequest("답글", parent.getId());
+        CommentCreateRequest request = new CommentCreateRequest("답글", parent.getId(), null);
 
         mockMvc.perform(post("/api/diaries/{diaryId}/comments", diary.getId())
                         .with(securityContext(SecurityContextHolder.getContext()))
@@ -162,7 +162,7 @@ class CommentControllerTest {
     void createReplyToOtherDiaryCommentFails() throws Exception {
         DiaryEntity otherDiary = diaryRepository.save(TestUtil.makeDiaryEntity(owner));
         CommentEntity parent = commentRepository.save(TestUtil.makeCommentEntity(otherDiary, owner, "다른 다이어리 댓글"));
-        CommentCreateRequest request = new CommentCreateRequest("답글", parent.getId());
+        CommentCreateRequest request = new CommentCreateRequest("답글", parent.getId(), null);
 
         mockMvc.perform(post("/api/diaries/{diaryId}/comments", diary.getId())
                         .with(securityContext(SecurityContextHolder.getContext()))
@@ -175,7 +175,7 @@ class CommentControllerTest {
     @DisplayName("PRIVATE 킬링파트에는 소유자만 댓글을 달 수 있다")
     void createCommentOnPrivateDiaryFails() throws Exception {
         DiaryEntity privateDiary = diaryRepository.save(TestUtil.makeDiaryEntityWithScope(owner, DiaryScope.PRIVATE));
-        CommentCreateRequest request = new CommentCreateRequest("몰래 댓글", null);
+        CommentCreateRequest request = new CommentCreateRequest("몰래 댓글", null, null);
 
         mockMvc.perform(post("/api/diaries/{diaryId}/comments", privateDiary.getId())
                         .with(securityContext(SecurityContextHolder.getContext()))
@@ -195,7 +195,7 @@ class CommentControllerTest {
     @Test
     @DisplayName("공백 댓글은 작성할 수 없다")
     void createBlankCommentFails() throws Exception {
-        CommentCreateRequest request = new CommentCreateRequest("   ", null);
+        CommentCreateRequest request = new CommentCreateRequest("   ", null, null);
 
         mockMvc.perform(post("/api/diaries/{diaryId}/comments", diary.getId())
                         .with(securityContext(SecurityContextHolder.getContext()))
@@ -354,7 +354,7 @@ class CommentControllerTest {
     @DisplayName("댓글 수정")
     void updateComment() throws Exception {
         CommentEntity comment = commentRepository.save(TestUtil.makeCommentEntity(diary, viewer, "수정 전"));
-        CommentUpdateRequest request = new CommentUpdateRequest("수정 후");
+        CommentUpdateRequest request = new CommentUpdateRequest("수정 후", null);
 
         String body = mockMvc.perform(put("/api/comments/{commentId}", comment.getId())
                         .with(securityContext(SecurityContextHolder.getContext()))
@@ -376,7 +376,7 @@ class CommentControllerTest {
     @DisplayName("남의 댓글은 수정할 수 없다")
     void updateOthersCommentFails() throws Exception {
         CommentEntity comment = commentRepository.save(TestUtil.makeCommentEntity(diary, owner, "남의 댓글"));
-        CommentUpdateRequest request = new CommentUpdateRequest("훔쳐 수정");
+        CommentUpdateRequest request = new CommentUpdateRequest("훔쳐 수정", null);
 
         mockMvc.perform(put("/api/comments/{commentId}", comment.getId())
                         .with(securityContext(SecurityContextHolder.getContext()))
@@ -390,7 +390,7 @@ class CommentControllerTest {
     void updateDeletedCommentFails() throws Exception {
         CommentEntity comment = commentRepository.save(TestUtil.makeCommentEntity(diary, viewer, "삭제됨"));
         comment.delete();
-        CommentUpdateRequest request = new CommentUpdateRequest("되살리기");
+        CommentUpdateRequest request = new CommentUpdateRequest("되살리기", null);
 
         mockMvc.perform(put("/api/comments/{commentId}", comment.getId())
                         .with(securityContext(SecurityContextHolder.getContext()))

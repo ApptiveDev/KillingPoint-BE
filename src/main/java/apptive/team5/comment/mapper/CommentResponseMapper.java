@@ -1,13 +1,13 @@
 package apptive.team5.comment.mapper;
 
 import apptive.team5.comment.domain.CommentEntity;
+import apptive.team5.comment.dto.CommentAttachmentResponse;
 import apptive.team5.comment.dto.CommentAuthorResponse;
 import apptive.team5.comment.dto.CommentResponse;
 import apptive.team5.user.domain.UserEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,21 +19,10 @@ public class CommentResponseMapper {
             Long viewerId,
             Set<Long> blockedUserIds,
             Set<Long> likedCommentIds,
-            Map<Long, Long> replyCounts
+            Map<Long, Long> replyCounts,
+            Map<Long, CommentAttachmentResponse> attachments
     ) {
-        return comments.map(comment -> toResponse(comment, viewerId, blockedUserIds, likedCommentIds, replyCounts));
-    }
-
-    public List<CommentResponse> toResponseList(
-            List<CommentEntity> comments,
-            Long viewerId,
-            Set<Long> blockedUserIds,
-            Set<Long> likedCommentIds,
-            Map<Long, Long> replyCounts
-    ) {
-        return comments.stream()
-                .map(comment -> toResponse(comment, viewerId, blockedUserIds, likedCommentIds, replyCounts))
-                .toList();
+        return comments.map(comment -> toResponse(comment, viewerId, blockedUserIds, likedCommentIds, replyCounts, attachments));
     }
 
     public CommentResponse toResponse(
@@ -41,7 +30,8 @@ public class CommentResponseMapper {
             Long viewerId,
             Set<Long> blockedUserIds,
             Set<Long> likedCommentIds,
-            Map<Long, Long> replyCounts
+            Map<Long, Long> replyCounts,
+            Map<Long, CommentAttachmentResponse> attachments
     ) {
         UserEntity author = comment.getUser();
         long replyCount = replyCounts.getOrDefault(comment.getId(), 0L);
@@ -62,6 +52,7 @@ public class CommentResponseMapper {
                 comment.getStatus(),
                 false,
                 comment.getContent(),
+                attachments.getOrDefault(comment.getId(), CommentAttachmentResponse.empty()),
                 author == null ? null : CommentAuthorResponse.from(author),
                 comment.isMine(viewerId),
                 likedCommentIds.contains(comment.getId()),
@@ -80,6 +71,7 @@ public class CommentResponseMapper {
                 comment.getStatus(),
                 isBlocked,
                 null,
+                CommentAttachmentResponse.empty(),
                 author,
                 false,
                 false,

@@ -1,5 +1,6 @@
 package apptive.team5.comment.service;
 
+import apptive.team5.comment.domain.CommentMentionEntity;
 import apptive.team5.comment.domain.MentionTargetType;
 import apptive.team5.comment.repository.CommentMentionRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,18 @@ import java.util.List;
 public class CommentMentionLowService {
 
     private final CommentMentionRepository commentMentionRepository;
+
+    public List<CommentMentionEntity> saveAll(List<CommentMentionEntity> mentions) {
+        return commentMentionRepository.saveAll(mentions);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CommentMentionEntity> findByCommentIds(List<Long> commentIds) {
+        if (commentIds == null || commentIds.isEmpty()) {
+            return List.of();
+        }
+        return commentMentionRepository.findByCommentIds(commentIds);
+    }
 
     public void deleteByCommentIds(List<Long> commentIds) {
         if (commentIds == null || commentIds.isEmpty()) {
