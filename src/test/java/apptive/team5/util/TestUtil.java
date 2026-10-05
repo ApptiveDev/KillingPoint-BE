@@ -1,5 +1,6 @@
 package apptive.team5.util;
 
+import apptive.team5.comment.domain.CommentEntity;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryScope;
 import apptive.team5.diary.domain.model.DiaryBasicInfo;
@@ -125,6 +126,14 @@ public final class TestUtil {
                 "PT1M31S",
                 null
         );
+    }
+
+    public static CommentEntity makeCommentEntity(DiaryEntity diary, UserEntity user, String content) {
+        return new CommentEntity(diary, user, null, content);
+    }
+
+    public static CommentEntity makeReplyEntity(DiaryEntity diary, UserEntity user, CommentEntity parent, String content) {
+        return new CommentEntity(diary, user, parent, content);
     }
 
     public static DiaryUpdateRequestDto makeDiaryUpdateRequest() {
