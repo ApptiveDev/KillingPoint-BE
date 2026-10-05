@@ -118,7 +118,7 @@ class DiaryDeletionIntegrationTest {
         CommentEntity parent = commentRepository.save(TestUtil.makeCommentEntity(diary, other, "댓글"));
         CommentEntity reply = commentRepository.save(TestUtil.makeReplyEntity(diary, owner, parent, "답글"));
         commentLikeRepository.save(new CommentLikeEntity(owner, parent));
-        commentMentionRepository.save(new CommentMentionEntity(parent, MentionTargetType.USER, owner.getId(), 1));
+        commentMentionRepository.save(new CommentMentionEntity(parent, MentionTargetType.USER, owner.getId(), 1, 3));
         commentReportRepository.save(new CommentReportEntity("신고", parent.getContent(), parent, owner));
 
         em.flush();

@@ -128,7 +128,7 @@ class UserWithdrawalIntegrationTest {
         commentLikeRepository.save(new CommentLikeEntity(leaver, othersComment));
         commentReportRepository.save(new CommentReportEntity("신고", othersComment.getContent(), othersComment, leaver));
         commentReportRepository.save(new CommentReportEntity("남의 신고", leaverComment.getContent(), leaverComment, other));
-        commentMentionRepository.save(new CommentMentionEntity(othersComment, MentionTargetType.USER, leaverId, 1));
+        commentMentionRepository.save(new CommentMentionEntity(othersComment, MentionTargetType.USER, leaverId, 1, 3));
         em.createQuery("update CommentEntity c set c.likeCount = 1 where c.id = :id")
                 .setParameter("id", othersComment.getId())
                 .executeUpdate();
