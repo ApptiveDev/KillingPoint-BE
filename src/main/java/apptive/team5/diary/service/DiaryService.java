@@ -1,6 +1,8 @@
 package apptive.team5.diary.service;
 
+import apptive.team5.comment.dto.CommentPreviewResponse;
 import apptive.team5.comment.service.CommentCleanupService;
+import apptive.team5.comment.service.CommentPreviewService;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryOrderEntity;
 import apptive.team5.diary.domain.DiaryScope;
@@ -50,6 +52,7 @@ public class DiaryService {
     private final RecommendationService recommendationService;
     private final ExploreExposureService exploreExposureService;
     private final CommentCleanupService commentCleanupService;
+    private final CommentPreviewService commentPreviewService;
 
     @Transactional(readOnly = true)
     public Page<MyDiaryResponseDto> getMyDiaries(Long userId, Pageable pageable) {
@@ -219,12 +222,14 @@ public class DiaryService {
         Set<Long> likedDiaryIds = diaryLikeLowService.findLikedDiaryIdsByUser(userId, diaryIds);
         Map<Long, Long> likeCountsMap = diaryLikeLowService.findLikeCountsByDiaryIds(diaryIds);
         Set<Long> storedDiaryIds = diaryStoreLowService.findStoredDiaryIdsByUser(userId, diaryIds);
+        Map<Long, CommentPreviewResponse> commentPreviews = commentPreviewService.getPreviews(diaryIds, userId);
 
         return diaryResponseMapper.mapToResponseDto(
                 diaryPage,
                 likedDiaryIds,
                 storedDiaryIds,
                 likeCountsMap,
+                commentPreviews,
                 userId,
                 mapper
         );
@@ -238,12 +243,14 @@ public class DiaryService {
         Set<Long> likedDiaryIds = diaryLikeLowService.findLikedDiaryIdsByUser(userId, diaryIds);
         Map<Long, Long> likeCountsMap = diaryLikeLowService.findLikeCountsByDiaryIds(diaryIds);
         Set<Long> storedDiaryIds = diaryStoreLowService.findStoredDiaryIdsByUser(userId, diaryIds);
+        Map<Long, CommentPreviewResponse> commentPreviews = commentPreviewService.getPreviews(diaryIds, userId);
 
         return diaryResponseMapper.mapToResponseDto(
                 diaries,
                 likedDiaryIds,
                 storedDiaryIds,
                 likeCountsMap,
+                commentPreviews,
                 userId,
                 mapper
         );
@@ -268,6 +275,7 @@ public class DiaryService {
         Set<Long> likedDiaryIds = diaryLikeLowService.findLikedDiaryIdsByUser(userId, diaryIds);
         Map<Long, Long> likeCountsMap = diaryLikeLowService.findLikeCountsByDiaryIds(diaryIds);
         Set<Long> storedDiaryIds = diaryStoreLowService.findStoredDiaryIdsByUser(userId, diaryIds);
+        Map<Long, CommentPreviewResponse> commentPreviews = commentPreviewService.getPreviews(diaryIds, userId);
         Map<Long, RecommendationService.RecommendedDiaryResult> resultMap = recommendedDiaries.stream()
                 .collect(Collectors.toMap(result -> result.diary().getId(), Function.identity()));
 
@@ -280,6 +288,7 @@ public class DiaryService {
                             storedDiaryIds.contains(diary.getId()),
                             likeCountsMap.getOrDefault(diary.getId(), 0L),
                             userId,
+                            commentPreviews.getOrDefault(diary.getId(), CommentPreviewResponse.empty()),
                             result.recommended(),
                             result.reason()
                     );
@@ -292,13 +301,15 @@ public class DiaryService {
         Set<Long> likedDiaryIds = diaryLikeLowService.findLikedDiaryIdsByUser(userId, List.of(diaryId));
         Map<Long, Long> likeCountsMap = diaryLikeLowService.findLikeCountsByDiaryIds(List.of(diaryId));
         Set<Long> storedDiaryIds = diaryStoreLowService.findStoredDiaryIdsByUser(userId, List.of(diaryId));
+        CommentPreviewResponse commentPreview = commentPreviewService.getPreview(diaryId, userId);
 
         return mapper.map(
                 diary,
                 likedDiaryIds.contains(diaryId),
                 storedDiaryIds.contains(diaryId),
                 likeCountsMap.getOrDefault(diaryId, 0L),
-                userId
+                userId,
+                commentPreview
         );
     }
 

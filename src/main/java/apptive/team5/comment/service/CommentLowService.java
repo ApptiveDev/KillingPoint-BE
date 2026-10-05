@@ -2,8 +2,10 @@ package apptive.team5.comment.service;
 
 import apptive.team5.comment.domain.CommentEntity;
 import apptive.team5.comment.domain.CommentStatus;
+import apptive.team5.comment.dto.CommentCountDto;
 import apptive.team5.comment.dto.CommentReplyCountDto;
 import apptive.team5.comment.repository.CommentRepository;
+import apptive.team5.comment.repository.QCommentRepository;
 import apptive.team5.global.exception.ExceptionCode;
 import apptive.team5.global.exception.NotFoundEntityException;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -25,6 +28,7 @@ import java.util.stream.Collectors;
 public class CommentLowService {
 
     private final CommentRepository commentRepository;
+    private final QCommentRepository qCommentRepository;
 
     public CommentEntity save(CommentEntity comment) {
         return commentRepository.save(comment);
@@ -87,6 +91,26 @@ public class CommentLowService {
     @Transactional(readOnly = true)
     public long countActiveTopLevelByDiaryId(Long diaryId) {
         return commentRepository.countTopLevelByDiaryId(diaryId, CommentStatus.ACTIVE);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, Long> countActiveTopLevelByDiaryIds(List<Long> diaryIds) {
+        if (diaryIds == null || diaryIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return commentRepository.countTopLevelByDiaryIds(diaryIds, CommentStatus.ACTIVE)
+                .stream()
+                .collect(Collectors.toMap(
+                        CommentCountDto::diaryId,
+                        CommentCountDto::commentCount,
+                        (a, b) -> a
+                ));
+    }
+
+    @Transactional(readOnly = true)
+    public List<CommentEntity> findRecentActiveTopLevel(Long diaryId, Set<Long> excludedUserIds, int limit) {
+        return qCommentRepository.findRecentActiveTopLevelComments(diaryId, excludedUserIds, limit);
     }
 
     @Transactional(readOnly = true)

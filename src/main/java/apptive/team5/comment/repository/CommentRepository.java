@@ -2,6 +2,7 @@ package apptive.team5.comment.repository;
 
 import apptive.team5.comment.domain.CommentEntity;
 import apptive.team5.comment.domain.CommentStatus;
+import apptive.team5.comment.dto.CommentCountDto;
 import apptive.team5.comment.dto.CommentReplyCountDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -77,6 +78,14 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
             where c.diary.id = :diaryId and c.parent is null and c.status = :status
             """)
     long countTopLevelByDiaryId(@Param("diaryId") Long diaryId, @Param("status") CommentStatus status);
+
+    @Query("""
+            select new apptive.team5.comment.dto.CommentCountDto(c.diary.id, count(c))
+            from CommentEntity c
+            where c.diary.id in :diaryIds and c.parent is null and c.status = :status
+            group by c.diary.id
+            """)
+    List<CommentCountDto> countTopLevelByDiaryIds(@Param("diaryIds") List<Long> diaryIds, @Param("status") CommentStatus status);
 
     @Query("select c.id from CommentEntity c where c.diary.id in :diaryIds")
     List<Long> findIdsByDiaryIds(@Param("diaryIds") List<Long> diaryIds);
