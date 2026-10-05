@@ -24,7 +24,17 @@ public enum ExceptionCode {
     DUPLICATE_DIARY_REPORT("이미 신고한 게시글입니다."),
     REQUIRED_POLICY_NOT_AGREED("필수 약관에 동의해야 합니다."),
     DUPLICATE_BLOCKED_USER("이미 차단한 회원입니다."),
-    BAD_BLOCK_REQUEST("자신을 차단할 수는 없습니다.");
+    BAD_BLOCK_REQUEST("자신을 차단할 수는 없습니다."),
+    NOT_FOUND_COMMENT("존재하지 않는 댓글입니다."),
+    ACCESS_DENIED_COMMENT("해당 댓글에 대한 권한이 없습니다."),
+    DELETED_COMMENT("삭제된 댓글입니다."),
+    INVALID_COMMENT_PARENT("답글을 달 수 없는 댓글입니다."),
+    NOT_FOUND_COMMENT_LIKE("좋아요를 누르지 않은 댓글입니다!"),
+    DUPLICATE_COMMENT_REPORT("이미 신고한 댓글입니다."),
+    MENTION_LIMIT_EXCEEDED("한 댓글에 최대 5명까지 언급할 수 있어요."),
+    INVALID_MENTION_REFERENCE("멘션 정보가 본문과 일치하지 않습니다."),
+    UNSUPPORTED_MENTION_TARGET("아직 지원하지 않는 멘션 대상입니다."),
+    BLOCKED_MENTION_TARGET("차단 관계인 사용자는 언급할 수 없습니다.");
 
     private final String description;
 
