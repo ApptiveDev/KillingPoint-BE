@@ -1,7 +1,9 @@
 package apptive.team5.subscribe.service;
 
 import apptive.team5.subscribe.domain.Subscribe;
+import apptive.team5.subscribe.repository.QSubscribeRepository;
 import apptive.team5.subscribe.repository.SubscribeRepository;
+import apptive.team5.user.domain.UserEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Transactional
 @RequiredArgsConstructor
@@ -16,6 +19,12 @@ import java.util.List;
 public class SubscribeLowService {
 
     private final SubscribeRepository subscribeRepository;
+    private final QSubscribeRepository qSubscribeRepository;
+
+    @Transactional(readOnly = true)
+    public List<UserEntity> findSubscribedUsersByKeyword(Long subscriberId, Set<Long> blockedUserIds, String keyword, int limit) {
+        return qSubscribeRepository.findSubscribedUsersByKeyword(subscriberId, blockedUserIds, keyword, limit);
+    }
 
     public Subscribe save(Subscribe subscribe) {
         return subscribeRepository.save(subscribe);

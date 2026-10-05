@@ -6,10 +6,12 @@ import apptive.team5.comment.domain.MentionTargetType;
 import apptive.team5.comment.dto.CommentAttachmentResponse;
 import apptive.team5.comment.dto.MentionDisplayResponse;
 import apptive.team5.comment.dto.MentionReferenceRequest;
+import apptive.team5.comment.dto.MentionCandidateResponse;
 import apptive.team5.comment.dto.MentionReferenceResponse;
 import apptive.team5.global.exception.BadRequestException;
 import apptive.team5.global.exception.ExceptionCode;
 import apptive.team5.global.exception.NotFoundEntityException;
+import apptive.team5.subscribe.service.SubscribeLowService;
 import apptive.team5.user.domain.UserEntity;
 import apptive.team5.user.service.UserBlockLowService;
 import apptive.team5.user.service.UserLowService;
@@ -32,11 +34,13 @@ import java.util.stream.Collectors;
 public class CommentMentionService {
 
     private static final int MAX_MENTION_TARGETS = 5;
+    private static final int MAX_CANDIDATE_SIZE = 20;
     private static final char AT_SIGN = '@';
 
     private final CommentMentionLowService commentMentionLowService;
     private final UserLowService userLowService;
     private final UserBlockLowService userBlockLowService;
+    private final SubscribeLowService subscribeLowService;
 
     public void createMentions(CommentEntity comment, String text, List<MentionReferenceRequest> references, Long authorId) {
         if (references.isEmpty()) {
@@ -57,6 +61,17 @@ public class CommentMentionService {
     public void replaceMentions(CommentEntity comment, String text, List<MentionReferenceRequest> references, Long authorId) {
         commentMentionLowService.deleteByCommentIds(List.of(comment.getId()));
         createMentions(comment, text, references, authorId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MentionCandidateResponse> getMentionCandidates(Long userId, String keyword, int size) {
+        int limit = Math.max(1, Math.min(size, MAX_CANDIDATE_SIZE));
+        Set<Long> blockedUserIds = userBlockLowService.getBlockedUserIds(userId);
+
+        return subscribeLowService.findSubscribedUsersByKeyword(userId, blockedUserIds, keyword, limit)
+                .stream()
+                .map(MentionCandidateResponse::from)
+                .toList();
     }
 
     @Transactional(readOnly = true)
