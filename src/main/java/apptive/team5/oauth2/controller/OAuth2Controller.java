@@ -49,9 +49,9 @@ public class OAuth2Controller {
     }
 
     @GetMapping("/test")
-    public ResponseEntity<TokenResponse> testLogin() {
+    public ResponseEntity<TokenResponse> testLogin(@RequestParam(required = false) String name) {
 
-        TokenResponse tokenResponse = testLoginService.testLogin();
+        TokenResponse tokenResponse = testLoginService.testLogin(name);
 
         return ResponseEntity.ok(tokenResponse);
     }

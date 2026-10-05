@@ -4,6 +4,7 @@ import apptive.team5.admin.dto.AdminUgcItem;
 import apptive.team5.admin.dto.AdminMemoItem;
 import apptive.team5.admin.dto.AdminUgcSearchType;
 import apptive.team5.admin.repository.AdminUgcQueryRepository;
+import apptive.team5.comment.service.CommentCleanupService;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryMemoEntity;
 import apptive.team5.diary.service.DiaryLowService;
@@ -33,6 +34,7 @@ public class AdminUgcService {
     private final DiaryOrderLowService diaryOrderLowService;
     private final DiaryReportLowService diaryReportLowService;
     private final DiaryStoreLowService diaryStoreLowService;
+    private final CommentCleanupService commentCleanupService;
 
     @Transactional(readOnly = true)
     public Page<AdminUgcItem> getPublicUgcItems(String filter, AdminUgcSearchType searchType, String query, Pageable pageable) {
@@ -84,6 +86,7 @@ public class AdminUgcService {
         diaryLikeLowService.deleteByDiaryId(diaryId);
         diaryStoreLowService.deleteByDiaryId(diaryId);
         diaryMemoLowService.deleteByDiaryId(diaryId);
+        commentCleanupService.deleteByDiaryId(diaryId);
         diaryLowService.deleteDiary(diary);
     }
 

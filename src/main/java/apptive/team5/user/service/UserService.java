@@ -1,5 +1,9 @@
 package apptive.team5.user.service;
 import apptive.team5.alarm.service.AlarmLowService;
+import apptive.team5.comment.service.CommentCleanupService;
+import apptive.team5.recommendation.service.UserArtistPreferenceLowService;
+import apptive.team5.recommendation.service.UserExploreExposureLowService;
+import apptive.team5.recommendation.service.UserGenrePreferenceLowService;
 import apptive.team5.diary.service.*;
 import apptive.team5.fcm.service.DeviceTokenLowService;
 import apptive.team5.file.dto.FileUploadRequest;
@@ -60,6 +64,10 @@ public class UserService {
     private final UserBlockLowService userBlockLowService;
     private final DeviceTokenLowService deviceTokenLowService;
     private final AlarmLowService alarmLowService;
+    private final CommentCleanupService commentCleanupService;
+    private final UserGenrePreferenceLowService userGenrePreferenceLowService;
+    private final UserArtistPreferenceLowService userArtistPreferenceLowService;
+    private final UserExploreExposureLowService userExploreExposureLowService;
 
     public TokenResponse socialLogin(OAuth2Response oAuth2Response) {
         String identifier = oAuth2Response.getProvider() + "-" +oAuth2Response.getProviderId();
@@ -112,7 +120,11 @@ public class UserService {
         diaryReportLowService.deleteByUserId(userId);
         diaryLikeLowService.deleteByUserId(userId);
         diaryOrderLowService.deleteByUserId(userId);
+        userGenrePreferenceLowService.deleteByUserId(userId);
+        userArtistPreferenceLowService.deleteByUserId(userId);
+        userExploreExposureLowService.deleteByUserId(userId);
 
+        commentCleanupService.handleUserWithdrawal(userId);
         diaryService.deleteByUserId(userId);
         jwtService.deleteRefreshTokenByUserId(userId);
         userPolicyLowService.deleteByUserEntity(findUser);

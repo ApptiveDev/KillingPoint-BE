@@ -1,5 +1,6 @@
 package apptive.team5.diary.service;
 
+import apptive.team5.comment.service.CommentCleanupService;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryOrderEntity;
 import apptive.team5.diary.domain.DiaryScope;
@@ -48,6 +49,7 @@ public class DiaryService {
     private final PreferenceService preferenceService;
     private final RecommendationService recommendationService;
     private final ExploreExposureService exploreExposureService;
+    private final CommentCleanupService commentCleanupService;
 
     @Transactional(readOnly = true)
     public Page<MyDiaryResponseDto> getMyDiaries(Long userId, Pageable pageable) {
@@ -187,6 +189,7 @@ public class DiaryService {
         diaryOrderLowService.deleteDiaryId(userId, diaryId);
         diaryLikeLowService.deleteByDiaryId(diaryId);
         diaryMemoLowService.deleteByDiaryId(diaryId);
+        commentCleanupService.deleteByDiaryId(diaryId);
         diaryLowService.deleteDiary(foundDiary);
     }
 
@@ -202,6 +205,8 @@ public class DiaryService {
         diaryLikeLowService.deleteByDiaryIds(diaryIds);
 
         diaryMemoLowService.deleteByDiaryIds(diaryIds);
+
+        commentCleanupService.deleteByDiaryIds(diaryIds);
 
         diaryLowService.deleteByUserId(userId);
     }

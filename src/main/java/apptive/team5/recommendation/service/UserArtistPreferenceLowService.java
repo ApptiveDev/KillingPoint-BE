@@ -33,4 +33,8 @@ public class UserArtistPreferenceLowService {
     public List<UserArtistPreferenceEntity> findTop5ByUserId(Long userId) {
         return userArtistPreferenceRepository.findTop5ByUser_IdOrderByScoreDescUpdateDateTimeDesc(userId);
     }
+
+    public void deleteByUserId(Long userId) {
+        userArtistPreferenceRepository.deleteByUserId(userId);
+    }
 }

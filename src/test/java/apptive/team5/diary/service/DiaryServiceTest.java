@@ -1,5 +1,6 @@
 package apptive.team5.diary.service;
 
+import apptive.team5.comment.service.CommentCleanupService;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryOrderEntity;
 import apptive.team5.diary.domain.DiaryScope;
@@ -83,6 +84,8 @@ public class DiaryServiceTest {
     private DiaryStoreLowService diaryStoreLowService;
     @Mock
     private DiaryMemoLowService diaryMemoLowService;
+    @Mock
+    private CommentCleanupService commentCleanupService;
 
     @Test
     @DisplayName("내 다이어리 목록 조회 - diaryOrder 없는 상황")

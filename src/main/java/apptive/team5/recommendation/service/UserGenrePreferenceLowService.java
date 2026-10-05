@@ -33,4 +33,8 @@ public class UserGenrePreferenceLowService {
     public List<UserGenrePreferenceEntity> findTop3ByUserId(Long userId) {
         return userGenrePreferenceRepository.findTop3ByUser_IdOrderByScoreDescUpdateDateTimeDesc(userId);
     }
+
+    public void deleteByUserId(Long userId) {
+        userGenrePreferenceRepository.deleteByUserId(userId);
+    }
 }

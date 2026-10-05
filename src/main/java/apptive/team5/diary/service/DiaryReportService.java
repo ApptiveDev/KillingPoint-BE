@@ -1,5 +1,6 @@
 package apptive.team5.diary.service;
 
+import apptive.team5.comment.service.CommentCleanupService;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryReportEntity;
 import apptive.team5.diary.dto.DiaryReportRequestDto;
@@ -27,6 +28,7 @@ public class DiaryReportService {
     private final DiaryLikeLowService diaryLikeLowService;
     private final DiaryMemoLowService diaryMemoLowService;
     private final UserLowService userLowService;
+    private final CommentCleanupService commentCleanupService;
 
     public DiaryReportResponseDto createDiaryReport(DiaryReportRequestDto diaryReportRequestDto, Long diaryId, Long userId) {
 
@@ -58,6 +60,8 @@ public class DiaryReportService {
         diaryLikeLowService.deleteByDiaryIds(invalidDiaryIds);  // 부적절한 diary의 좋아요 삭제
 
         diaryMemoLowService.deleteByDiaryIds(invalidDiaryIds);  // 부적절한 diary의 메모 삭제
+
+        commentCleanupService.deleteByDiaryIds(invalidDiaryIds);
 
         Set<Long> userIds = diaryLowService.findAllByIds(invalidDiaryIds)
                 .stream()

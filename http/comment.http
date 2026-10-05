@@ -1,0 +1,182 @@
+# 댓글 기능 수동 시나리오 (IntelliJ HTTP Client)
+# 1. 로컬 서버 실행 (bootRun), MySQL killing_point 기동
+# 2. 우측 상단 환경을 local 로 선택
+# 3. 위에서 아래로 ▶ 순서대로 실행. 토큰/id 는 응답에서 자동으로 변수에 담긴다.
+#
+# 등장인물: A = 킬링파트 주인, B = 댓글 다는 사람, C = A 가 차단할 사람
+
+### A 로그인
+GET {{host}}/api/oauth2/test?name=commentA
+
+> {% client.global.set("tokenA", response.body.accessToken); %}
+
+### B 로그인
+GET {{host}}/api/oauth2/test?name=commentB
+
+> {% client.global.set("tokenB", response.body.accessToken); %}
+
+### C 로그인
+GET {{host}}/api/oauth2/test?name=commentC
+
+> {% client.global.set("tokenC", response.body.accessToken); %}
+
+### C 의 userId 확보 (차단 시나리오용)
+GET {{host}}/api/users/my
+Authorization: Bearer {{tokenC}}
+
+> {% client.global.set("userC", response.body.userId); %}
+
+### A 가 킬링파트 작성
+POST {{host}}/api/diaries
+Authorization: Bearer {{tokenA}}
+Content-Type: application/json
+
+{
+  "artist": "Test Artist",
+  "musicTitle": "Test Music",
+  "albumImageUrl": "https://example.com/album.png",
+  "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  "content": "댓글 테스트용 킬링파트",
+  "scope": "PUBLIC",
+  "duration": "30S",
+  "totalDuration": "PT2M58S",
+  "start": "PT1M1S",
+  "end": "PT1M31S"
+}
+
+> {%
+    const location = response.headers.valueOf("Location");
+    client.global.set("diaryId", location.substring(location.lastIndexOf("/") + 1));
+%}
+
+### B 댓글 작성 → 201, author = B, isMine = true
+POST {{host}}/api/diaries/{{diaryId}}/comments
+Authorization: Bearer {{tokenB}}
+Content-Type: application/json
+
+{
+  "text": "첫 댓글입니다. 좋은 킬파네요!",
+  "parentCommentId": null
+}
+
+> {% client.global.set("commentB1", response.body.commentId); %}
+
+### B 두 번째 댓글 (정렬 확인용)
+POST {{host}}/api/diaries/{{diaryId}}/comments
+Authorization: Bearer {{tokenB}}
+Content-Type: application/json
+
+{
+  "text": "두 번째 댓글",
+  "parentCommentId": null
+}
+
+> {% client.global.set("commentB2", response.body.commentId); %}
+
+### C 댓글 작성 (차단 시나리오용)
+POST {{host}}/api/diaries/{{diaryId}}/comments
+Authorization: Bearer {{tokenC}}
+Content-Type: application/json
+
+{
+  "text": "C 의 댓글",
+  "parentCommentId": null
+}
+
+> {% client.global.set("commentC1", response.body.commentId); %}
+
+### A 가 B 첫 댓글에 답글 → parentCommentId = commentB1
+POST {{host}}/api/diaries/{{diaryId}}/comments
+Authorization: Bearer {{tokenA}}
+Content-Type: application/json
+
+{
+  "text": "감사합니다!",
+  "parentCommentId": {{commentB1}}
+}
+
+> {% client.global.set("replyA1", response.body.commentId); %}
+
+### 목록 조회 (A 시점) → commentCount 3, commentB1 의 replyCount 1, 최신순(좋아요 동일)
+GET {{host}}/api/diaries/{{diaryId}}/comments?page=0&size=20
+Authorization: Bearer {{tokenA}}
+
+### 답글 목록 → replyA1 하나
+GET {{host}}/api/comments/{{commentB1}}/replies
+Authorization: Bearer {{tokenA}}
+
+### B 가 자기 댓글 수정 → isEdited true
+PUT {{host}}/api/comments/{{commentB2}}
+Authorization: Bearer {{tokenB}}
+Content-Type: application/json
+
+{
+  "text": "두 번째 댓글 (수정됨)"
+}
+
+### A 가 B 댓글 수정 시도 → 403
+PUT {{host}}/api/comments/{{commentB2}}
+Authorization: Bearer {{tokenA}}
+Content-Type: application/json
+
+{
+  "text": "남의 댓글 수정"
+}
+
+### 답글의 답글 시도 → 400
+POST {{host}}/api/diaries/{{diaryId}}/comments
+Authorization: Bearer {{tokenB}}
+Content-Type: application/json
+
+{
+  "text": "답글의 답글",
+  "parentCommentId": {{replyA1}}
+}
+
+### 공백 댓글 → 400 (fieldErrors)
+POST {{host}}/api/diaries/{{diaryId}}/comments
+Authorization: Bearer {{tokenB}}
+Content-Type: application/json
+
+{
+  "text": "   ",
+  "parentCommentId": null
+}
+
+### A 가 C 를 차단
+POST {{host}}/api/users/{{userC}}/blocks
+Authorization: Bearer {{tokenA}}
+
+### 목록 조회 (A 시점) → commentC1 이 isBlocked true, text null, author.userId 만
+GET {{host}}/api/diaries/{{diaryId}}/comments?page=0&size=20
+Authorization: Bearer {{tokenA}}
+
+### B 가 답글 달린 첫 댓글 삭제 → 204
+DELETE {{host}}/api/comments/{{commentB1}}
+Authorization: Bearer {{tokenB}}
+
+### 목록 조회 (A 시점) → commentB1 이 status DELETED 플레이스홀더(text/author null, replyCount 1), commentCount 2
+GET {{host}}/api/diaries/{{diaryId}}/comments?page=0&size=20
+Authorization: Bearer {{tokenA}}
+
+### 삭제된 원댓글에 답글 시도 → 400
+POST {{host}}/api/diaries/{{diaryId}}/comments
+Authorization: Bearer {{tokenA}}
+Content-Type: application/json
+
+{
+  "text": "삭제된 댓글에 답글",
+  "parentCommentId": {{commentB1}}
+}
+
+### 답글 없는 댓글 삭제 → 목록에서 사라짐
+DELETE {{host}}/api/comments/{{commentB2}}
+Authorization: Bearer {{tokenB}}
+
+### 최종 목록 (A 시점)
+GET {{host}}/api/diaries/{{diaryId}}/comments?page=0&size=20
+Authorization: Bearer {{tokenA}}
+
+### 정리: A 가 킬링파트 삭제 (댓글 cascade 확인, 204)
+DELETE {{host}}/api/diaries/{{diaryId}}
+Authorization: Bearer {{tokenA}}
