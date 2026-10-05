@@ -29,4 +29,8 @@ public class UserExploreExposureLowService {
     public void deleteOlderThan(Long userId, LocalDateTime cutoff) {
         userExploreExposureRepository.deleteByUser_IdAndCreateDateTimeBefore(userId, cutoff);
     }
+
+    public void deleteByUserId(Long userId) {
+        userExploreExposureRepository.deleteByUserId(userId);
+    }
 }
