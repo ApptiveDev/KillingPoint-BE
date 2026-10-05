@@ -143,6 +143,40 @@ Content-Type: application/json
   "parentCommentId": null
 }
 
+### A 가 B 첫 댓글 좋아요 → isLiked true, likeCount 1
+POST {{host}}/api/comments/{{commentB1}}/like
+Authorization: Bearer {{tokenA}}
+
+### C 도 B 첫 댓글 좋아요 → likeCount 2
+POST {{host}}/api/comments/{{commentB1}}/like
+Authorization: Bearer {{tokenC}}
+
+### 목록 조회 (A 시점) → commentB1 이 likeCount 2 로 최상단, isLiked true
+GET {{host}}/api/diaries/{{diaryId}}/comments?page=0&size=20
+Authorization: Bearer {{tokenA}}
+
+### A 가 다시 누르면 취소 → isLiked false, likeCount 1
+POST {{host}}/api/comments/{{commentB1}}/like
+Authorization: Bearer {{tokenA}}
+
+### A 가 C 댓글 신고 → 201 (운영자 메일 발송)
+POST {{host}}/api/comments/{{commentC1}}/reports
+Authorization: Bearer {{tokenA}}
+Content-Type: application/json
+
+{
+  "content": "부적절한 댓글이에요"
+}
+
+### 같은 댓글 다시 신고 → 400 이미 신고한 댓글입니다.
+POST {{host}}/api/comments/{{commentC1}}/reports
+Authorization: Bearer {{tokenA}}
+Content-Type: application/json
+
+{
+  "content": "또 신고"
+}
+
 ### A 가 C 를 차단
 POST {{host}}/api/users/{{userC}}/blocks
 Authorization: Bearer {{tokenA}}
