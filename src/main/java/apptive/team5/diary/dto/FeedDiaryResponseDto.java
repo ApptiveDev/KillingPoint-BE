@@ -1,10 +1,8 @@
 package apptive.team5.diary.dto;
 
+import apptive.team5.comment.dto.CommentPreviewResponse;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryScope;
-import apptive.team5.diary.domain.DiaryStoreEntity;
-import apptive.team5.global.exception.BadRequestException;
-import apptive.team5.global.exception.ExceptionCode;
 import apptive.team5.global.util.S3Util;
 import apptive.team5.user.domain.UserEntity;
 
@@ -32,10 +30,11 @@ public record FeedDiaryResponseDto (
         String tag,
         String profileImageUrl,
         boolean isRecommended,
-        String recommendationReason
+        String recommendationReason,
+        CommentPreviewResponse commentPreview
 ) implements DiaryResponseDto {
-    public static FeedDiaryResponseDto from(DiaryEntity diary, boolean isLiked, boolean isStored, Long likeCount, Long currentUserId) {
-        return from(diary, isLiked, isStored, likeCount, currentUserId, false, null);
+    public static FeedDiaryResponseDto from(DiaryEntity diary, boolean isLiked, boolean isStored, Long likeCount, Long currentUserId, CommentPreviewResponse commentPreview) {
+        return from(diary, isLiked, isStored, likeCount, currentUserId, commentPreview, false, null);
     }
 
     public static FeedDiaryResponseDto from(
@@ -44,6 +43,7 @@ public record FeedDiaryResponseDto (
             boolean isStored,
             Long likeCount,
             Long currentUserId,
+            CommentPreviewResponse commentPreview,
             boolean isRecommended,
             String recommendationReason
     ) {
@@ -72,7 +72,8 @@ public record FeedDiaryResponseDto (
                 user.getTag(),
                 S3Util.s3Url + user.getProfileImage(),
                 isRecommended,
-                recommendationReason
+                recommendationReason,
+                commentPreview
         );
     }
 }

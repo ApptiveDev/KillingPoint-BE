@@ -1,6 +1,7 @@
 package apptive.team5.diary.dto;
 
 
+import apptive.team5.comment.dto.CommentPreviewResponse;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryScope;
 import java.time.LocalDateTime;
@@ -22,9 +23,10 @@ public record MyDiaryResponseDto(
         boolean isLiked,
         boolean isStored,
         Long likeCount,
-        Long userId
+        Long userId,
+        CommentPreviewResponse commentPreview
 ) implements DiaryResponseDto {
-    public static MyDiaryResponseDto from(DiaryEntity diary, boolean isLiked, boolean isStored, Long likeCount, Long userId) {
+    public static MyDiaryResponseDto from(DiaryEntity diary, boolean isLiked, boolean isStored, Long likeCount, Long userId, CommentPreviewResponse commentPreview) {
         return new MyDiaryResponseDto(
                 diary.getId(),
                 diary.getArtist(),
@@ -42,7 +44,8 @@ public record MyDiaryResponseDto(
                 isLiked,
                 isStored,
                 likeCount,
-                userId
+                userId,
+                commentPreview
         );
     }
 }

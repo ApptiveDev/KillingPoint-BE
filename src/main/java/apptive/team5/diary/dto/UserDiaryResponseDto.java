@@ -1,9 +1,8 @@
 package apptive.team5.diary.dto;
 
+import apptive.team5.comment.dto.CommentPreviewResponse;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.domain.DiaryScope;
-import apptive.team5.global.exception.BadRequestException;
-import apptive.team5.global.exception.ExceptionCode;
 
 import java.time.LocalDateTime;
 
@@ -23,9 +22,10 @@ public record UserDiaryResponseDto(
         LocalDateTime updateDate,
         boolean isLiked,
         boolean isStored,
-        Long likeCount
+        Long likeCount,
+        CommentPreviewResponse commentPreview
 ) implements DiaryResponseDto {
-    public static UserDiaryResponseDto from(DiaryEntity diary, boolean isLiked, boolean isStored, Long likeCount, Long currentUserId) {
+    public static UserDiaryResponseDto from(DiaryEntity diary, boolean isLiked, boolean isStored, Long likeCount, Long currentUserId, CommentPreviewResponse commentPreview) {
         String contentResponse = diary.getContentForViewer(currentUserId);
 
         return new UserDiaryResponseDto(
@@ -44,7 +44,8 @@ public record UserDiaryResponseDto(
                 diary.getUpdateDateTime(),
                 isLiked,
                 isStored,
-                likeCount
+                likeCount,
+                commentPreview
         );
     }
 }

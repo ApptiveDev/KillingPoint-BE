@@ -1,5 +1,6 @@
 package apptive.team5.diary.mapper;
 
+import apptive.team5.comment.dto.CommentPreviewResponse;
 import apptive.team5.diary.domain.DiaryEntity;
 import apptive.team5.diary.dto.DiaryResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ public class DiaryResponseMapper {
 
     @FunctionalInterface
     public interface DiaryResponseDtoMapper<T extends DiaryResponseDto> {
-        T map(DiaryEntity diary, boolean isLiked, boolean isStored, Long likeCount, Long currentUserId);
+        T map(DiaryEntity diary, boolean isLiked, boolean isStored, Long likeCount, Long currentUserId, CommentPreviewResponse commentPreview);
     }
 
     public <T extends DiaryResponseDto> Page<T> mapToResponseDto(
@@ -24,6 +25,7 @@ public class DiaryResponseMapper {
             Set<Long> likedDiaryIds,
             Set<Long> storedDiaryIds,
             Map<Long, Long> likeCountsMap,
+            Map<Long, CommentPreviewResponse> commentPreviews,
             Long currentUserId,
             DiaryResponseDtoMapper<T> mapper
     ) {
@@ -37,7 +39,8 @@ public class DiaryResponseMapper {
                         likedDiaryIds.contains(diary.getId()),
                         storedDiaryIds.contains(diary.getId()),
                         likeCountsMap.getOrDefault(diary.getId(), 0L),
-                        currentUserId
+                        currentUserId,
+                        commentPreviews.getOrDefault(diary.getId(), CommentPreviewResponse.empty())
                 )
         );
     }
@@ -47,6 +50,7 @@ public class DiaryResponseMapper {
             Set<Long> likedDiaryIds,
             Set<Long> storedDiaryIds,
             Map<Long, Long> likeCountsMap,
+            Map<Long, CommentPreviewResponse> commentPreviews,
             Long currentUserId,
             DiaryResponseDtoMapper<T> mapper
     ) {
@@ -57,7 +61,8 @@ public class DiaryResponseMapper {
                                 likedDiaryIds.contains(diary.getId()),
                                 storedDiaryIds.contains(diary.getId()),
                                 likeCountsMap.getOrDefault(diary.getId(), 0L),
-                                currentUserId
+                                currentUserId,
+                                commentPreviews.getOrDefault(diary.getId(), CommentPreviewResponse.empty())
                         )
                 )
                 .toList();
