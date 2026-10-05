@@ -85,6 +85,14 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
     List<Long> findIdsByUserId(@Param("userId") Long userId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update CommentEntity c set c.likeCount = c.likeCount + 1 where c.id = :commentId")
+    void increaseLikeCount(@Param("commentId") Long commentId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update CommentEntity c set c.likeCount = c.likeCount - 1 where c.id = :commentId and c.likeCount > 0")
+    void decreaseLikeCount(@Param("commentId") Long commentId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("delete from CommentEntity c where c.diary.id in :diaryIds and c.parent is not null")
     void deleteRepliesByDiaryIds(@Param("diaryIds") List<Long> diaryIds);
 
