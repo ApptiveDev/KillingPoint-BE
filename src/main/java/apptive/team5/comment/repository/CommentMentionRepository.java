@@ -11,6 +11,9 @@ import java.util.List;
 
 public interface CommentMentionRepository extends JpaRepository<CommentMentionEntity, Long> {
 
+    @Query("select m from CommentMentionEntity m where m.comment.id in :commentIds order by m.comment.id, m.atOrder")
+    List<CommentMentionEntity> findByCommentIds(@Param("commentIds") List<Long> commentIds);
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("delete from CommentMentionEntity m where m.comment.id in :commentIds")
     void deleteByCommentIds(@Param("commentIds") List<Long> commentIds);

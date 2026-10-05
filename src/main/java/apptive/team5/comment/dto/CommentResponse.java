@@ -11,6 +11,7 @@ public record CommentResponse(
         CommentStatus status,
         boolean isBlocked,
         String text,
+        CommentAttachmentResponse attachment,
         CommentAuthorResponse author,
         boolean isMine,
         boolean isLiked,

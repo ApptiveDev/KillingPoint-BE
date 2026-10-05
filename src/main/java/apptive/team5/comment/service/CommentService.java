@@ -1,6 +1,7 @@
 package apptive.team5.comment.service;
 
 import apptive.team5.comment.domain.CommentEntity;
+import apptive.team5.comment.dto.CommentAttachmentResponse;
 import apptive.team5.comment.dto.CommentCreateRequest;
 import apptive.team5.comment.dto.CommentPageResponse;
 import apptive.team5.comment.dto.CommentResponse;
@@ -31,6 +32,7 @@ public class CommentService {
 
     private final CommentLowService commentLowService;
     private final CommentLikeLowService commentLikeLowService;
+    private final CommentMentionService commentMentionService;
     private final DiaryLowService diaryLowService;
     private final UserLowService userLowService;
     private final UserBlockLowService userBlockLowService;
@@ -49,9 +51,10 @@ public class CommentService {
         Set<Long> blockedUserIds = userBlockLowService.getBlockedUserIds(viewerId);
         Set<Long> likedCommentIds = commentLikeLowService.findLikedCommentIds(viewerId, commentIds);
         Map<Long, Long> replyCounts = commentLowService.findActiveReplyCounts(commentIds);
+        Map<Long, CommentAttachmentResponse> attachments = commentMentionService.getAttachments(commentIds);
 
         Page<CommentResponse> responsePage = commentResponseMapper.toResponsePage(
-                commentPage, viewerId, blockedUserIds, likedCommentIds, replyCounts
+                commentPage, viewerId, blockedUserIds, likedCommentIds, replyCounts, attachments
         );
 
         return new CommentPageResponse(commentCount, responsePage);
@@ -68,8 +71,9 @@ public class CommentService {
 
         Set<Long> blockedUserIds = userBlockLowService.getBlockedUserIds(viewerId);
         Set<Long> likedCommentIds = commentLikeLowService.findLikedCommentIds(viewerId, replyIds);
+        Map<Long, CommentAttachmentResponse> attachments = commentMentionService.getAttachments(replyIds);
 
-        return commentResponseMapper.toResponsePage(replyPage, viewerId, blockedUserIds, likedCommentIds, Map.of());
+        return commentResponseMapper.toResponsePage(replyPage, viewerId, blockedUserIds, likedCommentIds, Map.of(), attachments);
     }
 
     public CommentResponse createComment(Long diaryId, Long userId, CommentCreateRequest request) {
@@ -86,8 +90,11 @@ public class CommentService {
         }
 
         CommentEntity saved = commentLowService.save(new CommentEntity(diary, user, parent, request.text()));
+        commentMentionService.createMentions(saved, request.text(), request.referencesOrEmpty(), userId);
 
-        return commentResponseMapper.toResponse(saved, userId, Set.of(), Set.of(), Map.of());
+        Map<Long, CommentAttachmentResponse> attachments = commentMentionService.getAttachments(List.of(saved.getId()));
+
+        return commentResponseMapper.toResponse(saved, userId, Set.of(), Set.of(), Map.of(), attachments);
     }
 
     public CommentResponse updateComment(Long commentId, Long userId, CommentUpdateRequest request) {
@@ -96,11 +103,14 @@ public class CommentService {
         comment.validateActive();
 
         comment.edit(request.text());
+        commentMentionService.replaceMentions(comment, request.text(), request.referencesOrEmpty(), userId);
 
+        CommentEntity refreshed = commentLowService.findByIdWithUserAndDiary(commentId);
         Set<Long> likedCommentIds = commentLikeLowService.findLikedCommentIds(userId, List.of(commentId));
         Map<Long, Long> replyCounts = commentLowService.findActiveReplyCounts(List.of(commentId));
+        Map<Long, CommentAttachmentResponse> attachments = commentMentionService.getAttachments(List.of(commentId));
 
-        return commentResponseMapper.toResponse(comment, userId, Set.of(), likedCommentIds, replyCounts);
+        return commentResponseMapper.toResponse(refreshed, userId, Set.of(), likedCommentIds, replyCounts, attachments);
     }
 
     public void deleteComment(Long commentId, Long userId) {

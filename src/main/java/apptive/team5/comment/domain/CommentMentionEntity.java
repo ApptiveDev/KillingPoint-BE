@@ -58,10 +58,14 @@ public class CommentMentionEntity {
     @Column(nullable = false)
     private int atOrder;
 
-    public CommentMentionEntity(CommentEntity comment, MentionTargetType targetType, Long targetId, int atOrder) {
+    @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+    private int length;
+
+    public CommentMentionEntity(CommentEntity comment, MentionTargetType targetType, Long targetId, int atOrder, int length) {
         this.comment = comment;
         this.targetType = targetType;
         this.targetId = targetId;
         this.atOrder = atOrder;
+        this.length = length;
     }
 }
