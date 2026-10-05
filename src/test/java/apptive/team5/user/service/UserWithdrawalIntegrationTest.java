@@ -5,10 +5,12 @@ import apptive.team5.alarm.entity.AlarmMessage;
 import apptive.team5.alarm.repository.AlarmRepository;
 import apptive.team5.comment.domain.CommentEntity;
 import apptive.team5.comment.domain.CommentLikeEntity;
+import apptive.team5.comment.domain.CommentReportEntity;
 import apptive.team5.comment.domain.CommentMentionEntity;
 import apptive.team5.comment.domain.CommentStatus;
 import apptive.team5.comment.domain.MentionTargetType;
 import apptive.team5.comment.repository.CommentLikeRepository;
+import apptive.team5.comment.repository.CommentReportRepository;
 import apptive.team5.comment.repository.CommentMentionRepository;
 import apptive.team5.comment.repository.CommentRepository;
 import apptive.team5.diary.domain.DiaryEntity;
@@ -90,6 +92,8 @@ class UserWithdrawalIntegrationTest {
     @Autowired
     private CommentLikeRepository commentLikeRepository;
     @Autowired
+    private CommentReportRepository commentReportRepository;
+    @Autowired
     private CommentMentionRepository commentMentionRepository;
 
     @Test
@@ -122,6 +126,8 @@ class UserWithdrawalIntegrationTest {
         CommentEntity othersComment = commentRepository.save(TestUtil.makeCommentEntity(otherDiary, other, "남의 댓글"));
         commentRepository.save(TestUtil.makeCommentEntity(leaverDiary, other, "탈퇴자 다이어리의 남의 댓글"));
         commentLikeRepository.save(new CommentLikeEntity(leaver, othersComment));
+        commentReportRepository.save(new CommentReportEntity("신고", othersComment.getContent(), othersComment, leaver));
+        commentReportRepository.save(new CommentReportEntity("남의 신고", leaverComment.getContent(), leaverComment, other));
         commentMentionRepository.save(new CommentMentionEntity(othersComment, MentionTargetType.USER, leaverId, 1));
         em.createQuery("update CommentEntity c set c.likeCount = 1 where c.id = :id")
                 .setParameter("id", othersComment.getId())
@@ -152,6 +158,8 @@ class UserWithdrawalIntegrationTest {
             softly.assertThat(foundOthersReply.getStatus()).isEqualTo(CommentStatus.ACTIVE);
             softly.assertThat(foundOthersComment.getLikeCount()).isZero();
             softly.assertThat(count("CommentMentionEntity", "targetId", leaverId)).isZero();
+            softly.assertThat(count("CommentReportEntity", "user.id", leaverId)).isZero();
+            softly.assertThat(count("CommentReportEntity", "comment.id", leaverComment.getId())).isEqualTo(1);
         });
     }
 
