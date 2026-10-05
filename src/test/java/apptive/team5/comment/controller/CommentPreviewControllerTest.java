@@ -41,6 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CommentPreviewControllerTest {
 
     private static final String LONG_CONTENT = "이 댓글은 서른 글자를 넘기기 위해 일부러 길게 작성한 미리보기 테스트용 본문입니다";
+    private static final String GRINNING_FACE = "😀";
 
     @Autowired
     private MockMvc mockMvc;
@@ -93,14 +94,7 @@ class CommentPreviewControllerTest {
     @Test
     @DisplayName("단건 조회 - 최신 3개, 차단 유저와 삭제 댓글 제외, 답글은 개수에 미포함, 본문 30자 절단")
     void previewOnSingleDiary() throws Exception {
-        loginAs(viewer);
-
-        JsonNode node = objectMapper.readTree(mockMvc.perform(get("/api/diaries/{diaryId}", diary.getId())
-                        .with(securityContext(SecurityContextHolder.getContext())))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8));
-
-        CommentPreviewResponse preview = objectMapper.treeToValue(node.path("commentPreview"), CommentPreviewResponse.class);
+        CommentPreviewResponse preview = previewOf(viewer, diary);
 
         assertSoftly(softly -> {
             softly.assertThat(preview.commentCount()).isEqualTo(4);
@@ -116,14 +110,7 @@ class CommentPreviewControllerTest {
     @Test
     @DisplayName("차단하지 않은 뷰어에게는 차단 유저 댓글도 미리보기에 보인다")
     void previewWithoutBlock() throws Exception {
-        loginAs(other);
-
-        JsonNode node = objectMapper.readTree(mockMvc.perform(get("/api/diaries/{diaryId}", diary.getId())
-                        .with(securityContext(SecurityContextHolder.getContext())))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8));
-
-        CommentPreviewResponse preview = objectMapper.treeToValue(node.path("commentPreview"), CommentPreviewResponse.class);
+        CommentPreviewResponse preview = previewOf(other, diary);
 
         assertThat(preview.comments()).extracting(CommentPreviewItem::userId)
                 .containsExactly(viewer.getId(), owner.getId(), blockedByViewer.getId());
@@ -132,18 +119,28 @@ class CommentPreviewControllerTest {
     @Test
     @DisplayName("댓글 없는 킬링파트는 commentCount 0 과 빈 목록")
     void previewOnEmptyDiary() throws Exception {
-        loginAs(viewer);
-
-        JsonNode node = objectMapper.readTree(mockMvc.perform(get("/api/diaries/{diaryId}", emptyDiary.getId())
-                        .with(securityContext(SecurityContextHolder.getContext())))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8));
-
-        CommentPreviewResponse preview = objectMapper.treeToValue(node.path("commentPreview"), CommentPreviewResponse.class);
+        CommentPreviewResponse preview = previewOf(viewer, emptyDiary);
 
         assertSoftly(softly -> {
             softly.assertThat(preview.commentCount()).isZero();
             softly.assertThat(preview.comments()).isEmpty();
+        });
+    }
+
+    @Test
+    @DisplayName("30번째 글자가 이모지여도 절단된 미리보기가 깨지지 않는다")
+    void previewTruncationIsSurrogateSafe() throws Exception {
+        DiaryEntity emojiDiary = diaryRepository.save(TestUtil.makeDiaryEntity(owner));
+        commentRepository.save(TestUtil.makeCommentEntity(emojiDiary, other, "a".repeat(29) + GRINNING_FACE + "tail"));
+        em.flush();
+        em.clear();
+
+        CommentPreviewResponse preview = previewOf(viewer, emojiDiary);
+        String content = preview.comments().getFirst().content();
+
+        assertSoftly(softly -> {
+            softly.assertThat(content).isEqualTo("a".repeat(29));
+            softly.assertThat(content.chars().anyMatch(c -> Character.isSurrogate((char) c))).isFalse();
         });
     }
 
@@ -170,6 +167,15 @@ class CommentPreviewControllerTest {
             softly.assertThat(previewCount(myList, diary.getId())).isEqualTo(4);
             softly.assertThat(previewCount(myList, emptyDiary.getId())).isZero();
         });
+    }
+
+    private CommentPreviewResponse previewOf(UserEntity asUser, DiaryEntity target) throws Exception {
+        loginAs(asUser);
+        JsonNode node = objectMapper.readTree(mockMvc.perform(get("/api/diaries/{diaryId}", target.getId())
+                        .with(securityContext(SecurityContextHolder.getContext())))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8));
+        return objectMapper.treeToValue(node.path("commentPreview"), CommentPreviewResponse.class);
     }
 
     private long previewCount(JsonNode page, Long diaryId) {
