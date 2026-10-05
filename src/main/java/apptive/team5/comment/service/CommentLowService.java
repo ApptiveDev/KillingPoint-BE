@@ -110,6 +110,14 @@ public class CommentLowService {
         commentRepository.deleteTopLevelByDiaryIds(diaryIds);
     }
 
+    public void increaseLikeCount(Long commentId) {
+        commentRepository.increaseLikeCount(commentId);
+    }
+
+    public void decreaseLikeCount(Long commentId) {
+        commentRepository.decreaseLikeCount(commentId);
+    }
+
     public void decrementLikeCountForUserLikes(Long userId) {
         commentRepository.decrementLikeCountForUserLikes(userId);
     }
