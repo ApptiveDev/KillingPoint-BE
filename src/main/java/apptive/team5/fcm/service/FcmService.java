@@ -15,6 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 
 @Transactional
 @Service
@@ -57,10 +61,10 @@ public class FcmService {
             return;
         }
 
-        deviceTokens.forEach(deviceToken -> sendMessageTo(deviceToken.getToken(), alarmMessage, content, deepLink));
+        deviceTokens.forEach(deviceToken -> sendMessageTo(userId, deviceToken.getToken(), alarmMessage, content, deepLink));
     }
 
-    private void sendMessageTo(String targetToken, AlarmMessage alarmMessage, String body, String deepLink) {
+    private void sendMessageTo(Long userId, String targetToken, AlarmMessage alarmMessage, String body, String deepLink) {
 
         Message message = Message.builder()
                 .setToken(targetToken)
@@ -77,16 +81,24 @@ public class FcmService {
         FirebaseMessaging firebaseMessaging = FirebaseMessaging.getInstance();
 
         ApiFuture<String> future = firebaseMessaging.sendAsync(message);
-        future.addListener(() -> handleSendResult(future, targetToken), Runnable::run);
+        future.addListener(() -> handleSendResult(future, userId, targetToken), Runnable::run);
     }
 
-    private void handleSendResult(ApiFuture<String> future, String targetToken) {
+    private void handleSendResult(ApiFuture<String> future, Long userId, String targetToken) {
         try {
-            future.get();
+            String messageId = future.get();
+            log.info("FCM 전송 성공: userId={}, tokenHash={}, messageId={}", userId, tokenHash(targetToken), messageId);
             return;
         } catch (Exception ex) {
             Throwable cause = ex.getCause();
-            log.error("fcm 전송 실패 : {}", ex.getMessage());
+            if (cause instanceof FirebaseMessagingException fme) {
+                log.error("FCM 전송 실패: userId={}, tokenHash={}, httpStatus={}, messagingErrorCode={}, firebaseErrorCode={}, message={}",
+                        userId, tokenHash(targetToken), fme.getHttpResponse() == null ? null : fme.getHttpResponse().getStatusCode(),
+                        fme.getMessagingErrorCode(), fme.getErrorCode(), fme.getMessage(), ex);
+            } else {
+                log.error("FCM 전송 실패(FCM 상세 예외 아님): userId={}, tokenHash={}, cause={}",
+                        userId, tokenHash(targetToken), cause == null ? ex.getMessage() : cause.toString(), ex);
+            }
             if (!(cause instanceof FirebaseMessagingException fme)) {
                 return;
             }
@@ -96,5 +108,14 @@ public class FcmService {
         }
 
         deviceTokenLowService.deleteByToken(targetToken);
+    }
+
+    private String tokenHash(String token) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256").digest(token.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(digest, 0, 6);
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IllegalStateException("SHA-256 is unavailable", ex);
+        }
     }
 }
