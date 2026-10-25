@@ -64,18 +64,32 @@ public class FcmService {
         deviceTokens.forEach(deviceToken -> sendMessageTo(userId, deviceToken.getToken(), alarmMessage, content, deepLink));
     }
 
+    @Async("sendAlarm")
+    public void sendAdminAlarmV2(Long userId, String title, String content, String deepLink) {
+        UserEntity user = userLowService.findById(userId);
+        if (!user.isAlarmEnabled()) return;
+
+        List<DeviceToken> deviceTokens = deviceTokenLowService.findByUserId(userId);
+        deviceTokens.forEach(deviceToken -> sendMessageTo(userId, deviceToken.getToken(), title, content, deepLink, AlarmMessage.ADMIN_ALARM.name()));
+    }
+
     private void sendMessageTo(Long userId, String targetToken, AlarmMessage alarmMessage, String body, String deepLink) {
+
+        sendMessageTo(userId, targetToken, alarmMessage.getMessage(), body, deepLink, alarmMessage.name());
+    }
+
+    private void sendMessageTo(Long userId, String targetToken, String title, String body, String deepLink, String type) {
 
         Message message = Message.builder()
                 .setToken(targetToken)
                 .setNotification(
                         Notification.builder()
-                                .setTitle(alarmMessage.getMessage())
+                                .setTitle(title)
                                 .setBody(body)
                                 .build()
                 )
                 .putData("deepLink", deepLink)
-                .putData("type", alarmMessage.name())
+                .putData("type", type)
                 .build();
 
         FirebaseMessaging firebaseMessaging = FirebaseMessaging.getInstance();

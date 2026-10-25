@@ -45,4 +45,12 @@ public class Alarm extends BaseTimeEntity {
         this.user = user;
         this.alarmType = alarmMessage.name();
     }
+
+    public Alarm(String title, String content, String deepLink, UserEntity user, AlarmMessage alarmMessage) {
+        this.title = title;
+        this.content = content;
+        this.deepLink = deepLink;
+        this.user = user;
+        this.alarmType = alarmMessage.name();
+    }
 }

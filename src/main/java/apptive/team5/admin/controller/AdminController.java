@@ -10,6 +10,9 @@ import apptive.team5.admin.service.AdminUgcService;
 import apptive.team5.admin.service.UserManagementService;
 import apptive.team5.alarm.dto.AdminAlarmSendRequest;
 import apptive.team5.alarm.service.AlarmDispatchService;
+import apptive.team5.alarmv2.service.AlarmDispatchV2Service;
+import apptive.team5.alarmv2.service.AdminNoticeService;
+import apptive.team5.alarmv2.service.AlarmV2RecipientService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -40,6 +43,9 @@ public class AdminController {
     private final AdminUgcService adminUgcService;
     private final UserManagementService userManagementService;
     private final AlarmDispatchService alarmDispatchService;
+    private final AlarmDispatchV2Service alarmDispatchV2Service;
+    private final AdminNoticeService adminNoticeService;
+    private final AlarmV2RecipientService alarmV2RecipientService;
 
     @GetMapping
     public String adminHome(HttpServletRequest request) {
@@ -98,6 +104,13 @@ public class AdminController {
                             @RequestParam(defaultValue = "USER_ID") String alarmUserSearchType,
                             @RequestParam(defaultValue = "") String alarmUserQ,
                             @RequestParam(defaultValue = "0") int alarmUserPage,
+                            @RequestParam(defaultValue = "send") String alarmV2Tab,
+                            @RequestParam(defaultValue = "all") String alarmV2RecipientMode,
+                            @RequestParam(defaultValue = "USERNAME") String alarmV2RecipientSearchType,
+                            @RequestParam(defaultValue = "") String alarmV2RecipientQ,
+                            @RequestParam(defaultValue = "0") int alarmV2RecipientPage,
+                            @RequestParam(defaultValue = "true") boolean alarmV2IncludeExcluded,
+                            @RequestParam(required = false) List<Long> selectedRecipientIds,
                             Model model) {
         int pageNumber = Math.max(page, 0);
         int pageSize = Math.min(Math.max(size, 10), 50);
@@ -142,6 +155,35 @@ public class AdminController {
             model.addAttribute("alarmUserSearchTypes", UserSearchType.values());
             model.addAttribute("alarmUserSearchType", searchTypeForAlarmUser);
             model.addAttribute("alarmUserQuery", alarmUserQuery);
+            return "admin/dashboard";
+        }
+
+        if ("alarms-v2".equals(adminView)) {
+            UserSearchType recipientSearchType = UserSearchType.from(alarmV2RecipientSearchType);
+            String recipientQuery = alarmV2RecipientQ == null ? "" : alarmV2RecipientQ.trim();
+            String recipientMode = "manual".equals(alarmV2RecipientMode) ? "manual" : "all";
+            var recipientPage = alarmV2RecipientService.getRecipients(recipientSearchType, recipientQuery, alarmV2IncludeExcluded,
+                    PageRequest.of(Math.max(alarmV2RecipientPage, 0), 10, Sort.by(Sort.Direction.DESC, "id")));
+            var selectableRecipientIds = alarmV2RecipientService.getSelectableRecipientIds(selectedRecipientIds);
+            long eligibleRecipientCount = alarmV2RecipientService.countSelectableRecipients(recipientSearchType, recipientQuery);
+            model.addAttribute("alarmV2Tab", resolveAlarmV2Tab(alarmV2Tab));
+            model.addAttribute("alarmV2Summary", alarmDispatchV2Service.getSummary());
+            model.addAttribute("alarmV2Dispatches", alarmDispatchV2Service.getRecentDispatches());
+            model.addAttribute("alarmV2Schedules", alarmDispatchV2Service.getScheduledDispatches());
+            model.addAttribute("alarmV2Notices", adminNoticeService.getRecentNotices());
+            if (!model.containsAttribute("alarmV2Title")) model.addAttribute("alarmV2Title", "");
+            if (!model.containsAttribute("alarmV2Content")) model.addAttribute("alarmV2Content", "");
+            if (!model.containsAttribute("alarmV2DeepLink")) model.addAttribute("alarmV2DeepLink", "/");
+            model.addAttribute("alarmV2RecipientMode", recipientMode);
+            model.addAttribute("alarmV2RecipientItems", recipientPage.getContent());
+            model.addAttribute("alarmV2RecipientPage", recipientPage);
+            model.addAttribute("alarmV2RecipientSearchTypes", UserSearchType.values());
+            model.addAttribute("alarmV2RecipientSearchType", recipientSearchType);
+            model.addAttribute("alarmV2RecipientQuery", recipientQuery);
+            model.addAttribute("alarmV2IncludeExcluded", alarmV2IncludeExcluded);
+            model.addAttribute("selectedRecipientIds", selectableRecipientIds);
+            model.addAttribute("selectedRecipientItems", alarmV2RecipientService.getSelectedRecipients(selectableRecipientIds));
+            model.addAttribute("alarmV2TargetCount", "all".equals(recipientMode) ? eligibleRecipientCount : selectableRecipientIds.size());
             return "admin/dashboard";
         }
 
@@ -334,6 +376,7 @@ public class AdminController {
             case "cs" -> "cs";
             case "users" -> "users";
             case "alarms" -> "alarms";
+            case "alarms-v2" -> "alarms-v2";
             default -> "ugc";
         };
     }
@@ -343,7 +386,16 @@ public class AdminController {
             case "cs" -> "메모 기록";
             case "users" -> "유저";
             case "alarms" -> "알림 발송";
+            case "alarms-v2" -> "알림 발송v2";
             default -> "UGC 검수";
+        };
+    }
+
+    private String resolveAlarmV2Tab(String alarmV2Tab) {
+        return switch (alarmV2Tab) {
+            case "schedules" -> "schedules";
+            case "notices" -> "notices";
+            default -> "send";
         };
     }
 

@@ -402,6 +402,188 @@
             background: #fff;
         }
 
+        .alarm-v2-board {
+            max-width: 1140px;
+            margin: 0 auto;
+        }
+
+        .alarm-v2-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .alarm-v2-tab {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 120px;
+            height: 36px;
+            padding: 0 16px;
+            border: 1px solid #e7e7e2;
+            background: #fff;
+            color: #16160f;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .alarm-v2-tab.is-active {
+            border-color: #16160f;
+            background: #16160f;
+            color: #fff;
+        }
+
+        .alarm-v2-content {
+            display: grid;
+            gap: 16px;
+        }
+
+        .alarm-v2-panel {
+            border: 1px solid #e7e7e2;
+            background: #fff;
+        }
+
+        .alarm-v2-panel-body {
+            padding: 18px;
+        }
+
+        .alarm-v2-field-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .alarm-v2-consent-row,
+        .alarm-v2-choice-row,
+        .alarm-v2-summary-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .alarm-v2-consent,
+        .alarm-v2-status {
+            padding: 3px 7px;
+            border: 1px solid #e7e7e2;
+            background: #f4f4f1;
+            color: #526410;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .alarm-v2-help {
+            color: #6c6c63;
+            font-size: 12px;
+        }
+
+        .alarm-v2-choice,
+        .alarm-v2-action {
+            min-height: 38px;
+            padding: 8px 16px;
+            border: 1px solid #e7e7e2;
+            background: #fff;
+            color: #6c6c63;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .alarm-v2-choice {
+            flex: 1;
+        }
+
+        .alarm-v2-choice.is-active {
+            border-color: #16160f;
+            background: #16160f;
+            color: #fff;
+        }
+
+        .alarm-v2-action {
+            background: #c7f23f;
+            color: #16160f;
+        }
+
+        .alarm-v2-input,
+        .alarm-v2-textarea {
+            width: 100%;
+            margin-top: 6px;
+            padding: 10px 12px;
+            border: 1px solid #dcdcd5;
+            background: #fff;
+            color: #6c6c63;
+            font-size: 13px;
+        }
+
+        .alarm-v2-textarea {
+            min-height: 112px;
+            resize: vertical;
+        }
+
+        .alarm-v2-input:disabled,
+        .alarm-v2-textarea:disabled,
+        .alarm-v2-choice:disabled,
+        .alarm-v2-action:disabled {
+            cursor: not-allowed;
+            opacity: .72;
+        }
+
+        .alarm-v2-table-head,
+        .alarm-v2-table-empty {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 214px 268px;
+            align-items: center;
+            min-height: 42px;
+            padding: 0 18px;
+            border-top: 1px solid #e7e7e2;
+            font-size: 12px;
+        }
+
+        .alarm-v2-table-head {
+            background: #f4f4f1;
+            color: #6c6c63;
+            font-weight: 700;
+        }
+
+        .alarm-v2-table-empty {
+            min-height: 90px;
+            color: #9a9a92;
+        }
+
+        .alarm-v2-recipient-list { max-height: 360px; overflow-y: auto; border: 1px solid #e7e7e2; }
+        .alarm-v2-target-field.is-disabled { display: none; }
+        .alarm-v2-selected-list { display: flex; flex-direction: column; gap: 8px; }
+        .alarm-v2-selected-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid #e7e7e2; background: #fcfcfb; }
+        .alarm-v2-selected-user { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
+        .alarm-v2-selected-user small { color: #6c6c63; font-size: 11px; }
+        .alarm-v2-selected-remove { padding: 6px 9px; border: 1px solid #e2e2dc; background: #fff; color: #5a5a54; font-size: 12px; font-weight: 700; }
+        .alarm-v2-mode-help { margin: -8px 0 0; color: #6c6c63; font-size: 12px; }
+        .alarm-v2-feedback { margin-bottom: 12px; padding: 11px 12px; border: 1px solid #d2e6a6; background: #f0f7e3; color: #526410; font-size: 13px; font-weight: 700; }
+        .alarm-v2-feedback.is-error { border-color: #ecc3bc; background: #fdf1ef; color: #bf4a3c; }
+        .alarm-v2-schedule-field.is-disabled { display: none; }
+        .alarm-v2-dialog-schedule.is-disabled { display: none; }
+        .alarm-v2-dialog { width: min(640px, calc(100vw - 32px)); padding: 0; border: 1px solid #e7e7e2; background: #fff; color: #16160f; }
+        .alarm-v2-dialog::backdrop { background: rgba(0, 0, 0, .42); }
+        .alarm-v2-dialog-header { padding: 20px 22px; border-bottom: 1px solid #e7e7e2; font-size: 17px; font-weight: 800; }
+        .alarm-v2-dialog-body { display: grid; gap: 16px; padding: 22px; }
+        .alarm-v2-dialog-field { display: grid; gap: 6px; }
+        .alarm-v2-dialog-label { color: #6c6c63; font-size: 12px; font-weight: 700; }
+        .alarm-v2-dialog-value { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; line-height: 1.6; }
+        .alarm-v2-dialog-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 16px 22px; border-top: 1px solid #e7e7e2; }
+        .alarm-v2-dialog-cancel { min-height: 40px; padding: 0 16px; border: 1px solid #e2e2dc; background: #fff; color: #16160f; }
+        .alarm-v2-dialog-confirm { min-height: 40px; padding: 0 18px; border: 1px solid #c7f23f; background: #c7f23f; color: #16160f; font-weight: 800; }
+        .alarm-v2-history-row { display: grid; grid-template-columns: minmax(0, 1fr) 110px 190px 120px; align-items: center; gap: 12px; min-height: 54px; padding: 8px 18px; border-top: 1px solid #e7e7e2; font-size: 13px; }
+        .alarm-v2-history-status { width: fit-content; padding: 4px 8px; background: #f4f4f1; color: #526410; font-size: 11px; font-weight: 700; }
+        .alarm-v2-recipient-head, .alarm-v2-recipient-row { display: grid; grid-template-columns: 42px minmax(0, 1fr) 210px; align-items: center; }
+        .alarm-v2-recipient-head { min-height: 40px; padding: 0 13px; background: #f4f4f1; color: #6c6c63; font-size: 11px; font-weight: 700; }
+        .alarm-v2-recipient-row { min-height: 64px; padding: 0 13px; border-top: 1px solid #e7e7e2; }
+        .alarm-v2-recipient-row.is-excluded { background: #fafaf8; color: #8a8a82; }
+        .alarm-v2-recipient-name, .alarm-v2-recipient-status { display: flex; flex-direction: column; gap: 2px; }
+        .alarm-v2-recipient-name strong { font-size: 13px; }
+        .alarm-v2-recipient-name span, .alarm-v2-recipient-status { color: #6c6c63; font-size: 11px; }
+        .alarm-v2-recipient-status strong { width: fit-content; padding: 3px 7px; border: 1px solid #e7e7e2; background: #f4f4f1; color: #526410; font-size: 11px; }
+        .alarm-v2-recipient-row.is-excluded .alarm-v2-recipient-status strong { color: #8a5a22; }
+        .alarm-v2-selection-result { display: flex; justify-content: space-between; gap: 16px; padding: 11px 18px; background: #f4f4f1; font-size: 12px; }
+
         .alarm-form {
             padding: 18px;
         }
@@ -1149,6 +1331,7 @@
         <a class="nav-item" th:classappend="${adminView == 'cs'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='cs')}"><span class="nav-dot"></span>메모 기록</a>
         <a class="nav-item" th:classappend="${adminView == 'users'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='users')}"><span class="nav-dot"></span>유저</a>
         <a class="nav-item" th:classappend="${adminView == 'alarms'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='alarms')}"><span class="nav-dot"></span>알림 발송</a>
+        <a class="nav-item" th:classappend="${adminView == 'alarms-v2'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='alarms-v2')}"><span class="nav-dot"></span>알림 발송v2</a>
         <form class="sidebar-footer" th:action="@{/admin/logout}" method="post">
             <div class="sidebar-user">
                 <strong>admin</strong>
@@ -1431,6 +1614,165 @@
                     </div>
                 </div>
             </section>
+            <section class="alarm-v2-board" th:if="${adminView == 'alarms-v2'}">
+                <div class="alarm-v2-feedback" th:if="${alarmV2Success != null}" th:text="${alarmV2Success}">완료</div>
+                <div class="alarm-v2-feedback is-error" th:if="${alarmV2Error != null}" th:text="${alarmV2Error}">오류</div>
+                <nav class="alarm-v2-tabs" aria-label="알림 발송v2 메뉴">
+                    <a class="alarm-v2-tab" th:classappend="${alarmV2Tab == 'send'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='alarms-v2', alarmV2Tab='send')}">알림 발송</a>
+                    <a class="alarm-v2-tab" th:classappend="${alarmV2Tab == 'schedules'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='alarms-v2', alarmV2Tab='schedules')}">예약 관리</a>
+                    <a class="alarm-v2-tab" th:classappend="${alarmV2Tab == 'notices'} ? ' is-active' : ''" th:href="@{/admin/dashboard(view='alarms-v2', alarmV2Tab='notices')}">공지 작성</a>
+                </nav>
+
+                <div class="alarm-v2-content" th:if="${alarmV2Tab == 'send'}">
+                    <section class="alarm-v2-panel">
+                        <div class="panel-header"><span class="panel-title">1. 발송 대상</span></div>
+                        <form class="alarm-v2-panel-body alarm-v2-field-grid" id="alarmV2RecipientForm" th:action="@{/admin/dashboard}" method="get">
+                            <input type="hidden" name="view" value="alarms-v2">
+                            <input type="hidden" name="alarmV2Tab" value="send">
+                            <input type="hidden" name="alarmV2RecipientMode" id="alarmV2RecipientMode" th:value="${alarmV2RecipientMode}">
+                            <span hidden th:each="selectedId : ${selectedRecipientIds}" data-selected-recipient-id th:data-selected-recipient-id="${selectedId}"></span>
+                            <div class="alarm-v2-consent-row">
+                                <span class="alarm-v2-consent">개인정보 마케팅 이용 동의</span>
+                                <span class="alarm-v2-consent">광고성 정보 수신 동의</span>
+                                <span class="alarm-v2-help">현재는 푸시 수신 설정과 정지 여부만 확인합니다.</span>
+                            </div>
+                            <div class="alarm-v2-choice-row">
+                                <button class="alarm-v2-choice alarm-v2-mode-button" th:classappend="${alarmV2RecipientMode == 'all'} ? ' is-active' : ''" type="button" data-mode="all">전체 유저에게 발송</button>
+                                <button class="alarm-v2-choice alarm-v2-mode-button" th:classappend="${alarmV2RecipientMode == 'manual'} ? ' is-active' : ''" type="button" data-mode="manual">선택 유저에게 발송</button>
+                            </div>
+                            <p class="alarm-v2-mode-help" th:if="${alarmV2RecipientMode == 'all'}">발송 가능한 전체 유저에게 발송합니다.</p>
+                            <div class="alarm-v2-field-grid alarm-v2-target-field" id="alarmV2TargetField" th:classappend="${alarmV2RecipientMode != 'manual'} ? ' is-disabled' : ''">
+                              <div class="alarm-v2-choice-row">
+                                <div class="search-type-tabs" aria-label="알림 v2 대상 검색 조건">
+                                  <label class="search-type-option" th:each="type : ${alarmV2RecipientSearchTypes}">
+                                      <input type="radio" name="alarmV2RecipientSearchType" th:value="${type.name()}" th:checked="${type == alarmV2RecipientSearchType}">
+                                      <span th:text="${type.label}">검색 조건</span>
+                                  </label>
+                                </div>
+                                <input class="alarm-v2-input" style="flex: 1; width: auto; margin-top: 0;" name="alarmV2RecipientQ" type="search" placeholder="닉네임 또는 유저 ID 검색" th:value="${alarmV2RecipientQuery}">
+                                <button class="search-button" style="flex: 0 0 auto;" type="submit" name="alarmV2RecipientPage" value="0">검색</button>
+                              </div>
+                              <label class="alarm-v2-help"><input type="checkbox" name="alarmV2IncludeExcluded" value="true" th:checked="${alarmV2IncludeExcluded}"> 제외 대상 포함 (기본)</label>
+                              <div class="alarm-v2-recipient-list">
+                                <div class="alarm-v2-recipient-head"><span></span><span>유저</span><span>발송 상태</span></div>
+                                <label class="alarm-v2-recipient-row" th:each="user : ${alarmV2RecipientItems}" th:classappend="${!user.selectable} ? ' is-excluded' : ''">
+                                    <input type="checkbox" name="selectedRecipientIds" th:value="${user.userId}" th:checked="${selectedRecipientIds.contains(user.userId)}" th:disabled="${!user.selectable}">
+                                    <span class="alarm-v2-recipient-name"><strong th:text="${user.username}">username</strong><span th:text="${user.tag}">u_0000</span></span>
+                                    <span class="alarm-v2-recipient-status"><strong th:text="${user.statusLabel}">발송 가능</strong><span th:text="${user.exclusionReason}"></span></span>
+                                </label>
+                                <div class="empty-state" th:if="${#lists.isEmpty(alarmV2RecipientItems)}">조건에 맞는 유저가 없습니다.</div>
+                              </div>
+                              <div class="alarm-v2-panel">
+                                <div class="panel-header"><span class="panel-title">선택한 유저 <span id="alarmV2SelectedUserCount" th:text="|${selectedRecipientItems.size()}명|">0명</span></span></div>
+                                <div class="alarm-v2-panel-body alarm-v2-selected-list" id="alarmV2SelectedUsers">
+                                  <div class="alarm-v2-selected-row" th:each="user : ${selectedRecipientItems}" th:data-selected-user-id="${user.userId}" th:data-username="${user.username}" th:data-tag="${user.tag}">
+                                    <span class="alarm-v2-selected-user"><strong th:text="${user.username}">username</strong><small th:text="${user.tag}">tag</small></span>
+                                    <button class="alarm-v2-selected-remove" type="button" th:data-remove-user-id="${user.userId}">제거</button>
+                                  </div>
+                                  <p class="alarm-v2-help" th:if="${selectedRecipientItems.isEmpty()}">선택된 유저가 없습니다.</p>
+                                </div>
+                              </div>
+                              <div class="alarm-v2-selection-result">
+                                <span>직접 선택한 발송 가능 유저</span>
+                                <strong id="alarmV2SelectedTargetCount" th:text="|최종 대상 ${alarmV2TargetCount}명|">최종 대상 0명</strong>
+                              </div>
+                              <button class="alarm-v2-choice" type="submit">선택 적용</button>
+                              <div class="page-actions" th:if="${alarmV2RecipientPage.totalPages > 1}">
+                                <button class="page-link" type="submit" name="alarmV2RecipientPage" th:value="${alarmV2RecipientPage.number - 1}" th:disabled="${alarmV2RecipientPage.first}">이전</button>
+                                <span class="page-status" th:text="|${alarmV2RecipientPage.number + 1} / ${alarmV2RecipientPage.totalPages} 페이지|">1 / 1 페이지</span>
+                                <button class="page-link" type="submit" name="alarmV2RecipientPage" th:value="${alarmV2RecipientPage.number + 1}" th:disabled="${alarmV2RecipientPage.last}">다음</button>
+                              </div>
+                            </div>
+                            <div class="alarm-v2-selection-result" th:if="${alarmV2RecipientMode == 'all'}">
+                                <span>발송 가능한 전체 유저</span>
+                                <strong id="alarmV2AllTargetCount" th:text="|최종 대상 ${alarmV2TargetCount}명|">최종 대상 0명</strong>
+                            </div>
+                        </form>
+                    </section>
+                    <form id="alarmV2DispatchForm" th:action="@{/admin/dashboard/alarms-v2/dispatch}" method="post">
+                    <input type="hidden" name="recipientMode" id="alarmV2DispatchRecipientMode" th:value="${alarmV2RecipientMode}">
+                    <section class="alarm-v2-panel">
+                        <div class="panel-header"><span class="panel-title">2. 메시지 작성</span></div>
+                        <div class="alarm-v2-panel-body alarm-v2-field-grid">
+                            <label><span class="field-label">제목</span><input class="alarm-v2-input" name="title" type="text" maxlength="200" placeholder="제목을 입력하세요" th:value="${alarmV2Title}" required></label>
+                            <label><span class="field-label">본문</span><textarea class="alarm-v2-textarea" name="content" maxlength="1000" placeholder="본문을 입력하세요" th:text="${alarmV2Content}" required></textarea></label>
+                            <label><span class="field-label">딥링크</span><input class="alarm-v2-input" name="deepLink" type="text" maxlength="1000" placeholder="/" th:value="${alarmV2DeepLink}"></label>
+                        </div>
+                    </section>
+                    <section class="alarm-v2-panel">
+                        <div class="panel-header"><span class="panel-title">3. 발송 전 확인</span></div>
+                        <div class="alarm-v2-panel-body alarm-v2-field-grid">
+                            <div class="alarm-v2-choice-row" role="radiogroup" aria-label="발송 방식">
+                                <label class="alarm-v2-choice"><input type="radio" name="dispatchType" value="IMMEDIATE" checked> 즉시 발송</label>
+                                <label class="alarm-v2-choice"><input type="radio" name="dispatchType" value="SCHEDULED"> 예약 발송</label>
+                            </div>
+                            <label class="alarm-v2-schedule-field is-disabled" id="alarmV2ScheduleField"><span class="field-label">예약 시간 (한국 시간)</span><input class="alarm-v2-input" id="alarmV2ScheduledAt" name="scheduledAt" type="datetime-local"></label>
+                            <button class="alarm-v2-action" id="alarmV2ConfirmOpen" type="button">발송 전 확인</button>
+                        </div>
+                    </section>
+                    <dialog class="alarm-v2-dialog" id="alarmV2ConfirmDialog">
+                        <div class="alarm-v2-dialog-header" id="alarmV2DialogTitle">발송 내용을 확인해주세요</div>
+                        <div class="alarm-v2-dialog-body">
+                            <div class="alarm-v2-dialog-field"><span class="alarm-v2-dialog-label">대상</span><span class="alarm-v2-dialog-value" id="alarmV2DialogTarget"></span></div>
+                            <div class="alarm-v2-dialog-field"><span class="alarm-v2-dialog-label">제목</span><span class="alarm-v2-dialog-value" id="alarmV2DialogMessageTitle"></span></div>
+                            <div class="alarm-v2-dialog-field"><span class="alarm-v2-dialog-label">본문</span><span class="alarm-v2-dialog-value" id="alarmV2DialogContent"></span></div>
+                            <div class="alarm-v2-dialog-field alarm-v2-dialog-schedule is-disabled" id="alarmV2DialogScheduleField"><span class="alarm-v2-dialog-label">예약 시간 (한국 시간)</span><span class="alarm-v2-dialog-value" id="alarmV2DialogSchedule"></span></div>
+                        </div>
+                        <div class="alarm-v2-dialog-footer">
+                            <button class="alarm-v2-dialog-cancel" id="alarmV2DialogCancel" type="button">취소</button>
+                            <button class="alarm-v2-dialog-confirm" id="alarmV2DialogSubmit" type="button">발송</button>
+                        </div>
+                    </dialog>
+                    </form>
+                    <section class="alarm-v2-panel">
+                        <div class="panel-header"><span class="panel-title">발송 이력</span></div>
+                        <div class="alarm-v2-table-head" style="grid-template-columns:minmax(0,1fr) 110px 190px 120px"><span>메시지</span><span>대상</span><span>시각 · 한국 시간</span><span>상태</span></div>
+                        <div class="alarm-v2-history-row" th:each="dispatch : ${alarmV2Dispatches}">
+                            <span th:text="${dispatch.title()}">제목</span>
+                            <span th:text="|${dispatch.recipientCount()}명|">0명</span>
+                            <span th:text="${dispatch.displayTime()}">시각</span>
+                            <span class="alarm-v2-history-status" th:text="${dispatch.statusLabel()}">상태</span>
+                        </div>
+                        <div class="alarm-v2-table-empty" th:if="${#lists.isEmpty(alarmV2Dispatches)}"><span>아직 발송 이력이 없어요.</span></div>
+                    </section>
+                </div>
+
+                <div class="alarm-v2-content" th:if="${alarmV2Tab == 'schedules'}">
+                    <section class="alarm-v2-panel">
+                        <div class="panel-header"><span class="panel-title">예약 발송</span><a class="alarm-v2-action" th:href="@{/admin/dashboard(view='alarms-v2', alarmV2Tab='send')}">예약 추가</a></div>
+                        <div class="alarm-v2-table-head" style="grid-template-columns:minmax(0,1fr) 110px 190px 100px"><span>제목</span><span>대상</span><span>예약 시간 · 한국 시간</span><span>관리</span></div>
+                        <div class="alarm-v2-history-row" style="grid-template-columns:minmax(0,1fr) 110px 190px 100px" th:each="schedule : ${alarmV2Schedules}">
+                            <span th:text="${schedule.title()}">제목</span>
+                            <span th:text="|${schedule.recipientCount()}명|">0명</span>
+                            <span th:text="${schedule.scheduledAt()}">시각</span>
+                            <form th:action="@{/admin/dashboard/alarms-v2/{id}/cancel(id=${schedule.id()})}" method="post" onsubmit="return confirm('이 예약을 취소할까요?')">
+                                <button class="alarm-v2-selected-remove" type="submit">취소</button>
+                            </form>
+                        </div>
+                        <div class="alarm-v2-table-empty" th:if="${#lists.isEmpty(alarmV2Schedules)}"><span>등록된 예약 알림이 없어요.</span></div>
+                    </section>
+                    <p class="alarm-v2-help" th:text="|임시 ${alarmV2Summary.draftCount}건 · 예약 ${alarmV2Summary.scheduledCount}건 · 완료 ${alarmV2Summary.completedCount}건|">임시 0건 · 예약 0건 · 완료 0건</p>
+                </div>
+
+                <div class="alarm-v2-content" th:if="${alarmV2Tab == 'notices'}">
+                    <section class="alarm-v2-panel">
+                        <div class="panel-header"><span class="panel-title">공지 작성</span></div>
+                        <form class="alarm-v2-panel-body alarm-v2-field-grid" th:action="@{/admin/dashboard/alarms-v2/notices}" method="post">
+                            <label><span class="field-label">제목</span><input class="alarm-v2-input" name="title" type="text" maxlength="200" placeholder="제목을 입력하세요" th:value="${alarmV2NoticeTitle}" required></label>
+                            <label><span class="field-label">본문</span><textarea class="alarm-v2-textarea" name="content" maxlength="20000" placeholder="본문을 입력하세요" th:text="${alarmV2NoticeContent}" required></textarea></label>
+                            <button class="alarm-v2-action" type="submit">공지 등록</button>
+                        </form>
+                    </section>
+                    <section class="alarm-v2-panel">
+                        <div class="panel-header"><span class="panel-title">공지 등록 기록</span></div>
+                        <div class="alarm-v2-table-head" style="grid-template-columns:minmax(0,1fr) 190px"><span>제목</span><span>등록 일시 · 한국 시간</span></div>
+                        <div class="alarm-v2-history-row" style="grid-template-columns:minmax(0,1fr) 190px" th:each="notice : ${alarmV2Notices}">
+                            <span th:text="${notice.title()}">제목</span><span th:text="${notice.displayTime()}">시각</span>
+                        </div>
+                        <div class="alarm-v2-table-empty" th:if="${#lists.isEmpty(alarmV2Notices)}"><span>아직 등록된 공지가 없어요.</span></div>
+                    </section>
+                </div>
+            </section>
             <section class="user-board" th:if="${adminView == 'users'}">
                 <div class="toolbar">
                     <form class="search-form" th:action="@{/admin/dashboard}" method="get">
@@ -1569,6 +1911,195 @@
 </main>
 
 <script>
+    const alarmV2RecipientForm = document.getElementById("alarmV2RecipientForm");
+    if (alarmV2RecipientForm) {
+        const storageKey = "alarm-v2-selected-recipient-users";
+        const selectedUsers = new Map();
+        try {
+            const savedUsers = JSON.parse(sessionStorage.getItem(storageKey) || "[]");
+            savedUsers.forEach(user => selectedUsers.set(String(user.id), user));
+        } catch (error) {
+            sessionStorage.removeItem(storageKey);
+        }
+        const selectedList = document.getElementById("alarmV2SelectedUsers");
+        const selectedCount = document.getElementById("alarmV2SelectedUserCount");
+        const selectedTargetCount = document.getElementById("alarmV2SelectedTargetCount");
+        const validSelectedIds = new Set(Array.from(alarmV2RecipientForm.querySelectorAll("[data-selected-recipient-id]"))
+            .map(item => item.dataset.selectedRecipientId));
+        const recipientChecks = Array.from(alarmV2RecipientForm.querySelectorAll("input[name='selectedRecipientIds']"));
+        const modeInput = document.getElementById("alarmV2RecipientMode");
+        const targetField = document.getElementById("alarmV2TargetField");
+        const dispatchModeInput = document.getElementById("alarmV2DispatchRecipientMode");
+
+        selectedList?.querySelectorAll("[data-selected-user-id]").forEach(row => {
+            selectedUsers.set(row.dataset.selectedUserId, {
+                id: row.dataset.selectedUserId,
+                username: row.dataset.username,
+                tag: row.dataset.tag
+            });
+        });
+        selectedUsers.forEach((user, id) => {
+            if (!validSelectedIds.has(id)) selectedUsers.delete(id);
+        });
+
+        function persistSelectedUsers() {
+            sessionStorage.setItem(storageKey, JSON.stringify(Array.from(selectedUsers.values())));
+        }
+
+        function renderSelectedUsers() {
+            if (!selectedList) return;
+            selectedList.replaceChildren();
+            if (selectedUsers.size === 0) {
+                const empty = document.createElement("p");
+                empty.className = "alarm-v2-help";
+                empty.textContent = "선택된 유저가 없습니다.";
+                selectedList.append(empty);
+            }
+            selectedUsers.forEach(user => {
+                const row = document.createElement("div");
+                row.className = "alarm-v2-selected-row";
+                const main = document.createElement("span");
+                main.className = "alarm-v2-selected-user";
+                const name = document.createElement("strong");
+                name.textContent = user.username;
+                const tag = document.createElement("small");
+                tag.textContent = user.tag;
+                main.append(name, tag);
+                const remove = document.createElement("button");
+                remove.className = "alarm-v2-selected-remove";
+                remove.type = "button";
+                remove.dataset.removeUserId = user.id;
+                remove.textContent = "제거";
+                row.append(main, remove);
+                selectedList.append(row);
+            });
+            if (selectedCount) selectedCount.textContent = selectedUsers.size + "명";
+            if (selectedTargetCount) selectedTargetCount.textContent = "최종 대상 " + selectedUsers.size + "명";
+        }
+
+        alarmV2RecipientForm.querySelectorAll(".alarm-v2-mode-button").forEach(button => {
+            button.addEventListener("click", () => {
+                modeInput.value = button.dataset.mode;
+                if (dispatchModeInput) dispatchModeInput.value = button.dataset.mode;
+                targetField?.classList.toggle("is-disabled", modeInput.value !== "manual");
+                alarmV2RecipientForm.querySelectorAll(".alarm-v2-mode-button").forEach(item => item.classList.toggle("is-active", item === button));
+                if (modeInput.value === "all") alarmV2RecipientForm.requestSubmit();
+            });
+        });
+
+        selectedList?.addEventListener("click", event => {
+            const button = event.target.closest("[data-remove-user-id]");
+            if (!button) return;
+            const id = button.dataset.removeUserId;
+            selectedUsers.delete(id);
+            recipientChecks.forEach(check => { if (check.value === id) check.checked = false; });
+            persistSelectedUsers();
+            renderSelectedUsers();
+        });
+
+        recipientChecks.forEach(check => {
+            const userId = check.value;
+            const row = check.closest(".alarm-v2-recipient-row");
+            const name = row.querySelector(".alarm-v2-recipient-name strong").textContent;
+            const tag = row.querySelector(".alarm-v2-recipient-name span").textContent;
+            check.checked = selectedUsers.has(userId);
+            check.addEventListener("change", () => {
+                if (check.checked) selectedUsers.set(userId, { id: userId, username: name, tag });
+                else selectedUsers.delete(userId);
+                persistSelectedUsers();
+                renderSelectedUsers();
+            });
+        });
+        renderSelectedUsers();
+
+        alarmV2RecipientForm.addEventListener("submit", () => {
+            recipientChecks.forEach(check => {
+                if (!check.disabled && check.checked && !selectedUsers.has(check.value)) {
+                    const row = check.closest(".alarm-v2-recipient-row");
+                    selectedUsers.set(check.value, {
+                        id: check.value,
+                        username: row.querySelector(".alarm-v2-recipient-name strong").textContent,
+                        tag: row.querySelector(".alarm-v2-recipient-name span").textContent
+                    });
+                }
+            });
+            alarmV2RecipientForm.querySelectorAll(".alarm-v2-selection-hidden").forEach(item => item.remove());
+            selectedUsers.forEach(user => {
+                const hidden = document.createElement("input");
+                hidden.type = "hidden";
+                hidden.name = "selectedRecipientIds";
+                hidden.value = user.id;
+                hidden.className = "alarm-v2-selection-hidden";
+                alarmV2RecipientForm.append(hidden);
+            });
+            persistSelectedUsers();
+        });
+    }
+
+    const alarmV2DispatchForm = document.getElementById("alarmV2DispatchForm");
+    const alarmV2ConfirmDialog = document.getElementById("alarmV2ConfirmDialog");
+    if (alarmV2DispatchForm && alarmV2ConfirmDialog) {
+        const scheduleField = document.getElementById("alarmV2ScheduleField");
+        const scheduledAtInput = document.getElementById("alarmV2ScheduledAt");
+        const dispatchTypeInputs = Array.from(alarmV2DispatchForm.querySelectorAll("input[name='dispatchType']"));
+        const confirmOpen = document.getElementById("alarmV2ConfirmOpen");
+        const confirmCancel = document.getElementById("alarmV2DialogCancel");
+        const confirmSubmit = document.getElementById("alarmV2DialogSubmit");
+
+        function selectedDispatchType() {
+            return dispatchTypeInputs.find(input => input.checked)?.value || "IMMEDIATE";
+        }
+
+        function updateScheduleField() {
+            const scheduled = selectedDispatchType() === "SCHEDULED";
+            scheduleField?.classList.toggle("is-disabled", !scheduled);
+            scheduledAtInput.required = scheduled;
+            if (scheduled && !scheduledAtInput.value) {
+                const localNow = new Date(Date.now() - new Date().getTimezoneOffset() * 60000);
+                localNow.setMinutes(localNow.getMinutes() + 5);
+                scheduledAtInput.value = localNow.toISOString().slice(0, 16);
+            }
+        }
+
+        dispatchTypeInputs.forEach(input => input.addEventListener("change", updateScheduleField));
+        updateScheduleField();
+
+        confirmOpen.addEventListener("click", () => {
+            if (!alarmV2DispatchForm.reportValidity()) return;
+            const scheduled = selectedDispatchType() === "SCHEDULED";
+            const mode = document.getElementById("alarmV2DispatchRecipientMode").value;
+            const targetCount = mode === "all"
+                ? document.getElementById("alarmV2AllTargetCount")?.textContent.replace("최종 대상", "").trim()
+                : document.getElementById("alarmV2SelectedUserCount")?.textContent;
+            document.getElementById("alarmV2DialogTitle").textContent = scheduled ? "예약 내용을 확인해주세요" : "발송 내용을 확인해주세요";
+            document.getElementById("alarmV2DialogTarget").textContent = (mode === "all" ? "발송 가능한 전체 유저 " : "선택한 유저 ") + (targetCount || "0명");
+            document.getElementById("alarmV2DialogMessageTitle").textContent = alarmV2DispatchForm.elements.title.value;
+            document.getElementById("alarmV2DialogContent").textContent = alarmV2DispatchForm.elements.content.value;
+            document.getElementById("alarmV2DialogScheduleField").classList.toggle("is-disabled", !scheduled);
+            document.getElementById("alarmV2DialogSchedule").textContent = scheduledAtInput.value.replace("T", " ");
+            confirmSubmit.textContent = scheduled ? "예약 등록" : "발송";
+            alarmV2ConfirmDialog.showModal();
+        });
+
+        confirmCancel.addEventListener("click", () => alarmV2ConfirmDialog.close());
+        confirmSubmit.addEventListener("click", () => {
+            const recipientMode = document.getElementById("alarmV2DispatchRecipientMode").value;
+            if (recipientMode === "manual") {
+                alarmV2DispatchForm.querySelectorAll(".alarm-v2-dispatch-recipient-id").forEach(input => input.remove());
+                const selectedUsers = JSON.parse(sessionStorage.getItem("alarm-v2-selected-recipient-users") || "[]");
+                selectedUsers.forEach(user => {
+                    const input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = "selectedRecipientIds";
+                    input.value = user.id;
+                    input.className = "alarm-v2-dispatch-recipient-id";
+                    alarmV2DispatchForm.append(input);
+                });
+            }
+            alarmV2DispatchForm.submit();
+        });
+    }
+
     const rows = Array.from(document.querySelectorAll(".ugc-row"));
 
     function selectRow(row) {
